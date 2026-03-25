@@ -1,0 +1,72 @@
+<section class='jj-rd-config jj-characteristics-config jj-trainings-config'>
+    <header class='jj-rd-config-header'>
+        <h2>Treinamentos</h2>
+        <p>Ative os treinamentos que devem aparecer na ficha e gerencie a lista custom da personagem.</p>
+    </header>
+
+    <div class='jj-rd-config-list jj-trainings-config-list'>
+        {{#if trainingDefinitions.length}}
+            {{#each trainingDefinitions as |training|}}
+                <div class='jj-rd-config-row jj-trainings-config-row {{#if training.selected}}is-enabled{{/if}}' data-training-row>
+                    <label class='jj-rd-config-main' for='jj-training-enabled-{{training.id}}'>
+                        <input
+                            id='jj-training-enabled-{{training.id}}'
+                            class='jj-rd-config-toggle'
+                            data-training-enabled
+                            type='checkbox'
+                            name='{{training.selectionName}}'
+                            {{checked training.selected}}
+                        />
+                        <span class='jj-rd-config-code'>{{training.code}}</span>
+                        <span class='jj-rd-config-text'>
+                            <strong>{{training.label}}</strong>
+                            <span>{{training.summary}}</span>
+                        </span>
+                    </label>
+                </div>
+            {{/each}}
+        {{else}}
+            <p class='jj-rd-empty'>Nenhum treinamento criado ainda.</p>
+        {{/if}}
+    </div>
+
+    <section class='jj-characteristics-custom-section'>
+        <div class='jj-rd-heading'>
+            <h3>Treinamentos</h3>
+        </div>
+        <div class='jj-characteristics-custom-list' data-trainings-custom-list data-next-index='{{customTrainings.length}}'>
+            {{#each customTrainings as |training idx|}}
+                <div class='jj-characteristics-custom-row' data-custom-training-row>
+                    <input type='hidden' name='custom.{{idx}}.id' value='{{training.id}}' />
+                    <input type='hidden' name='custom.{{idx}}.origem' value='custom' />
+                    <div class='jj-characteristics-custom-grid'>
+                        <label class='jj-characteristics-custom-field'>
+                            <span>Nome</span>
+                            <input name='custom.{{idx}}.label' type='text' value='{{training.label}}' />
+                        </label>
+                        <label class='jj-characteristics-custom-field'>
+                            <span>Sigla</span>
+                            <input name='custom.{{idx}}.code' type='text' value='{{training.code}}' maxlength='6' placeholder='TRN' />
+                        </label>
+                        <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+                            <span>Descrição</span>
+                            <textarea name='custom.{{idx}}.description' rows='2'>{{training.description}}</textarea>
+                        </label>
+                        <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+                            <span>Observações</span>
+                            <textarea name='custom.{{idx}}.observations' rows='2'>{{training.observations}}</textarea>
+                        </label>
+                    </div>
+                    <div class='jj-characteristics-custom-actions'>
+                        <button class='jj-action-button jj-action-button--danger' type='button' data-remove-custom-training>Remover treinamento</button>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+        <div class='jj-characteristics-custom-toolbar'>
+            <button class='jj-action-button' type='button' data-add-custom-training>Adicionar Treinamento</button>
+            <button class='jj-action-button jj-action-button--primary' type='button' data-save-trainings>Salvar e adicionar à ficha</button>
+        </div>
+        <p class='jj-characteristics-custom-note'>Os treinamentos são salvos na configuração própria de Treinamentos e já entram ativos ao serem adicionados.</p>
+    </section>
+</section>

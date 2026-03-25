@@ -1,0 +1,48 @@
+<section class='jj-rd-config jj-item-config'>
+    <header class='jj-rd-config-header'>
+        <h2>{{dialogTitle}}</h2>
+        <p>Configure {{entryTypeLabelLower}} para renderizar no layout atual e enviar o texto ao chat.</p>
+    </header>
+
+    <div class='jj-item-config-grid'>
+        <div class='jj-item-image-picker jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+            <span>Imagem</span>
+            <div class='jj-item-image-picker-body'>
+                <img class='jj-item-image-preview' src='{{entry.image}}' alt='{{entry.name}}' data-item-image-preview />
+                <div class='jj-item-image-fields'>
+                    <input name='image' type='text' value='{{entry.image}}' placeholder='icons/svg/book.svg' data-item-image-input />
+                    <button class='jj-action-button' type='button' data-pick-item-image>Escolher imagem</button>
+                </div>
+            </div>
+        </div>
+
+        <label class='jj-characteristics-custom-field'>
+            <span>Nome</span>
+            <input name='name' type='text' value='{{entry.name}}' />
+        </label>
+        <label class='jj-characteristics-custom-field'>
+            <span>Acerto</span>
+            <input name='acerto' type='number' value='{{entry.acerto}}' />
+        </label>
+        <label class='jj-characteristics-custom-field'>
+            <span>Atual</span>
+            <input name='current' type='number' value='{{entry.current}}' />
+        </label>
+        <label class='jj-characteristics-custom-field'>
+            <span>Max.</span>
+            <input name='max' type='number' value='{{entry.max}}' />
+        </label>
+        <label class='jj-characteristics-custom-field'>
+            <span>Custo</span>
+            <input name='cost' type='number' value='{{entry.cost}}' />
+        </label>
+        <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+            <span>Descrição</span>
+            <textarea name='description' rows='3'>{{entry.description}}</textarea>
+        </label>
+        <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+            <span>Observações</span>
+            <textarea name='observations' rows='2'>{{entry.observations}}</textarea>
+        </label>
+    </div>
+</section>

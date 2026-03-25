@@ -1,0 +1,2566 @@
+@font-face {
+    font-family: 'JJRobotoSlab';
+    src: url('../../dnd5e/fonts/roboto-slab/RobotoSlab-Regular.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'JJRobotoSlab';
+    src: url('../../dnd5e/fonts/roboto-slab/RobotoSlab-Bold.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'JJRobotoCondensed';
+    src: url('../../dnd5e/fonts/roboto-condensed/RobotoCondensed-Regular.woff2') format('woff2');
+    font-style: normal;
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'JJRobotoCondensed';
+    src: url('../../dnd5e/fonts/roboto-condensed/RobotoCondensed-Bold.woff2') format('woff2');
+    font-style: normal;
+    font-weight: 700;
+}
+
+.custom-system.actor.actor-v2 .window-content,
+.custom-system.actor.actor-v2 .custom-system-actor-content {
+    background:
+        linear-gradient(rgba(8, 8, 11, 0.54), rgba(8, 8, 11, 0.72)),
+        url('../../img/bg-jujutsu-1.jpg') center top / cover no-repeat fixed;
+}
+
+.jj-sheet {
+    --jj-panel: rgba(18, 20, 26, 0.86);
+    --jj-panel-2: rgba(27, 30, 37, 0.9);
+    --jj-card: rgba(39, 43, 52, 0.9);
+    --jj-card-soft: rgba(30, 33, 41, 0.84);
+    --jj-text: #ddd8cd;
+    --jj-muted: #af9f84;
+    --jj-edge: #4d4b53;
+    --jj-edge-strong: #9b8a69;
+    --jj-gold: #b7a37b;
+    --jj-gold-soft: #d5c6a3;
+    --jj-accent: #d9c49a;
+    --jj-accent-dark: #7e6847;
+    align-content: start;
+    color: var(--jj-text);
+    display: grid !important;
+    gap: 14px;
+    grid-template-columns: 320px minmax(0, 1fr);
+    padding: 16px;
+}
+
+.jj-span-2 {
+    grid-column: 1 / -1;
+}
+
+.jj-layout {
+    align-items: start;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: 320px minmax(0, 1fr);
+}
+
+.jj-sheet input,
+.jj-sheet select,
+.jj-sheet textarea,
+.jj-sheet button {
+    background: rgba(10, 11, 15, 0.66);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    color: var(--jj-text);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.85rem;
+}
+
+.jj-sheet input:focus,
+.jj-sheet select:focus,
+.jj-sheet textarea:focus {
+    outline: 0;
+    border-color: var(--jj-gold);
+    box-shadow: 0 0 0 1px rgba(183, 163, 123, 0.4);
+}
+
+.jj-sheet textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.jj-sheet button {
+    cursor: pointer;
+}
+
+.jj-sheet h2,
+.jj-sheet h3 {
+    border: 0;
+    color: var(--jj-accent);
+    margin: 0;
+}
+
+.jj-header {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    box-shadow: none;
+    display: grid;
+    gap: 10px;
+    grid-template-rows: minmax(0, 1fr) auto;
+    min-height: 218px;
+    overflow: hidden;
+    padding: 14px 18px 12px;
+    position: relative;
+}
+
+.jj-header::before {
+    display: none;
+}
+
+.jj-hero {
+    align-items: start;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) 520px;
+    min-height: 140px;
+}
+
+.jj-hero-brand,
+.jj-hero-meta {
+    align-content: start;
+    display: grid;
+    gap: 8px;
+}
+
+.jj-hero-title {
+    display: grid;
+    gap: 4px;
+}
+
+.jj-kicker {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+}
+
+.jj-hero-name {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #f4f2ed !important;
+    font-family: 'JJRobotoSlab', serif;
+    font-size: 2.45rem !important;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0;
+    padding: 0 !important;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.jj-hero-tags,
+.jj-hero-badges {
+    display: grid;
+    gap: 8px;
+}
+
+.jj-hero-tags {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.jj-hero-meta {
+    align-items: start;
+    gap: 8px 10px;
+    grid-template-columns: minmax(0, 1fr) 132px;
+}
+
+.jj-hero-badges--text {
+    align-items: start;
+    gap: 8px;
+    grid-column: 1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 58px;
+}
+
+.jj-hero-badges--number {
+    gap: 8px;
+    grid-column: 2;
+    grid-template-columns: 1fr;
+}
+
+.jj-hero-tags label,
+.jj-badge {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%),
+        url('../../dnd5e/ui/texture-gray2.webp') center / cover no-repeat;
+    align-content: start;
+    border: 1px solid rgba(183, 163, 123, 0.18);
+    border-radius: 8px;
+    display: grid;
+    gap: 1px;
+    min-height: 42px;
+    overflow: hidden;
+    padding: 5px 8px 6px;
+}
+
+.jj-hero-badges--text .jj-badge,
+.jj-hero-tags label {
+    align-content: start;
+    height: 42px;
+}
+
+.jj-hero-tags span,
+.jj-badge span {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.jj-hero-tags input,
+.jj-badge input {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #f2eee6 !important;
+    display: block;
+    font-size: 0.84rem;
+    line-height: 1;
+    margin-top: -5px;
+    min-height: 15px;
+    padding: 0 !important;
+}
+
+.jj-badge--number {
+    align-content: center;
+    background: url('../../dnd5e/ui/level-badge.webp') center / contain no-repeat !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    justify-items: center;
+    min-height: 92px;
+    overflow: visible;
+    padding: 0;
+    text-align: center;
+}
+
+.jj-badge--number input {
+    font-family: 'JJRobotoSlab', serif;
+    font-size: 1.38rem !important;
+    font-weight: 700;
+    text-align: center;
+}
+
+.jj-page-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-start;
+    margin-top: 2px;
+    position: relative;
+    z-index: 1;
+}
+
+.jj-page-nav a,
+.jj-page-nav button {
+    appearance: none;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+    border: 1px solid rgba(183, 163, 123, 0.22);
+    border-radius: 999px;
+    color: var(--jj-gold-soft);
+    cursor: pointer;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 5px 11px;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.jj-page-nav a:hover,
+.jj-page-nav button:hover,
+.jj-page-nav .is-active {
+    border-color: rgba(183, 163, 123, 0.48);
+    color: #fff6dd;
+}
+
+.jj-page-nav .is-active {
+    background:
+        linear-gradient(180deg, rgba(183, 163, 123, 0.26) 0%, rgba(96, 78, 48, 0.18) 100%),
+        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+    box-shadow: inset 0 0 0 1px rgba(255, 248, 222, 0.08), 0 2px 10px rgba(0, 0, 0, 0.24);
+}
+
+.jj-tab-panels,
+.jj-tab-panel {
+    display: grid;
+    gap: 14px;
+}
+
+.jj-tab-panel[hidden] {
+    display: none !important;
+}
+
+.jj-layout [data-tab-block] {
+    display: none;
+}
+
+.jj-layout.is-resumo [data-tab-block~='resumo'],
+.jj-layout.is-pericias [data-tab-block~='pericias'],
+.jj-layout.is-habilidades [data-tab-block~='habilidades'],
+.jj-layout.is-inventario [data-tab-block~='inventario'],
+.jj-layout.is-registro [data-tab-block~='registro'] {
+    display: grid;
+}
+
+.jj-layout.is-pericias,
+.jj-layout.is-habilidades,
+.jj-layout.is-inventario,
+.jj-layout.is-registro {
+    grid-template-columns: 1fr;
+}
+
+.jj-layout.is-pericias .jj-sidebar,
+.jj-layout.is-habilidades .jj-sidebar,
+.jj-layout.is-inventario .jj-sidebar,
+.jj-layout.is-registro .jj-sidebar {
+    display: none;
+}
+
+.jj-layout.is-pericias .jj-main-columns {
+    grid-template-columns: 1fr;
+}
+
+.jj-layout.is-habilidades .jj-main-columns {
+    grid-template-columns: 1fr;
+}
+
+.jj-layout.is-inventario .jj-main-columns,
+.jj-layout.is-registro .jj-main-columns {
+    grid-template-columns: 1fr;
+}
+
+.jj-layout.is-inventario .jj-main-columns,
+.jj-layout.is-registro .jj-main-columns {
+    display: none;
+}
+
+
+.jj-layout.is-pericias .jj-main-secondary {
+    display: none;
+}
+
+.jj-layout.is-habilidades .jj-main-secondary {
+    display: none;
+}
+
+.jj-layout.is-inventario .jj-main-secondary,
+.jj-layout.is-registro .jj-main-secondary {
+    display: none;
+}
+
+.jj-inventory-toolbar {
+    display: grid;
+    gap: 14px;
+}
+
+.jj-inventory-space-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+}
+
+.jj-inventory-space-card {
+    align-items: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 34px;
+    padding: 6px 12px;
+}
+
+.jj-inventory-space-label {
+    color: var(--jj-gold);
+    font-family: var(--jj-label-font);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.jj-inventory-space-card input,
+.jj-inventory-space-value {
+    align-items: center;
+    display: inline-flex;
+    min-height: 22px;
+}
+
+.jj-inventory-space-value {
+    color: var(--jj-ink-light);
+    font-family: var(--jj-heading-font);
+    font-size: 1.02rem;
+    font-weight: 700;
+    line-height: 1;
+    justify-self: end;
+}
+
+.jj-inventory-space-card input {
+    font-size: 0.9rem;
+    justify-self: end;
+    min-height: 22px;
+    max-width: 92px;
+    padding: 3px 8px;
+}
+
+.jj-inventory-card {
+    overflow: hidden;
+    padding: 0;
+}
+
+.jj-inventory-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.jj-inventory-table thead,
+.jj-inventory-table tbody {
+    display: block;
+    width: 100%;
+}
+
+.jj-inventory-table thead tr,
+.jj-inventory-table tbody tr {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 132px 132px 132px 164px;
+    width: 100%;
+}
+
+.jj-inventory-table th,
+.jj-inventory-table td {
+    align-items: center;
+    border-bottom: 1px solid rgba(197, 180, 136, 0.18);
+    display: flex;
+    justify-content: center;
+    padding: 12px 14px;
+    vertical-align: middle;
+}
+
+.jj-inventory-table th {
+    color: var(--jj-gold);
+    font-family: var(--jj-label-font);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.jj-inventory-table th:first-child,
+.jj-inventory-table td:first-child {
+    justify-content: flex-start;
+}
+
+.jj-inventory-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.jj-inventory-col--number,
+.jj-inventory-cell--number {
+    text-align: center;
+}
+
+.jj-inventory-col--actions {
+    text-align: center;
+}
+
+.jj-inventory-cell--number {
+    color: var(--jj-ink-light);
+    font-weight: 700;
+}
+
+.jj-inventory-actions-cell {
+    justify-content: flex-start;
+    padding-left: 18px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.jj-inventory-item-main {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+}
+
+.jj-inventory-item-main--draggable {
+    cursor: grab;
+}
+
+.jj-inventory-item-main--draggable:active {
+    cursor: grabbing;
+}
+
+.jj-inventory-item-image {
+    background: rgba(8, 9, 13, 0.72);
+    border: 1px solid rgba(197, 180, 136, 0.24);
+    border-radius: 10px;
+    height: 42px;
+    object-fit: cover;
+    width: 42px;
+}
+
+.jj-inventory-item-text {
+    display: grid;
+    gap: 4px;
+}
+
+.jj-inventory-item-text strong {
+    color: var(--jj-ink-light);
+    font-size: 0.98rem;
+    line-height: 1.1;
+}
+
+.jj-inventory-roll-chip {
+    align-items: center;
+    background:
+        linear-gradient(180deg, rgba(37, 40, 54, 0.92), rgba(17, 19, 27, 0.92)),
+        url('../../dnd5e/ui/texture-gray2.webp') center / cover;
+    border: 1px solid rgba(197, 180, 136, 0.24);
+    border-radius: 999px;
+    color: var(--jj-gold);
+    display: inline-flex;
+    font-family: var(--jj-label-font);
+    font-size: 0.7rem;
+    justify-content: center;
+    letter-spacing: 0.12em;
+    min-height: 22px;
+    padding: 0 10px;
+    text-transform: uppercase;
+    width: fit-content;
+}
+
+.jj-inventory-empty {
+    color: rgba(237, 231, 218, 0.72);
+    font-style: italic;
+    padding: 28px 14px;
+    text-align: center;
+}
+
+.jj-inventory-actions {
+    align-items: center;
+    display: inline-flex;
+    gap: 8px;
+    justify-content: flex-start;
+    min-height: 34px;
+}
+
+.jj-inventory-actions .jj-table-icon-button {
+    align-items: center;
+    display: inline-flex;
+    height: 34px;
+    justify-content: center;
+    padding: 0;
+    width: 34px;
+}
+
+.jj-inventory-actions .jj-table-icon-button--ghost {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    width: 0 !important;
+}
+
+.jj-inventory-config-grid {
+    align-items: start;
+    grid-template-columns: 132px repeat(2, minmax(0, 1fr));
+}
+
+.jj-inventory-config-checkbox {
+    align-items: center;
+    color: var(--jj-ink-light);
+    display: inline-flex;
+    gap: 10px;
+    min-height: 42px;
+    padding-top: 18px;
+}
+
+.jj-inventory-config-checkbox input {
+    margin: 0;
+}
+
+.jj-inventory-roll-grid {
+    display: grid;
+    gap: 12px;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.jj-inventory-roll-grid[hidden] {
+    display: none;
+}
+
+@media (max-width: 980px) {
+    .jj-inventory-space-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-inventory-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .jj-inventory-config-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-inventory-roll-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.jj-sidebar,
+.jj-main,
+.jj-main-shell,
+.jj-main-primary,
+.jj-main-secondary {
+    display: grid;
+    gap: 16px;
+}
+
+.jj-sidebar {
+    align-self: start;
+}
+
+.jj-main-columns {
+    align-items: start;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) 360px;
+}
+
+.jj-main-shell--single {
+    display: grid;
+    gap: 14px;
+}
+
+.jj-main-columns--abilities {
+    grid-template-columns: minmax(0, 1fr) 420px;
+}
+
+.jj-character-panel {
+    gap: 14px;
+}
+
+.jj-character-panel > h2 {
+    padding-left: 0;
+    padding-right: 0;
+    text-align: center;
+}
+
+.jj-character-panel > h2::after {
+    left: 18px;
+    right: 18px;
+}
+
+.jj-panel {
+    background:
+        linear-gradient(180deg, rgba(24, 26, 33, 0.92) 0%, rgba(15, 17, 23, 0.92) 100%),
+        url('../../dnd5e/ui/texture-gray2.webp') center / 460px auto repeat;
+    border: 1px solid rgba(183, 163, 123, 0.22);
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 20px rgba(0, 0, 0, 0.22);
+    display: grid;
+    gap: 12px;
+    overflow: hidden;
+    padding: 14px;
+    position: relative;
+}
+
+.jj-panel::before,
+.jj-panel::after {
+    content: '';
+    height: 30px;
+    opacity: 0.9;
+    position: absolute;
+    top: 10px;
+    width: 24px;
+}
+
+.jj-panel::before {
+    background: url('../../dnd5e/ui/notable-left-corner.svg') no-repeat left top / contain;
+    left: 10px;
+}
+
+.jj-panel::after {
+    background: url('../../dnd5e/ui/notable-right-corner.svg') no-repeat right top / contain;
+    right: 10px;
+}
+
+.jj-panel > h2 {
+    color: var(--jj-accent);
+    font-family: 'JJRobotoSlab', serif;
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0 0 4px;
+    padding: 4px 24px 10px;
+    position: relative;
+}
+
+.jj-panel > h2::after {
+    background: linear-gradient(90deg, rgba(183, 163, 123, 0.42) 0%, transparent 100%);
+    bottom: 0;
+    content: '';
+    height: 1px;
+    left: 24px;
+    position: absolute;
+    right: 24px;
+}
+
+.jj-card {
+    background: linear-gradient(180deg, rgba(42, 45, 54, 0.92) 0%, rgba(29, 33, 42, 0.92) 100%);
+    border: 1px solid rgba(183, 163, 123, 0.16);
+    border-radius: 10px;
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+}
+
+.jj-card > h3,
+.jj-ability-card > h3 {
+    color: var(--jj-accent);
+    font-family: 'JJRobotoSlab', serif;
+    font-size: 1.02rem;
+    font-weight: 700;
+}
+
+.jj-secondary-split {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.jj-status-stack {
+    display: grid;
+    gap: 12px;
+}
+
+.jj-derived-card {
+    align-content: start;
+    gap: 0;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+    padding: 0;
+}
+
+.jj-derived-card > h3 {
+    background:
+        linear-gradient(180deg, rgba(73, 13, 34, 0.96) 0%, rgba(48, 10, 24, 0.96) 100%),
+        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+    border-bottom: 1px solid rgba(183, 163, 123, 0.24);
+    color: #f6efde;
+    display: grid;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: 0.14em;
+    min-height: 44px;
+    place-items: center;
+    padding: 8px 10px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.jj-derived-card--sidebar > h3 {
+    min-height: 38px;
+}
+
+.jj-derived-body {
+    align-content: start;
+    display: grid;
+    gap: 10px;
+    padding: 10px;
+}
+
+.jj-derived-total {
+    align-items: center;
+    background:
+        linear-gradient(180deg, rgba(183, 163, 123, 0.2) 0%, rgba(95, 79, 52, 0.18) 100%),
+        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+    border: 1px solid rgba(183, 163, 123, 0.28);
+    border-radius: 10px;
+    display: grid;
+    gap: 2px;
+    justify-items: center;
+    padding: 8px 6px;
+}
+
+.jj-derived-total > span {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.jj-derived-total > input {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #fff6dd !important;
+    font-family: 'JJRobotoSlab', serif;
+    font-size: 1.6rem !important;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0 !important;
+    text-align: center;
+}
+
+.jj-derived-total-grid {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.jj-derived-fields {
+    display: grid;
+    gap: 6px;
+}
+
+.jj-derived-row {
+    align-items: center;
+    display: grid;
+    gap: 6px;
+    grid-template-columns: minmax(0, 1fr) 58px;
+}
+
+.jj-derived-row--checkbox {
+    grid-template-columns: minmax(0, 1fr) 58px;
+}
+
+.jj-derived-row > span {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.jj-derived-row--wide {
+    grid-template-columns: minmax(0, 1fr) 120px;
+}
+
+.jj-derived-row > input {
+    font-size: 0.82rem !important;
+    min-height: 30px;
+    padding: 4px 6px !important;
+    text-align: center;
+}
+
+.jj-derived-row--wide > input {
+    text-align: left;
+}
+
+.jj-derived-row > select {
+    font-size: 0.82rem !important;
+    min-height: 30px;
+    padding: 4px 6px !important;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.jj-derived-row--checkbox .jj-checkbox {
+    justify-self: center;
+}
+
+.jj-derived-row--checkbox .jj-checkbox.is-disabled {
+    cursor: default;
+    opacity: 0.9;
+}
+
+.jj-attack-card > h3 {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.jj-attack-card > h3 > span {
+    min-width: 0;
+}
+
+.jj-combat-summary-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.jj-combat-summary-grid > [data-attack-key='cursed'] {
+    grid-column: 1 / -1;
+}
+
+.jj-table-item-cell {
+    min-width: 220px;
+}
+
+.jj-table-item {
+    align-items: center;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+}
+
+.jj-table-item-thumb {
+    border: 1px solid rgba(183, 163, 123, 0.24);
+    border-radius: 8px;
+    display: block;
+    height: 40px;
+    object-fit: cover;
+    width: 40px;
+}
+
+.jj-table-item-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.jj-table-item-text > strong {
+    color: var(--jj-text);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.jj-table-item-text > span {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+}
+
+.jj-table-item-actions {
+    display: inline-flex;
+    gap: 6px;
+}
+
+.jj-sheet .jj-table-icon-button {
+    align-items: center;
+    background: rgba(10, 11, 15, 0.42);
+    border: 1px solid rgba(183, 163, 123, 0.24);
+    border-radius: 8px;
+    color: #f3ecdc;
+    display: inline-flex;
+    height: 30px;
+    justify-content: center;
+    padding: 0;
+    width: 30px;
+}
+
+.jj-sheet .jj-table-icon-button--danger {
+    border-color: rgba(183, 107, 123, 0.3);
+}
+
+.jj-item-config-grid {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.jj-item-image-picker-body {
+    align-items: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 72px minmax(0, 1fr);
+}
+
+.jj-item-image-preview {
+    border: 1px solid rgba(183, 163, 123, 0.24);
+    border-radius: 10px;
+    display: block;
+    height: 72px;
+    object-fit: cover;
+    width: 72px;
+}
+
+.jj-item-image-fields {
+    display: grid;
+    gap: 8px;
+}
+
+.jj-derived-checks {
+    display: grid;
+    gap: 8px;
+}
+
+.jj-sheet .jj-derived-toggle {
+    align-items: center;
+    color: var(--jj-text);
+    display: flex;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.74rem;
+    font-weight: 700;
+    gap: 8px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.jj-checkbox {
+    --jj-checkbox-size: 18px;
+    cursor: pointer;
+    position: relative;
+}
+
+.jj-checkbox-input {
+    height: 1px !important;
+    left: 0;
+    margin: 0 !important;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    width: 1px !important;
+}
+
+.jj-checkbox-mark {
+    background: linear-gradient(180deg, rgba(49, 38, 52, 0.92) 0%, rgba(28, 22, 35, 0.96) 100%);
+    border: 1px solid rgba(183, 163, 123, 0.22);
+    border-radius: 4px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    display: block;
+    flex: 0 0 var(--jj-checkbox-size);
+    height: var(--jj-checkbox-size);
+    position: relative;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.12s ease;
+    width: var(--jj-checkbox-size);
+}
+
+.jj-checkbox-mark::after {
+    background: linear-gradient(180deg, #dbc79f 0%, #8d6e44 100%);
+    border-radius: 2px;
+    content: '';
+    inset: 3px;
+    opacity: 0;
+    position: absolute;
+    transform: scale(0.72);
+    transition:
+        opacity 0.12s ease,
+        transform 0.12s ease;
+}
+
+.jj-checkbox.is-checked .jj-checkbox-mark {
+    background: linear-gradient(180deg, rgba(76, 55, 41, 0.92) 0%, rgba(46, 33, 24, 0.96) 100%);
+    border-color: rgba(213, 198, 163, 0.58);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 0 0 1px rgba(183, 163, 123, 0.16);
+}
+
+.jj-checkbox.is-checked .jj-checkbox-mark::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.jj-checkbox-input:focus-visible + .jj-checkbox-mark {
+    border-color: rgba(213, 198, 163, 0.62);
+    box-shadow:
+        0 0 0 1px rgba(183, 163, 123, 0.36),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.jj-checkbox-label {
+    min-width: 0;
+}
+
+.jj-checkbox--compact {
+    --jj-checkbox-size: 16px;
+}
+
+.jj-death-track-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.jj-death-track {
+    display: grid;
+    gap: 6px;
+}
+
+.jj-death-track > span,
+.jj-hit-dice-header > span,
+.jj-hit-dice-die {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.jj-death-pips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.jj-sheet .jj-death-pip {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    display: inline-grid;
+    height: 20px;
+    place-items: center;
+    width: 20px;
+}
+
+.jj-hit-dice-list {
+    display: grid;
+    gap: 6px;
+}
+
+.jj-hit-dice-header,
+.jj-hit-dice-row {
+    align-items: center;
+    display: grid;
+    gap: 6px;
+    grid-template-columns: 44px repeat(2, minmax(0, 1fr));
+}
+
+.jj-hit-dice-header > span {
+    text-align: center;
+}
+
+.jj-hit-dice-die {
+    text-align: left;
+}
+
+.jj-hit-dice-row > input {
+    font-size: 0.82rem !important;
+    min-height: 30px;
+    padding: 4px 6px !important;
+    text-align: center;
+}
+
+.jj-card--rd {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+.jj-summary-grid,
+.jj-compact-grid,
+.jj-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.jj-summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.jj-compact-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.jj-sheet label {
+    color: var(--jj-muted);
+    display: grid;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.76rem;
+    font-weight: 700;
+    gap: 4px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.jj-sheet label input,
+.jj-sheet label select,
+.jj-sheet label textarea {
+    color: var(--jj-text);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+.jj-character-card {
+    display: grid;
+    gap: 12px;
+}
+
+.jj-portrait-shell {
+    margin: 0 auto;
+    max-width: 220px;
+    position: relative;
+}
+
+.jj-portrait-frame {
+    background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.18) 66%),
+        url('../../dnd5e/ui/texture-gray1.webp') center / cover no-repeat;
+    border: 1px solid rgba(183, 163, 123, 0.28);
+    border-radius: 999px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.36);
+    padding: 8px;
+    position: relative;
+}
+
+.jj-portrait-frame::after {
+    border: 2px solid rgba(217, 196, 154, 0.74);
+    border-radius: 999px;
+    content: '';
+    inset: 6px;
+    pointer-events: none;
+    position: absolute;
+}
+
+.jj-portrait {
+    border-radius: 999px;
+    cursor: pointer;
+    display: block;
+    height: 200px;
+    object-fit: cover;
+    width: 200px;
+}
+
+.jj-portrait-badge {
+    align-items: center;
+    background: url('../../dnd5e/ui/level-badge.webp') center / contain no-repeat;
+    bottom: -6px;
+    display: flex;
+    height: 74px;
+    justify-content: center;
+    left: 50%;
+    position: absolute;
+    transform: translateX(-50%);
+    width: 74px;
+}
+
+.jj-portrait-badge span {
+    color: #fff;
+    font-family: 'JJRobotoSlab', serif;
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-top: -2px;
+}
+
+.jj-lozenges {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 18px;
+}
+
+.jj-lozenge {
+    align-content: center;
+    background: url('../../dnd5e/ui/lozenge.svg') no-repeat center / 100% 100%;
+    display: grid;
+    min-height: 68px;
+    padding: 6px 8px 10px;
+    text-align: center;
+}
+
+.jj-lozenge-value {
+    color: #f2eee6;
+    font-family: 'JJRobotoSlab', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.jj-lozenge-label {
+    color: #f1e6c7;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    text-transform: uppercase;
+}
+
+.jj-abilities {
+    display: grid;
+    gap: 4px 2px;
+    grid-template-columns: repeat(6, minmax(74px, 84px));
+    justify-content: center;
+    padding: 0 0 14px;
+}
+
+.jj-ability-card {
+    background: transparent;
+    display: grid;
+    gap: 1px;
+    justify-items: center;
+    min-height: 60px;
+    padding: 3px 5px 10px;
+    position: relative;
+}
+
+.jj-ability-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.jj-ability-card::before {
+    background: url('../../dnd5e/ui/ability-score-tab-dark.svg') no-repeat center top / 100% 100%;
+    content: '';
+    inset: 0;
+    position: absolute;
+}
+
+.jj-ability-card > h3 {
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.54rem;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    margin-top: 6px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.jj-ability-score,
+.jj-ability-mod {
+    appearance: textfield;
+    -moz-appearance: textfield;
+    align-self: center;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-family: 'JJRobotoSlab', serif;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0;
+    min-width: 0;
+    padding: 0 !important;
+    text-align: center !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    width: 100%;
+}
+
+.jj-ability-score {
+    font-size: 0.96rem;
+    margin-top: 0;
+}
+
+.jj-sheet .jj-ability-mod {
+    align-items: center;
+    background: linear-gradient(180deg, rgba(9, 10, 14, 0.96) 0%, rgba(19, 22, 31, 0.98) 100%) !important;
+    border: 1px solid rgba(86, 91, 108, 0.9) !important;
+    border-radius: 3px !important;
+    color: var(--jj-accent) !important;
+    display: flex;
+    font-size: 0.74rem;
+    height: 18px;
+    justify-content: center;
+    left: 50%;
+    padding: 0 6px !important;
+    position: absolute;
+    bottom: -8px;
+    transform: translateX(-50%);
+    width: 42px;
+    z-index: 2;
+}
+
+.jj-ability-score::-webkit-outer-spin-button,
+.jj-ability-score::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.jj-ability-score:hover,
+.jj-ability-score:focus,
+.jj-ability-mod:hover,
+.jj-ability-mod:focus {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.jj-ability-mod:hover,
+.jj-ability-mod:focus {
+    background: linear-gradient(180deg, rgba(9, 10, 14, 0.96) 0%, rgba(19, 22, 31, 0.98) 100%) !important;
+    border: 1px solid rgba(86, 91, 108, 0.9) !important;
+}
+
+.jj-row {
+    align-items: end;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+}
+
+.jj-resource {
+    --jj-extra-divider: #cdb8c0;
+    background: linear-gradient(180deg, rgba(43, 47, 55, 0.86) 0%, rgba(22, 24, 31, 0.9) 100%);
+    border: 1px solid rgba(183, 163, 123, 0.18);
+    border-radius: 10px;
+    display: grid;
+    gap: 6px;
+    padding: 10px;
+}
+
+.jj-resource-top strong {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.jj-resource-bar {
+    background: rgba(0, 0, 0, 0.52);
+    border: 1px solid rgba(183, 163, 123, 0.42);
+    border-radius: 6px;
+    height: 24px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.jj-resource-fill,
+.jj-resource-extra {
+    display: block;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    transition: width 0.15s ease-out;
+}
+
+.jj-resource-extra {
+    background: linear-gradient(90deg, rgba(245, 245, 245, 0.86) 0%, rgba(193, 196, 201, 0.96) 100%);
+    border-left: 2px solid var(--jj-extra-divider);
+}
+
+.jj-resource-values {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    left: 50%;
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    width: max-content;
+    z-index: 1;
+}
+
+.jj-resource-values-inner {
+    align-items: center;
+    display: flex;
+    gap: 0;
+    justify-content: center;
+}
+
+.jj-resource-values span {
+    color: #f4efe4;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.74rem;
+    font-weight: 700;
+    margin: 0;
+    padding: 0 1px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.jj-resource-values input {
+    appearance: textfield;
+    -moz-appearance: textfield;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    color: #f4efe4;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.74rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+    text-align: center;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    width: 28px;
+}
+
+.jj-resource-values-inner input:first-child {
+    padding-right: 1px;
+    text-align: right;
+}
+
+.jj-resource-values-inner input:last-child {
+    padding-left: 1px;
+    text-align: left;
+}
+
+.jj-resource-values input::-webkit-outer-spin-button,
+.jj-resource-values input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.jj-resource-values input:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+.jj-resource-extra-label {
+    color: #f2ede3;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.74rem;
+    font-weight: 700;
+    line-height: 1;
+    position: absolute;
+    right: 8px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+.jj-resource--vida .jj-resource-fill {
+    background: linear-gradient(90deg, #3f874a 0%, #49a25a 100%);
+}
+
+.jj-resource--vida {
+    --jj-extra-divider: #9fc4a5;
+}
+
+.jj-resource--energia .jj-resource-fill {
+    background: linear-gradient(90deg, #7e43d6 0%, #a550f5 100%);
+}
+
+.jj-resource--energia {
+    --jj-extra-divider: #b8a8d6;
+}
+
+.jj-resource--integridade .jj-resource-fill {
+    background: linear-gradient(90deg, #8e959f 0%, #b6bcc4 100%);
+}
+
+.jj-resource--integridade {
+    --jj-extra-divider: #d4d6da;
+}
+
+.jj-character-status {
+    background: linear-gradient(180deg, rgba(43, 47, 55, 0.86) 0%, rgba(22, 24, 31, 0.9) 100%);
+    border: 1px solid rgba(183, 163, 123, 0.18);
+    border-radius: 10px;
+    display: grid;
+    gap: 10px;
+    padding: 10px;
+}
+
+.jj-character-status > h3 {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin: 0;
+    padding-bottom: 6px;
+    position: relative;
+    text-transform: uppercase;
+}
+
+.jj-character-status > h3::after {
+    background: linear-gradient(90deg, rgba(183, 163, 123, 0.32) 0%, transparent 100%);
+    bottom: 0;
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+}
+
+.jj-character-condition-list {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.jj-sheet .jj-character-condition {
+    align-items: center;
+    background: rgba(0, 0, 0, 0.36);
+    border: 1px solid rgba(183, 163, 123, 0.18);
+    border-radius: 8px;
+    color: var(--jj-text);
+    cursor: pointer;
+    display: flex;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    gap: 8px;
+    letter-spacing: 0.06em;
+    min-height: 36px;
+    padding: 8px 10px;
+    text-transform: uppercase;
+}
+
+.jj-sheet .jj-character-condition .jj-checkbox-mark {
+    --jj-checkbox-size: 16px;
+}
+
+.jj-sheet .jj-character-condition.is-checked .jj-checkbox-label {
+    color: #fff6dd;
+}
+
+.jj-character-status-fields {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.jj-character-status-field {
+    display: grid;
+    gap: 4px;
+}
+
+.jj-character-status-field > span {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.jj-character-status-field > input {
+    font-size: 0.82rem !important;
+    min-height: 30px;
+    padding: 4px 6px !important;
+    text-align: center;
+}
+
+.jj-checks {
+    display: grid;
+    gap: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+
+.jj-checks label {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+}
+
+.jj-table {
+    background: rgba(0, 0, 0, 0.18);
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.jj-table th,
+.jj-table td {
+    border-bottom: 1px solid rgba(183, 163, 123, 0.16);
+    padding: 6px 7px;
+    text-align: left;
+}
+
+.jj-table th {
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.jj-table tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.jj-table td input,
+.jj-table td select {
+    width: 100%;
+}
+
+.jj-checkbox-cell {
+    text-align: center !important;
+}
+
+.jj-checkbox-cell .jj-checkbox {
+    display: inline-flex;
+    justify-content: center;
+}
+
+.jj-skills-columns {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.jj-skills-column {
+    min-width: 0;
+}
+
+.jj-table--skills {
+    table-layout: fixed;
+}
+
+.jj-table--skills .jj-skill-attribute-col {
+    width: 76px;
+}
+
+.jj-table--skills .jj-skill-others-col,
+.jj-table--skills .jj-skill-total-col {
+    width: 82px;
+}
+
+.jj-table--skills .jj-skill-check-col {
+    width: 48px;
+}
+
+.jj-table--skills th,
+.jj-table--skills td {
+    padding: 5px 6px;
+}
+
+.jj-table--skills th {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.jj-table--skills th:first-child {
+    text-align: left;
+}
+
+.jj-table--skills .jj-skill-name {
+    color: #f0e9da;
+    min-width: 0;
+}
+
+.jj-table--skills .jj-skill-name-content {
+    align-items: center;
+    display: flex;
+    gap: 4px;
+    min-width: 0;
+}
+
+.jj-table--skills .jj-skill-name-content > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.jj-table--skills .jj-skill-custom-name {
+    align-items: center;
+    color: #f0e9da;
+    display: flex;
+    gap: 2px;
+    justify-content: flex-start;
+    margin: 0;
+    min-width: 0;
+    text-align: left;
+}
+
+.jj-table--skills .jj-skill-custom-name > span {
+    flex: 0 0 auto;
+}
+
+.jj-table--skills .jj-skill-custom-name-input {
+    background: transparent !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(183, 163, 123, 0.28) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #f0e9da !important;
+    flex: 1 1 72px;
+    font-size: 0.82rem !important;
+    font-weight: 700;
+    min-width: 0;
+    padding: 0 0 1px !important;
+    text-align: center;
+}
+
+.jj-table--skills .jj-skill-custom-name-input::placeholder {
+    color: rgba(221, 216, 205, 0.42);
+}
+
+.jj-table--skills .jj-skill-custom-name-input:focus {
+    border-bottom-color: rgba(213, 198, 163, 0.62) !important;
+    box-shadow: none !important;
+}
+
+.jj-table--skills .jj-skill-attribute-head,
+.jj-table--skills .jj-skill-attribute-cell {
+    color: #f3ecdc;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.jj-table--skills .jj-skill-attribute-select {
+    font-size: 0.74rem !important;
+    font-weight: 700;
+    min-width: 0;
+    padding: 3px 4px !important;
+    text-align: center;
+    text-align-last: center;
+    text-transform: uppercase;
+    width: 100%;
+}
+
+.jj-table--skills .jj-skill-others-head,
+.jj-table--skills .jj-skill-total-head {
+    letter-spacing: 0.06em;
+    text-align: center;
+}
+
+.jj-table--skills .jj-skill-check-head,
+.jj-table--skills .jj-checkbox-cell {
+    text-align: center !important;
+}
+
+.jj-table--skills .jj-skill-others-cell input,
+.jj-table--skills .jj-skill-total-cell input {
+    margin: 0 auto;
+    max-width: 60px;
+    min-width: 0;
+    text-align: center;
+}
+
+.jj-table--skills .jj-checkbox-cell {
+    width: 48px;
+}
+
+.jj-saving-throws-panel .jj-table--saving-throws {
+    table-layout: fixed;
+}
+
+.jj-table--saving-throws .jj-save-name-col {
+    width: auto;
+}
+
+.jj-table--saving-throws .jj-save-total-col,
+.jj-table--saving-throws .jj-save-bonus-col {
+    width: 58px;
+}
+
+.jj-table--saving-throws .jj-save-check-col {
+    width: 30px;
+}
+
+.jj-saving-throws-panel .jj-table--saving-throws th,
+.jj-saving-throws-panel .jj-table--saving-throws td {
+    padding: 5px 4px;
+}
+
+.jj-saving-throws-panel .jj-table--saving-throws th {
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-align: center;
+}
+
+.jj-saving-throws-panel .jj-table--saving-throws th:first-child,
+.jj-saving-throws-panel .jj-table--saving-throws td:first-child {
+    text-align: left;
+}
+
+.jj-saving-throws-panel .jj-table--saving-throws .jj-save-others-cell input,
+.jj-saving-throws-panel .jj-table--saving-throws .jj-save-total-cell input {
+    margin: 0 auto;
+    max-width: 56px;
+    text-align: center;
+}
+
+.jj-saving-throws-panel .jj-table--saving-throws .jj-checkbox-cell {
+    width: 30px;
+}
+
+.jj-saving-throws-panel .jj-table--saving-throws [data-save-total] {
+    color: #fff6dd;
+    font-weight: 700;
+}
+
+.jj-save-name {
+    align-items: center;
+    display: flex;
+    gap: 4px;
+    min-width: 0;
+}
+
+.jj-save-name > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.jj-save-roll-button,
+.jj-skill-roll-button,
+.jj-attack-roll-button {
+    align-items: center;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: var(--jj-accent) !important;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 0.78rem;
+    height: 16px;
+    justify-content: center;
+    padding: 0 !important;
+    width: 16px;
+}
+
+.jj-save-roll-button:hover,
+.jj-save-roll-button:focus-visible,
+.jj-skill-roll-button:hover,
+.jj-skill-roll-button:focus-visible,
+.jj-attack-roll-button:hover,
+.jj-attack-roll-button:focus-visible {
+    color: #fff6dd !important;
+    outline: 0;
+}
+
+.jj-rd-block {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    display: grid;
+    gap: 10px;
+}
+
+.jj-rd-block.is-empty {
+    opacity: 0.84;
+}
+
+.jj-rd-heading {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    padding-bottom: 8px;
+    position: relative;
+}
+
+.jj-rd-heading::after {
+    background: linear-gradient(90deg, rgba(183, 163, 123, 0.32) 0%, transparent 100%);
+    bottom: 0;
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+}
+
+.jj-rd-heading > h3 {
+    font-family: 'JJRobotoSlab', serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0;
+}
+
+.jj-rd-config-button {
+    align-items: center;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: var(--jj-muted) !important;
+    display: inline-flex;
+    height: 22px;
+    justify-content: center;
+    padding: 0 !important;
+    width: 22px;
+}
+
+.jj-rd-config-button:hover {
+    color: #fff6dd !important;
+}
+
+.jj-rd-config-button:focus-visible {
+    box-shadow: 0 0 0 1px rgba(183, 163, 123, 0.4) !important;
+    outline: 0;
+}
+
+.jj-rd-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.jj-rd-pill {
+    background:
+        linear-gradient(180deg, rgba(124, 17, 42, 0.96) 0%, rgba(86, 10, 28, 0.94) 100%),
+        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+    border: 1px solid rgba(183, 163, 123, 0.28);
+    border-radius: 999px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    color: #f3ecdc;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    margin: 0;
+    min-width: 48px;
+    padding: 6px 10px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.jj-characteristics-pills {
+    gap: 8px;
+}
+
+.jj-resistances-pills {
+    gap: 8px;
+}
+
+.jj-trainings-pills {
+    gap: 8px;
+}
+
+.jj-characteristic-pill {
+    letter-spacing: 0.05em;
+    max-width: 100%;
+    padding: 7px 12px;
+    text-transform: none;
+}
+
+.jj-resistance-pill {
+    letter-spacing: 0.05em;
+    max-width: 100%;
+    padding: 7px 12px;
+    text-transform: none;
+}
+
+.jj-training-pill {
+    letter-spacing: 0.05em;
+    max-width: 100%;
+    padding: 7px 12px;
+    text-transform: none;
+}
+
+.jj-characteristic-pill.is-custom {
+    background:
+        linear-gradient(180deg, rgba(79, 55, 18, 0.94) 0%, rgba(54, 36, 12, 0.94) 100%),
+        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+}
+
+.jj-rd-empty {
+    color: rgba(221, 216, 205, 0.68);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    margin: 0;
+}
+
+.jj-rd-config {
+    --jj-text: #ddd8cd;
+    --jj-muted: #af9f84;
+    --jj-edge: #4d4b53;
+    --jj-gold: #b7a37b;
+    --jj-accent: #d9c49a;
+    background: linear-gradient(180deg, rgba(24, 26, 33, 0.96) 0%, rgba(15, 17, 23, 0.96) 100%);
+    border: 1px solid rgba(183, 163, 123, 0.22);
+    border-radius: 12px;
+    color: var(--jj-text);
+    display: grid;
+    gap: 14px;
+    padding: 14px;
+}
+
+.jj-rd-config-header {
+    display: grid;
+    gap: 4px;
+}
+
+.jj-rd-config-header > h2 {
+    color: var(--jj-accent);
+    font-family: 'JJRobotoSlab', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.jj-rd-config-header > p {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    margin: 0;
+}
+
+.jj-rd-config-list {
+    display: grid;
+    gap: 8px;
+}
+
+.jj-rd-config-row {
+    align-items: center;
+    background: linear-gradient(180deg, rgba(42, 45, 54, 0.9) 0%, rgba(29, 33, 42, 0.92) 100%);
+    border: 1px solid rgba(183, 163, 123, 0.14);
+    border-radius: 10px;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) 92px;
+    padding: 10px 12px;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+}
+
+.jj-rd-config-row.is-enabled {
+    border-color: rgba(183, 163, 123, 0.32);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.jj-rd-config-row:not(.is-enabled) {
+    opacity: 0.76;
+}
+
+.jj-rd-config-main,
+.jj-rd-config-value {
+    margin: 0;
+}
+
+.jj-rd-config-main {
+    align-items: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 18px auto minmax(0, 1fr);
+    min-width: 0;
+}
+
+.jj-rd-config-toggle {
+    accent-color: #7e6847;
+    height: 16px;
+    margin: 0;
+    width: 16px;
+}
+
+.jj-rd-config-code {
+    background: linear-gradient(180deg, rgba(124, 17, 42, 0.28) 0%, rgba(86, 10, 28, 0.2) 100%);
+    border: 1px solid rgba(183, 163, 123, 0.18);
+    border-radius: 999px;
+    color: #f3ecdc;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    min-width: 48px;
+    padding: 5px 8px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.jj-rd-config-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.jj-rd-config-text > strong {
+    color: #f4efe4;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.jj-rd-config-text > span {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: none;
+}
+
+.jj-rd-config-value {
+    display: grid;
+    gap: 4px;
+}
+
+.jj-rd-config-value > span {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.jj-rd-config input[type='number'] {
+    background: rgba(10, 11, 15, 0.72);
+    border: 1px solid var(--jj-edge);
+    border-radius: 6px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    color: var(--jj-text);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    min-height: 36px;
+    text-align: center;
+    width: 100%;
+}
+
+.jj-rd-config input[type='number']:focus {
+    border-color: var(--jj-gold);
+    box-shadow: 0 0 0 1px rgba(183, 163, 123, 0.4);
+    outline: 0;
+}
+
+.jj-rd-config input[type='number']:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.jj-characteristics-config-toolbar {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.jj-characteristics-filter,
+.jj-characteristics-custom-field {
+    display: grid;
+    gap: 4px;
+}
+
+.jj-characteristics-filter > span,
+.jj-characteristics-custom-field > span {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.jj-characteristics-custom-help {
+    color: rgba(221, 216, 205, 0.64);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+    line-height: 1.35;
+}
+
+.jj-characteristics-filter-status {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+}
+
+.jj-characteristics-config-list {
+    max-height: 340px;
+    overflow: auto;
+    padding-right: 2px;
+}
+
+.jj-characteristics-config-row {
+    align-items: start;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+.jj-characteristics-config-summary {
+    align-self: center;
+    min-width: 0;
+}
+
+.jj-characteristics-config-summary > p {
+    color: var(--jj-text);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.76rem;
+    letter-spacing: 0.02em;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.jj-characteristics-custom-section {
+    display: grid;
+    gap: 10px;
+}
+
+.jj-characteristics-custom-list {
+    display: grid;
+    gap: 10px;
+}
+
+.jj-characteristics-custom-row {
+    background: linear-gradient(180deg, rgba(42, 45, 54, 0.9) 0%, rgba(29, 33, 42, 0.92) 100%);
+    border: 1px solid rgba(183, 163, 123, 0.16);
+    border-radius: 10px;
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+}
+
+.jj-characteristics-custom-grid {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.jj-characteristics-custom-field--wide {
+    grid-column: 1 / -1;
+}
+
+.jj-characteristics-custom-field > textarea {
+    min-height: 70px;
+}
+
+.jj-characteristics-custom-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.jj-characteristics-custom-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.jj-characteristics-custom-note {
+    color: rgba(221, 216, 205, 0.7);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.74rem;
+    letter-spacing: 0.02em;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.jj-characteristics-dialog .dialog-form {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.jj-characteristics-dialog .dialog-content {
+    display: block;
+    overflow-y: auto;
+    padding-bottom: 88px;
+}
+
+.jj-characteristics-dialog .form-footer {
+    inset: auto;
+    margin-top: 12px;
+    position: static;
+    z-index: auto;
+}
+
+.jj-item-dialog .dialog-form {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.jj-item-dialog .dialog-content {
+    display: block;
+    overflow-y: auto;
+    padding-bottom: 24px;
+}
+
+.jj-item-dialog input,
+.jj-item-dialog textarea,
+.jj-item-dialog select {
+    pointer-events: auto;
+    user-select: text;
+}
+
+.jj-item-dialog .form-footer {
+    inset: auto;
+    margin-top: 12px;
+    position: static;
+    z-index: auto;
+}
+
+.dialog.custom-dialog .dialog-form:has(.jj-characteristics-config) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.dialog.custom-dialog .dialog-form:has(.jj-characteristics-config) > .dialog-content {
+    display: block;
+    overflow-y: auto;
+    padding-bottom: 88px !important;
+}
+
+.dialog.custom-dialog .dialog-form:has(.jj-characteristics-config) > .form-footer {
+    inset: auto !important;
+    margin-top: 12px;
+    position: static !important;
+    z-index: auto !important;
+}
+
+.jj-action-button {
+    background:
+        linear-gradient(180deg, rgba(186, 169, 132, 0.2) 0%, rgba(120, 102, 72, 0.24) 100%),
+        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+    border: 1px solid rgba(183, 163, 123, 0.42);
+    color: #f3ecdc;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.74rem;
+    font-weight: 700;
+    justify-self: start;
+    letter-spacing: 0.1em;
+    padding: 8px 14px;
+    text-transform: uppercase;
+}
+
+.jj-action-button--primary {
+    background:
+        linear-gradient(180deg, rgba(124, 17, 42, 0.96) 0%, rgba(86, 10, 28, 0.94) 100%),
+        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+    border-color: rgba(183, 163, 123, 0.48);
+}
+
+.jj-action-button--danger {
+    background:
+        linear-gradient(180deg, rgba(120, 27, 44, 0.34) 0%, rgba(82, 18, 31, 0.36) 100%),
+        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+    border-color: rgba(183, 107, 123, 0.42);
+}
+
+@media (max-width: 1100px) {
+    .jj-sheet {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-hero {
+        grid-template-columns: 1fr;
+        min-height: 0;
+    }
+
+    .jj-hero-tags {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .jj-hero-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-hero-badges--text {
+        grid-column: auto;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-top: 0;
+    }
+
+    .jj-hero-badges--number {
+        grid-column: auto;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .jj-layout,
+    .jj-main-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-main-columns--abilities {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-skills-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-characteristics-config-toolbar,
+    .jj-characteristics-custom-grid,
+    .jj-item-config-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-combat-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-combat-summary-grid > [data-attack-key='cursed'] {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 760px) {
+    .jj-lozenges {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-hero-tags {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-hero-badges--text,
+    .jj-hero-badges--number {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-secondary-split {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-derived-total-grid,
+    .jj-death-track-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-character-condition-list,
+    .jj-character-status-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-rd-config-row {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-characteristics-config-row {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-abilities {
+        grid-template-columns: repeat(2, minmax(74px, 84px));
+        justify-content: center;
+    }
+}
+
+@media (max-width: 520px) {
+    .jj-abilities {
+        grid-template-columns: minmax(74px, 84px);
+    }
+}

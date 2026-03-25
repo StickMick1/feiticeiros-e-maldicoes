@@ -1,0 +1,2400 @@
+/*
+ * Author: Jean-Baptiste Louvet-Daniel
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+/**
+ * @ignore
+ * @module
+ */
+import { CustomActorSheetV2 } from './CustomActorSheetV2.js';
+import CustomItem from '../../../documents/CustomItem.js';
+import Logger from '../../../Logger.js';
+import CustomDialogV2 from '../../../applications/CustomDialogV2.js';
+import { JUJUTSU_CHARACTERISTICS_CATALOG } from '../../../jujutsu/characteristicsCatalog.js';
+import {
+    calculateJujutsuAttackTotal,
+    calculateJujutsuAttributeMod,
+    calculateJujutsuSkillTotal,
+    calculateJujutsuSavingThrowTotal,
+    calculateJujutsuTrainingBonus,
+    createJujutsuTableRow,
+    prepareJujutsuSheetData
+} from '../../../jujutsu/sheetData.js';
+var DragDrop = foundry.applications.ux.DragDrop;
+/**
+ * The character actor sheets
+ * @extends {CustomActorSheetV2}
+ */
+export class CharacterSheetV2 extends CustomActorSheetV2 {
+    activeJujutsuTab = 'resumo';
+    static DEFAULT_OPTIONS = {
+        position: {
+            width: 1160,
+            height: 900
+        },
+        window: {
+            controls: [
+                {
+                    label: 'CSB.Sheets.SeeHiddenAttributes',
+                    icon: 'fas fa-eye-slash',
+                    action: 'openHiddenAttributes',
+                    ownership: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
+                },
+                {
+                    label: 'CSB.Sheets.SeeAttributeBars',
+                    icon: 'fas fa-bars-progress',
+                    action: 'openAttributeBars',
+                    ownership: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
+                }
+            ]
+        },
+        actions: {
+            openHiddenAttributes: CharacterSheetV2.openHiddenAttributes,
+            openAttributeBars: CharacterSheetV2.openAttributeBars,
+            addJujutsuRow: CharacterSheetV2.addJujutsuRow,
+            editJujutsuRow: CharacterSheetV2.editJujutsuRow,
+            removeJujutsuRow: CharacterSheetV2.removeJujutsuRow,
+            configureJujutsuRds: CharacterSheetV2.configureJujutsuRds,
+            configureJujutsuResistances: CharacterSheetV2.configureJujutsuResistances,
+            configureJujutsuTrainings: CharacterSheetV2.configureJujutsuTrainings,
+            configureJujutsuCharacteristics: CharacterSheetV2.configureJujutsuCharacteristics
+        }
+    };
+    static PARTS = {
+        form: {
+            get template() {
+                return `systems/${game.system.id}/templates/actor/v2/actor-character-sheet.hbs`;
+            },
+            classes: super.PARTS.form.classes
+        }
+    };
+    static openHiddenAttributes(_event, _target) {
+        void this.actor.templateSystem.openAttributesVision();
+    }
+    static openAttributeBars(_event, _target) {
+        void this.actor.templateSystem.openAttributeBarsVision();
+    }
+    static _getJujutsuRowConfig(rowTypeOrPath) {
+        switch (rowTypeOrPath) {
+            case 'attack':
+            case 'tables.attacks':
+                return {
+                    rowType: 'attack',
+                    tablePath: 'tables.attacks',
+                    entryTypeLabel: 'Ataque',
+                    entryTypeLabelLower: 'o ataque',
+                    dialogTitle: 'Adicionar Ataque',
+                    templatePath: `systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-attack-entry-config.hbs`
+                };
+            case 'ability':
+            case 'tables.abilities':
+                return {
+                    rowType: 'ability',
+                    tablePath: 'tables.abilities',
+                    entryTypeLabel: 'Habilidade',
+                    entryTypeLabelLower: 'a habilidade',
+                    dialogTitle: 'Adicionar Habilidade',
+                    templatePath: `systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-feature-entry-config.hbs`
+                };
+            case 'talent':
+            case 'tables.talents':
+                return {
+                    rowType: 'talent',
+                    tablePath: 'tables.talents',
+                    entryTypeLabel: 'Talento',
+                    entryTypeLabelLower: 'o talento',
+                    dialogTitle: 'Adicionar Talento',
+                    templatePath: `systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-feature-entry-config.hbs`
+                };
+            case 'inventory':
+            case 'tables.inventory':
+                return {
+                    rowType: 'inventory',
+                    tablePath: 'tables.inventory',
+                    entryTypeLabel: 'Item',
+                    entryTypeLabelLower: 'o item',
+                    dialogTitle: 'Adicionar Item ao Inventário',
+                    templatePath: `systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-inventory-entry-config.hbs`,
+                    rollOptions: [
+                        { value: 'd4', label: 'd4' },
+                        { value: 'd8', label: 'd8' },
+                        { value: 'd10', label: 'd10' },
+                        { value: 'd12', label: 'd12' },
+                        { value: 'd20', label: 'd20' }
+                    ],
+                    attributeOptions: [
+                        { value: '', label: 'Nenhum' },
+                        { value: 'for', label: 'FOR' },
+                        { value: 'des', label: 'DEX' },
+                        { value: 'con', label: 'CONS' },
+                        { value: 'int', label: 'INT' },
+                        { value: 'sab', label: 'SAB' },
+                        { value: 'pre', label: 'PRE' }
+                    ]
+                };
+            default:
+                return null;
+        }
+    }
+    static _createJujutsuDialogEntry(config, source = {}) {
+        return foundry.utils.mergeObject(createJujutsuTableRow(config.rowType), source ?? {}, {
+            inplace: false,
+            insertKeys: true,
+            recursive: true
+        });
+    }
+    static async _renderJujutsuDialogContent(config, entry) {
+        return foundry.applications.handlebars.renderTemplate(config.templatePath, {
+            dialogTitle: config.dialogTitle,
+            entryTypeLabel: config.entryTypeLabel,
+            entryTypeLabelLower: config.entryTypeLabelLower,
+            entry,
+            attributeOptions: (config.attributeOptions ?? []).map((option) => ({
+                ...option,
+                selected: option.value === (entry?.rollAttribute ?? '')
+            })),
+            rollOptions: (config.rollOptions ?? []).map((option) => ({
+                ...option,
+                selected: option.value === entry?.rollDie
+            }))
+        });
+    }
+    static _bindJujutsuItemImagePicker(element) {
+        const root = element;
+        if (!root)
+            return;
+        const imageInput = root.querySelector?.('[data-item-image-input]');
+        const imagePreview = root.querySelector?.('[data-item-image-preview]');
+        const syncPreview = () => {
+            if (imageInput && imagePreview) {
+                imagePreview.src = imageInput.value?.trim() || 'icons/svg/mystery-man.svg';
+            }
+        };
+        imageInput?.addEventListener('input', syncPreview);
+        imageInput?.addEventListener('change', syncPreview);
+        root.querySelectorAll?.('[data-pick-item-image]').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                if (!imageInput)
+                    return;
+                const PickerClass = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+                if (!PickerClass)
+                    return;
+                const picker = new PickerClass({
+                    type: 'image',
+                    current: imageInput.value,
+                    callback: (path) => {
+                        imageInput.value = path;
+                        syncPreview();
+                    }
+                });
+                try {
+                    void picker.browse(imageInput.value);
+                }
+                catch (error) {
+                    ui.notifications?.warn?.(error?.message ?? 'Nao foi possivel abrir o seletor de imagem.');
+                }
+            });
+        });
+        syncPreview();
+    }
+    static _bindJujutsuInventoryConfigDialog(element) {
+        const root = element;
+        if (!root)
+            return;
+        const checkbox = root.querySelector?.(`[name='hasRoll']`);
+        const rollField = root.querySelector?.('[data-inventory-roll-field]');
+        if (!checkbox || !rollField) {
+            return;
+        }
+        const sync = () => {
+            const enabled = !!checkbox.checked;
+            rollField.hidden = !enabled;
+            rollField.querySelectorAll('input, select').forEach((control) => {
+                control.disabled = !enabled;
+            });
+        };
+        checkbox.addEventListener('change', sync);
+        sync();
+    }
+    static _collectJujutsuDialogEntry(config, form, source = {}) {
+        const getValue = (name) => String(form?.querySelector?.(`[name='${name}']`)?.value ?? '').trim();
+        const getNumber = (name) => CharacterSheetV2._toSafeNumber(getValue(name), 0);
+        const entryId = String(source?.id ?? '').trim() || foundry.utils.randomID?.() || `${config.rowType}-${Date.now()}`;
+        if (config.rowType === 'attack') {
+            return {
+                ...createJujutsuTableRow('attack'),
+                id: entryId,
+                name: getValue('name') || 'Ataque',
+                image: getValue('image') || 'icons/svg/sword.svg',
+                acerto: getNumber('acerto'),
+                weapon: getValue('weapon'),
+                bonus: getNumber('bonus'),
+                damage: getValue('damage'),
+                crit: getValue('crit'),
+                type: getValue('type'),
+                range: getValue('range'),
+                properties: getValue('properties'),
+                description: getValue('description'),
+                observations: getValue('observations')
+            };
+        }
+        if (config.rowType === 'inventory') {
+            const hasRoll = !!form?.querySelector?.(`[name='hasRoll']`)?.checked;
+            const rollDie = getValue('rollDie').toLowerCase();
+            const rollAttribute = getValue('rollAttribute').toLowerCase();
+            return {
+                ...createJujutsuTableRow('inventory'),
+                id: entryId,
+                name: getValue('name') || 'Item',
+                image: getValue('image') || 'icons/svg/item-bag.svg',
+                quantity: Math.max(0, Math.trunc(getNumber('quantity') || 0)),
+                weight: Math.max(0, getNumber('weight') || 0),
+                price: Math.max(0, getNumber('price') || 0),
+                hasRoll,
+                rollDie: hasRoll && ['d4', 'd8', 'd10', 'd12', 'd20'].includes(rollDie) ? rollDie : '',
+                rollCount: hasRoll ? Math.max(1, Math.trunc(getNumber('rollCount') || 1)) : 1,
+                rollBonus: hasRoll ? Math.trunc(getNumber('rollBonus') || 0) : 0,
+                rollAttribute: hasRoll && ['for', 'des', 'con', 'int', 'sab', 'pre'].includes(rollAttribute) ? rollAttribute : ''
+            };
+        }
+        return {
+            ...createJujutsuTableRow(config.rowType),
+            id: entryId,
+            name: getValue('name') || config.entryTypeLabel,
+            image: getValue('image') || 'icons/svg/book.svg',
+            acerto: getNumber('acerto'),
+            current: getNumber('current'),
+            max: getNumber('max'),
+            cost: getNumber('cost'),
+            description: getValue('description'),
+            observations: getValue('observations')
+        };
+    }
+    static async _openJujutsuRowDialog({ actor, sheet, config, entry, title, onSave }) {
+        const content = await CharacterSheetV2._renderJujutsuDialogContent(config, entry);
+        await new CustomDialogV2({
+            tag: 'div',
+            modal: true,
+            content,
+            buttons: {
+                save: {
+                    default: true,
+                    icon: 'fa-solid fa-save',
+                    label: 'Salvar'
+                },
+                cancel: {
+                    icon: 'fa-solid fa-xmark',
+                    label: 'Cancelar'
+                }
+            },
+            onRender: (element) => {
+                element.classList.add('jj-item-dialog');
+                CharacterSheetV2._bindJujutsuItemImagePicker(element);
+                CharacterSheetV2._bindJujutsuInventoryConfigDialog(element);
+                queueMicrotask(() => {
+                    element.querySelector(`input[name='name'], input, textarea, select`)?.focus();
+                });
+            },
+            submit: async (result, _submitEvent, _button, dialog) => {
+                if (result !== 'save')
+                    return;
+                const form = dialog.querySelector('form');
+                if (!form)
+                    return;
+                await onSave(form, actor, sheet);
+            },
+            position: {
+                width: 760,
+                height: 'auto'
+            },
+            window: {
+                title
+            }
+        }).render({ force: true });
+    }
+    static async addJujutsuRow(_event, target) {
+        const actor = this.actor ?? this.document;
+        const actionTarget = target?.closest?.('[data-table-path]') ?? target;
+        const tablePath = actionTarget?.dataset?.tablePath ?? '';
+        const rowType = actionTarget?.dataset?.rowType ?? '';
+        const config = CharacterSheetV2._getJujutsuRowConfig(rowType || tablePath);
+        if (!config)
+            return;
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const sheet = this;
+        await CharacterSheetV2._openJujutsuRowDialog({
+            actor,
+            sheet,
+            config,
+            entry: CharacterSheetV2._createJujutsuDialogEntry(config),
+            title: config.dialogTitle,
+            onSave: async (form) => {
+                const rows = CharacterSheetV2._getJujutsuTableRows(actor.system.props, config.tablePath);
+                rows.push(CharacterSheetV2._collectJujutsuDialogEntry(config, form));
+                await actor.update({
+                    [`system.props.${config.tablePath}`]: rows
+                });
+                await sheet.render({ force: true });
+            }
+        });
+    }
+    static async editJujutsuRow(_event, target) {
+        const actor = this.actor ?? this.document;
+        const actionTarget = target?.closest?.('[data-table-path]') ?? target;
+        const tablePath = actionTarget?.dataset?.tablePath ?? '';
+        const rowIndex = Number(actionTarget?.dataset?.rowIndex);
+        const config = CharacterSheetV2._getJujutsuRowConfig(tablePath);
+        if (!config || !Number.isFinite(rowIndex))
+            return;
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const rows = CharacterSheetV2._getJujutsuTableRows(actor.system.props, tablePath);
+        if (rowIndex < 0 || rowIndex >= rows.length)
+            return;
+        const currentEntry = CharacterSheetV2._createJujutsuDialogEntry(config, rows[rowIndex]);
+        const currentLabel = String(currentEntry?.name ?? config.entryTypeLabel).trim() || config.entryTypeLabel;
+        const sheet = this;
+        await CharacterSheetV2._openJujutsuRowDialog({
+            actor,
+            sheet,
+            config,
+            entry: currentEntry,
+            title: `Editar ${currentLabel}`,
+            onSave: async (form) => {
+                const nextRows = CharacterSheetV2._getJujutsuTableRows(actor.system.props, tablePath);
+                if (rowIndex < 0 || rowIndex >= nextRows.length)
+                    return;
+                nextRows[rowIndex] = CharacterSheetV2._collectJujutsuDialogEntry(config, form, nextRows[rowIndex]);
+                await actor.update({
+                    [`system.props.${tablePath}`]: nextRows
+                });
+                await sheet.render({ force: true });
+            }
+        });
+    }
+    static _confirmJujutsuRowRemoval(label) {
+        return globalThis.confirm?.(`Excluir ${label}?`) ?? false;
+    }
+    static async removeJujutsuRow(_event, target) {
+        const actor = this.actor ?? this.document;
+        const actionTarget = target?.closest?.('[data-table-path]') ?? target;
+        const tablePath = actionTarget?.dataset?.tablePath ?? '';
+        const rowIndex = Number(actionTarget?.dataset?.rowIndex);
+        const config = CharacterSheetV2._getJujutsuRowConfig(tablePath);
+        if (!config || !Number.isFinite(rowIndex))
+            return;
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const rows = CharacterSheetV2._getJujutsuTableRows(actor.system.props, tablePath);
+        if (rowIndex < 0 || rowIndex >= rows.length)
+            return;
+        const currentLabel = String(rows[rowIndex]?.name ?? config.entryTypeLabel).trim() || config.entryTypeLabel;
+        if (!CharacterSheetV2._confirmJujutsuRowRemoval(currentLabel))
+            return;
+        rows.splice(rowIndex, 1);
+        await actor.update({
+            [`system.props.${tablePath}`]: rows
+        });
+        await this.render({ force: true });
+    }
+    static _toSafeNumber(value, fallback = 0) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : fallback;
+    }
+    static _toBoolean(value) {
+        return value === true || value === 'true' || value === 'on' || value === 1 || value === '1';
+    }
+    static _getJujutsuTableRows(props, tablePath) {
+        const rawRows = foundry.utils.getProperty(props ?? {}, tablePath);
+        if (Array.isArray(rawRows)) {
+            return foundry.utils.deepClone(rawRows);
+        }
+        if (rawRows && typeof rawRows === 'object') {
+            return foundry.utils.deepClone(Object.values(rawRows));
+        }
+        return [];
+    }
+    static _getJujutsuInventoryRows(actor) {
+        if (!actor) {
+            return [];
+        }
+        const jujutsu = prepareJujutsuSheetData(actor.system?.props ?? {});
+        return Array.isArray(jujutsu.props.tables?.inventory) ? jujutsu.props.tables.inventory : [];
+    }
+    static _getJujutsuInventoryEntry(actor, { rowId = null, rowIndex = -1 } = {}) {
+        const rows = CharacterSheetV2._getJujutsuInventoryRows(actor);
+        const normalizedRowId = String(rowId ?? '').trim();
+        if (normalizedRowId) {
+            const matchIndex = rows.findIndex((entry) => String(entry?.id ?? '').trim() === normalizedRowId);
+            if (matchIndex !== -1) {
+                return {
+                    entry: rows[matchIndex],
+                    rowIndex: matchIndex
+                };
+            }
+        }
+        if (Number.isInteger(rowIndex) && rowIndex >= 0 && rowIndex < rows.length) {
+            return {
+                entry: rows[rowIndex],
+                rowIndex
+            };
+        }
+        return {
+            entry: null,
+            rowIndex: -1
+        };
+    }
+    static _createJujutsuInventoryDragData(actor, { rowId = null, rowIndex = -1 } = {}) {
+        if (!actor?.uuid) {
+            return null;
+        }
+        const { entry, rowIndex: resolvedRowIndex } = CharacterSheetV2._getJujutsuInventoryEntry(actor, {
+            rowId,
+            rowIndex
+        });
+        if (!entry) {
+            return null;
+        }
+        return {
+            type: 'JujutsuInventoryItem',
+            actorUuid: actor.uuid,
+            actorName: actor.name ?? '',
+            rowId: entry.id ?? rowId ?? null,
+            rowIndex: resolvedRowIndex,
+            name: entry.name ?? 'Item',
+            img: entry.image ?? actor.img ?? 'icons/svg/item-bag.svg',
+            hasRoll: !!entry.hasRoll
+        };
+    }
+    static async rollJujutsuInventoryItem(actorOrUuid, { rowId = null, rowIndex = -1 } = {}) {
+        const actor = typeof actorOrUuid === 'string' ? await fromUuid(actorOrUuid) : actorOrUuid;
+        if (!(actor instanceof Actor)) {
+            ui.notifications.warn('Nao foi possivel localizar o ator do item de inventario.');
+            return null;
+        }
+        if (!actor.isOwner) {
+            ui.notifications.warn('Voce nao tem permissao para usar este item de inventario.');
+            return null;
+        }
+        const { entry } = CharacterSheetV2._getJujutsuInventoryEntry(actor, {
+            rowId,
+            rowIndex
+        });
+        if (!entry) {
+            ui.notifications.warn('Nao foi possivel localizar o item de inventario arrastado.');
+            return null;
+        }
+        const rollDie = String(entry?.rollDie ?? '').trim().toLowerCase();
+        if (!entry?.hasRoll || !['d4', 'd8', 'd10', 'd12', 'd20'].includes(rollDie)) {
+            ui.notifications.warn(`${entry?.name || 'Este item'} nao possui uma rolagem configurada.`);
+            return null;
+        }
+        const rollCount = Math.max(1, Math.trunc(CharacterSheetV2._toSafeNumber(entry?.rollCount, 1)));
+        const rollBonus = Math.trunc(CharacterSheetV2._toSafeNumber(entry?.rollBonus, 0));
+        const rollAttribute = String(entry?.rollAttribute ?? '').trim().toLowerCase();
+        const attributeValue = CharacterSheetV2._toSafeNumber(actor.system?.props?.attributes?.[rollAttribute]?.value, 10);
+        const attributeMod = ['for', 'des', 'con', 'int', 'sab', 'pre'].includes(rollAttribute)
+            ? calculateJujutsuAttributeMod(attributeValue)
+            : 0;
+        const formulaParts = [`${rollCount}${rollDie}`];
+        if (rollBonus > 0)
+            formulaParts.push(`+ ${rollBonus}`);
+        else if (rollBonus < 0)
+            formulaParts.push(`- ${Math.abs(rollBonus)}`);
+        if (attributeMod > 0)
+            formulaParts.push(`+ ${attributeMod}`);
+        else if (attributeMod < 0)
+            formulaParts.push(`- ${Math.abs(attributeMod)}`);
+        const roll = await new Roll(formulaParts.join(' ')).evaluate({ async: true });
+        await roll.toMessage({
+            speaker: foundry.documents.ChatMessage.implementation.getSpeaker({ actor }),
+            flavor: `${entry?.name || 'Item'} • Rolagem de inventario`
+        });
+        return roll;
+    }
+    static async createJujutsuInventoryMacro(dropData, slot) {
+        const actor = await fromUuid(String(dropData?.actorUuid ?? ''));
+        if (!(actor instanceof Actor) || !actor.isOwner) {
+            ui.notifications.warn('Nao foi possivel criar a macro para um item de inventario sem permissao.');
+            return null;
+        }
+        const { entry, rowIndex } = CharacterSheetV2._getJujutsuInventoryEntry(actor, {
+            rowId: dropData?.rowId ?? null,
+            rowIndex: Number(dropData?.rowIndex ?? -1)
+        });
+        if (!entry) {
+            ui.notifications.warn('Nao foi possivel localizar o item de inventario para criar a macro.');
+            return null;
+        }
+        const command = `game.CustomSystemBuilder?.API?.Jujutsu?.rollInventoryItem?.(${JSON.stringify(actor.uuid)}, { rowId: ${JSON.stringify(entry.id ?? null)}, rowIndex: ${rowIndex} });`;
+        const macroData = {
+            name: `${actor.name}: ${entry.name ?? 'Item'}`,
+            type: CONST.MACRO_TYPES.SCRIPT,
+            scope: 'actor',
+            img: entry.image ?? actor.img ?? 'icons/svg/item-bag.svg',
+            command,
+            flags: {
+                [game.system.id]: {
+                    jujutsuInventoryMacro: true,
+                    actorUuid: actor.uuid,
+                    rowId: entry.id ?? null,
+                    rowIndex
+                }
+            }
+        };
+        const macro = game.macros.find((candidate) => {
+            return candidate.name === macroData.name && candidate.command === macroData.command && candidate.isAuthor;
+        }) ?? await Macro.create(macroData);
+        if (!macro) {
+            return null;
+        }
+        await game.user.assignHotbarMacro(macro, slot);
+        return macro;
+    }
+    static _toSignedNumber(value) {
+        const number = CharacterSheetV2._toSafeNumber(value, 0);
+        return number > 0 ? `+${number}` : `${number}`;
+    }
+    static _getFormNumberValue(form, name, fallback = 0) {
+        const input = form?.querySelector?.(`[name='${name}']`);
+        return CharacterSheetV2._toSafeNumber(input?.value, fallback);
+    }
+    static _getFormCheckboxValue(form, name, fallback = false) {
+        const input = form?.querySelector?.(`[name='${name}']`);
+        return input ? !!input.checked : fallback;
+    }
+    static _getScopedNumberValue(scope, selector, fallback = 0) {
+        const input = scope?.querySelector?.(selector);
+        return CharacterSheetV2._toSafeNumber(input?.value, fallback);
+    }
+    static _getScopedCheckboxValue(scope, selector, fallback = false) {
+        const input = scope?.querySelector?.(selector);
+        return input ? !!input.checked : fallback;
+    }
+    static _applyLevelScaledResourceBonus({ currentMax, previousLevel, nextLevel, previousEnabled, nextEnabled }) {
+        if (previousEnabled && nextEnabled) {
+            return Math.max(0, currentMax + (nextLevel - previousLevel));
+        }
+        if (!previousEnabled && nextEnabled) {
+            return Math.max(0, currentMax + nextLevel);
+        }
+        if (previousEnabled && !nextEnabled) {
+            return Math.max(0, currentMax - previousLevel);
+        }
+        return Math.max(0, currentMax);
+    }
+    static _syncJujutsuRdConfigRow(row) {
+        const toggle = row?.querySelector?.('[data-rd-enabled]');
+        const valueInput = row?.querySelector?.('[data-rd-value]');
+        if (!toggle || !valueInput)
+            return;
+        const enabled = toggle.checked;
+        row.classList.toggle('is-enabled', enabled);
+        if (enabled) {
+            const value = Number(valueInput.value);
+            if (!Number.isFinite(value) || value <= 0) {
+                valueInput.value = '1';
+            }
+        }
+        else {
+            valueInput.value = '0';
+        }
+        valueInput.disabled = !enabled;
+    }
+    static _bindJujutsuRdConfigDialog(element) {
+        const form = element?.querySelector?.('form');
+        if (!form)
+            return;
+        form.querySelectorAll('[data-rd-row]').forEach((row) => {
+            const toggle = row.querySelector('[data-rd-enabled]');
+            const valueInput = row.querySelector('[data-rd-value]');
+            if (toggle) {
+                toggle.addEventListener('change', () => CharacterSheetV2._syncJujutsuRdConfigRow(row));
+            }
+            if (valueInput) {
+                valueInput.addEventListener('input', () => {
+                    const value = Number(valueInput.value);
+                    if (Number.isFinite(value) && value < 0) {
+                        valueInput.value = '0';
+                    }
+                });
+            }
+            CharacterSheetV2._syncJujutsuRdConfigRow(row);
+        });
+    }
+    static async configureJujutsuRds(_event, _target) {
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const actor = this.actor ?? this.document;
+        const jujutsu = prepareJujutsuSheetData(actor.system.props ?? {});
+        const content = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-rds-config.hbs`, {
+            rdDefinitions: jujutsu.rdDefinitions
+        });
+        await new CustomDialogV2({
+            modal: true,
+            content,
+            buttons: {
+                save: {
+                    default: true,
+                    icon: 'fa-solid fa-save',
+                    label: 'Salvar'
+                },
+                cancel: {
+                    icon: 'fa-solid fa-xmark',
+                    label: 'Cancelar'
+                }
+            },
+            onRender: (element) => {
+                CharacterSheetV2._bindJujutsuRdConfigDialog(element);
+            },
+            submit: async (result, _submitEvent, _button, dialog) => {
+                if (result !== 'save')
+                    return;
+                const form = dialog.querySelector('form');
+                if (!form)
+                    return;
+                const formValues = foundry.utils.expandObject(Object.fromEntries(new FormData(form).entries()));
+                const nextRds = foundry.utils.deepClone(actor.system.props?.rds ?? {});
+                for (const rd of jujutsu.rdDefinitions) {
+                    const entry = formValues.rds?.[rd.type] ?? {};
+                    const enabled = !!entry.enabled;
+                    const rawValue = Number(entry.value);
+                    nextRds[rd.type] = enabled ? Math.max(1, Number.isFinite(rawValue) ? Math.floor(rawValue) : 1) : 0;
+                }
+                await actor.update({
+                    'system.props.rds': nextRds
+                });
+            },
+            position: {
+                width: 520,
+                height: 'auto'
+            },
+            window: {
+                title: 'Configurar Redução de Danos (RDs)'
+            }
+        }).render({ force: true });
+    }
+    static _syncJujutsuCharacteristicConfigRow(row) {
+        const toggle = row?.querySelector?.('[data-characteristic-selected]');
+        if (!toggle)
+            return;
+        row.classList.toggle('is-enabled', !!toggle.checked);
+    }
+    static _applyJujutsuCharacteristicFilters(form) {
+        if (!form)
+            return;
+        const search = (form.querySelector('[data-characteristics-search]')?.value ?? '').trim().toLowerCase();
+        const type = (form.querySelector('[data-characteristics-type-filter]')?.value ?? '').trim().toLowerCase();
+        const category = (form.querySelector('[data-characteristics-category-filter]')?.value ?? '').trim().toLowerCase();
+        let visibleCount = 0;
+        let totalCount = 0;
+        form.querySelectorAll('[data-characteristic-row]').forEach((row) => {
+            totalCount += 1;
+            const haystack = (row.dataset.searchText ?? '').toLowerCase();
+            const rowType = (row.dataset.type ?? '').toLowerCase();
+            const rowCategory = (row.dataset.category ?? '').toLowerCase();
+            const matchesSearch = !search || haystack.includes(search);
+            const matchesType = !type || rowType === type;
+            const matchesCategory = !category || rowCategory === category;
+            const isVisible = matchesSearch && matchesType && matchesCategory;
+            row.hidden = !isVisible;
+            if (isVisible) {
+                visibleCount += 1;
+            }
+        });
+        const countDisplay = form.querySelector('[data-characteristics-filter-count]');
+        if (countDisplay) {
+            countDisplay.textContent = `${visibleCount} de ${totalCount} características exibidas`;
+        }
+    }
+    static _createJujutsuCharacteristicCustomRow(index, characteristic = {}) {
+        const escape = foundry.utils.escapeHTML;
+        const text = (value) => escape(String(value ?? ''));
+        const id = text(characteristic.id ?? `custom-characteristic-${index + 1}`);
+        const nome = text(characteristic.nome ?? '');
+        const tipo = text(characteristic.tipo ?? '');
+        const categoria = text(characteristic.categoria ?? '');
+        const modifica = text(Array.isArray(characteristic.modifica) ? characteristic.modifica.join(', ') : characteristic.modifica ?? '');
+        const efeito = text(characteristic.efeito_resumido ?? '');
+        const formula = text(characteristic.formula_sugerida ?? '');
+        const observacoes = text(characteristic.observacoes ?? '');
+        return `
+            <div class="jj-characteristics-custom-row" data-custom-characteristic-row>
+                <input type="hidden" name="custom.${index}.id" value="${id}" />
+                <input type="hidden" name="custom.${index}.origem" value="custom" />
+                <div class="jj-characteristics-custom-grid">
+                    <label class="jj-characteristics-custom-field">
+                        <span>Nome</span>
+                        <input name="custom.${index}.nome" type="text" value="${nome}" />
+                    </label>
+                    <label class="jj-characteristics-custom-field">
+                        <span>Tipo</span>
+                        <input name="custom.${index}.tipo" type="text" value="${tipo}" placeholder="custom" />
+                    </label>
+                    <label class="jj-characteristics-custom-field">
+                        <span>Categoria</span>
+                        <input name="custom.${index}.categoria" type="text" value="${categoria}" />
+                    </label>
+                    <label class="jj-characteristics-custom-field">
+                        <span>Modifica</span>
+                        <input name="custom.${index}.modifica" type="text" value="${modifica}" placeholder="atributo1, atributo2" />
+                    </label>
+                    <label class="jj-characteristics-custom-field jj-characteristics-custom-field--wide">
+                        <span>Efeito Resumido</span>
+                        <textarea name="custom.${index}.efeito_resumido" rows="2">${efeito}</textarea>
+                    </label>
+                    <label class="jj-characteristics-custom-field jj-characteristics-custom-field--wide">
+                        <span>Fórmula Sugerida</span>
+                        <textarea
+                            name="custom.${index}.formula_sugerida"
+                            rows="2"
+                            placeholder="Campo descritivo para registrar a lógica da característica. Ex.: if (nivel >= 6) pvMax += 2; ou periciaEscolhida += 2"
+                        >${formula}</textarea>
+                        <small class="jj-characteristics-custom-help">Campo descritivo. Ele não executa a fórmula automaticamente; serve para documentar a lógica da característica para uso futuro.</small>
+                    </label>
+                    <label class="jj-characteristics-custom-field jj-characteristics-custom-field--wide">
+                        <span>Observações</span>
+                        <textarea name="custom.${index}.observacoes" rows="2">${observacoes}</textarea>
+                    </label>
+                </div>
+                <div class="jj-characteristics-custom-actions">
+                    <button class="jj-action-button jj-action-button--danger" type="button" data-remove-custom-characteristic>Remover custom</button>
+                </div>
+            </div>
+        `;
+    }
+    static _bindJujutsuCharacteristicCustomRow(row) {
+        const removeButton = row?.querySelector?.('[data-remove-custom-characteristic]');
+        if (!removeButton)
+            return;
+        removeButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            row.remove();
+        });
+    }
+    static _syncJujutsuResistanceConfigRow(row) {
+        const toggle = row?.querySelector?.('[data-resistance-enabled]');
+        if (!toggle)
+            return;
+        row.classList.toggle('is-enabled', !!toggle.checked);
+    }
+    static _createJujutsuResistanceCustomRow(index, resistance = {}) {
+        const escapeHtml = foundry.utils.escapeHTML ?? ((value) => String(value ?? ''));
+        const id = escapeHtml(resistance.id ?? `custom-resistance-${index + 1}`);
+        const label = escapeHtml(resistance.label ?? '');
+        const code = escapeHtml(resistance.code ?? '');
+        const description = escapeHtml(resistance.description ?? '');
+        const observations = escapeHtml(resistance.observations ?? '');
+        return `
+            <div class="jj-characteristics-custom-row" data-custom-resistance-row>
+                <input type="hidden" name="custom.${index}.id" value="${id}" />
+                <input type="hidden" name="custom.${index}.origem" value="custom" />
+                <div class="jj-characteristics-custom-grid">
+                    <label class="jj-characteristics-custom-field">
+                        <span>Nome</span>
+                        <input name="custom.${index}.label" type="text" value="${label}" />
+                    </label>
+                    <label class="jj-characteristics-custom-field">
+                        <span>Sigla</span>
+                        <input name="custom.${index}.code" type="text" value="${code}" maxlength="6" placeholder="RES" />
+                    </label>
+                    <label class="jj-characteristics-custom-field jj-characteristics-custom-field--wide">
+                        <span>Descrição</span>
+                        <textarea name="custom.${index}.description" rows="2">${description}</textarea>
+                    </label>
+                    <label class="jj-characteristics-custom-field jj-characteristics-custom-field--wide">
+                        <span>Observações</span>
+                        <textarea name="custom.${index}.observations" rows="2">${observations}</textarea>
+                    </label>
+                </div>
+                <div class="jj-characteristics-custom-actions">
+                    <button class="jj-action-button jj-action-button--danger" type="button" data-remove-custom-resistance>Remover custom</button>
+                </div>
+            </div>
+        `;
+    }
+    static _bindJujutsuResistanceCustomRow(row) {
+        const removeButton = row?.querySelector?.('[data-remove-custom-resistance]');
+        if (!removeButton)
+            return;
+        removeButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            row.remove();
+        });
+    }
+    static _collectJujutsuResistanceConfig(form, validResistanceIds = new Set()) {
+        const readFieldValue = (row, selector) => String(row?.querySelector?.(selector)?.value ?? '').trim();
+        const selected = Array.from(form.querySelectorAll('[data-resistance-enabled][name^="selected."]:checked'))
+            .map((input) => String(input.name ?? '').replace(/^selected\./, '').trim())
+            .filter((id) => validResistanceIds.has(id));
+        const customToggleInputs = Array.from(form.querySelectorAll('[data-resistance-enabled][name^="customSelected."]'));
+        const selectedCustom = new Set(customToggleInputs
+            .filter((input) => input.checked)
+            .map((input) => String(input.name ?? '').replace(/^customSelected\./, '').trim())
+            .filter(Boolean));
+        const custom = Array.from(form.querySelectorAll('[data-custom-resistance-row]')).map((row, index) => {
+            const id = readFieldValue(row, 'input[name$=".id"]') || `custom-resistance-${index + 1}`;
+            const label = readFieldValue(row, 'input[name$=".label"]');
+            const code = readFieldValue(row, 'input[name$=".code"]');
+            const description = readFieldValue(row, 'textarea[name$=".description"]');
+            const observations = readFieldValue(row, 'textarea[name$=".observations"]');
+            if (!label && !code && !description && !observations) {
+                return null;
+            }
+            return {
+                id,
+                label: label || `Resistência Custom ${index + 1}`,
+                code,
+                description,
+                observations,
+                origem: 'custom',
+                enabled: customToggleInputs.some((input) => input.name === `customSelected.${id}`) ? selectedCustom.has(id) : true
+            };
+        }).filter(Boolean);
+        return { selected, custom };
+    }
+    static _bindJujutsuResistanceConfigDialog(element, { saveResistances, dialogApp } = {}) {
+        const form = element?.querySelector?.('form');
+        if (!form)
+            return;
+        form.querySelectorAll('[data-resistance-row]').forEach((row) => {
+            const toggle = row.querySelector('[data-resistance-enabled]');
+            if (toggle) {
+                toggle.addEventListener('change', () => CharacterSheetV2._syncJujutsuResistanceConfigRow(row));
+            }
+            CharacterSheetV2._syncJujutsuResistanceConfigRow(row);
+        });
+        form.querySelectorAll('[data-custom-resistance-row]').forEach((row) => {
+            CharacterSheetV2._bindJujutsuResistanceCustomRow(row);
+        });
+        const customList = form.querySelector('[data-resistances-custom-list]');
+        const addCustomButton = form.querySelector('[data-add-custom-resistance]');
+        if (customList && addCustomButton) {
+            addCustomButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                const nextIndex = CharacterSheetV2._toSafeNumber(customList.dataset.nextIndex, customList.children.length);
+                customList.insertAdjacentHTML('beforeend', CharacterSheetV2._createJujutsuResistanceCustomRow(nextIndex));
+                customList.dataset.nextIndex = String(nextIndex + 1);
+                const row = customList.lastElementChild;
+                if (row) {
+                    CharacterSheetV2._bindJujutsuResistanceCustomRow(row);
+                }
+            });
+        }
+        form.querySelectorAll('[data-save-resistances]').forEach((button) => {
+            button.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                await saveResistances?.(form, { refreshDialog: true });
+            });
+        });
+    }
+    static _syncJujutsuTrainingConfigRow(row) {
+        const toggle = row?.querySelector?.('[data-training-enabled]');
+        if (!toggle)
+            return;
+        row.classList.toggle('is-enabled', !!toggle.checked);
+    }
+    static _createJujutsuTrainingCustomRow(index, training = {}) {
+        const escapeHtml = foundry.utils.escapeHTML ?? ((value) => String(value ?? ''));
+        const id = escapeHtml(training.id ?? `custom-training-${index + 1}`);
+        const label = escapeHtml(training.label ?? '');
+        const code = escapeHtml(training.code ?? '');
+        const description = escapeHtml(training.description ?? '');
+        const observations = escapeHtml(training.observations ?? '');
+        return `
+            <div class="jj-characteristics-custom-row" data-custom-training-row>
+                <input type="hidden" name="custom.${index}.id" value="${id}" />
+                <input type="hidden" name="custom.${index}.origem" value="custom" />
+                <div class="jj-characteristics-custom-grid">
+                    <label class="jj-characteristics-custom-field">
+                        <span>Nome</span>
+                        <input name="custom.${index}.label" type="text" value="${label}" />
+                    </label>
+                    <label class="jj-characteristics-custom-field">
+                        <span>Sigla</span>
+                        <input name="custom.${index}.code" type="text" value="${code}" maxlength="6" placeholder="TRN" />
+                    </label>
+                    <label class="jj-characteristics-custom-field jj-characteristics-custom-field--wide">
+                        <span>Descrição</span>
+                        <textarea name="custom.${index}.description" rows="2">${description}</textarea>
+                    </label>
+                    <label class="jj-characteristics-custom-field jj-characteristics-custom-field--wide">
+                        <span>Observações</span>
+                        <textarea name="custom.${index}.observations" rows="2">${observations}</textarea>
+                    </label>
+                </div>
+                <div class="jj-characteristics-custom-actions">
+                    <button class="jj-action-button jj-action-button--danger" type="button" data-remove-custom-training>Remover treinamento</button>
+                </div>
+            </div>
+        `;
+    }
+    static _bindJujutsuTrainingCustomRow(row) {
+        const removeButton = row?.querySelector?.('[data-remove-custom-training]');
+        if (!removeButton)
+            return;
+        removeButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            row.remove();
+        });
+    }
+    static _collectJujutsuTrainingConfig(form) {
+        const readFieldValue = (row, selector) => String(row?.querySelector?.(selector)?.value ?? '').trim();
+        const customToggleInputs = Array.from(form.querySelectorAll('[data-training-enabled][name^="customSelected."]'));
+        const selectedCustom = new Set(customToggleInputs
+            .filter((input) => input.checked)
+            .map((input) => String(input.name ?? '').replace(/^customSelected\./, '').trim())
+            .filter(Boolean));
+        const custom = Array.from(form.querySelectorAll('[data-custom-training-row]')).map((row, index) => {
+            const id = readFieldValue(row, 'input[name$=".id"]') || `custom-training-${index + 1}`;
+            const label = readFieldValue(row, 'input[name$=".label"]');
+            const code = readFieldValue(row, 'input[name$=".code"]');
+            const description = readFieldValue(row, 'textarea[name$=".description"]');
+            const observations = readFieldValue(row, 'textarea[name$=".observations"]');
+            if (!label && !code && !description && !observations) {
+                return null;
+            }
+            return {
+                id,
+                label: label || `Treinamento ${index + 1}`,
+                code,
+                description,
+                observations,
+                origem: 'custom',
+                enabled: customToggleInputs.some((input) => input.name === `customSelected.${id}`) ? selectedCustom.has(id) : true
+            };
+        }).filter(Boolean);
+        return { custom };
+    }
+    static _bindJujutsuTrainingConfigDialog(element, { saveTrainings, dialogApp } = {}) {
+        const form = element?.querySelector?.('form');
+        if (!form)
+            return;
+        form.querySelectorAll('[data-training-row]').forEach((row) => {
+            const toggle = row.querySelector('[data-training-enabled]');
+            if (toggle) {
+                toggle.addEventListener('change', () => CharacterSheetV2._syncJujutsuTrainingConfigRow(row));
+            }
+            CharacterSheetV2._syncJujutsuTrainingConfigRow(row);
+        });
+        form.querySelectorAll('[data-custom-training-row]').forEach((row) => {
+            CharacterSheetV2._bindJujutsuTrainingCustomRow(row);
+        });
+        const customList = form.querySelector('[data-trainings-custom-list]');
+        const addCustomButton = form.querySelector('[data-add-custom-training]');
+        if (customList && addCustomButton) {
+            addCustomButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                const nextIndex = CharacterSheetV2._toSafeNumber(customList.dataset.nextIndex, customList.children.length);
+                customList.insertAdjacentHTML('beforeend', CharacterSheetV2._createJujutsuTrainingCustomRow(nextIndex));
+                customList.dataset.nextIndex = String(nextIndex + 1);
+                const row = customList.lastElementChild;
+                if (row) {
+                    CharacterSheetV2._bindJujutsuTrainingCustomRow(row);
+                }
+            });
+        }
+        form.querySelectorAll('[data-save-trainings]').forEach((button) => {
+            button.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                await saveTrainings?.(form, { refreshDialog: true });
+            });
+        });
+    }
+    static _collectJujutsuCharacteristicsConfig(form, validCharacteristicIds) {
+        const readFieldValue = (row, selector) => String(row?.querySelector?.(selector)?.value ?? '').trim();
+        const selected = Array.from(form.querySelectorAll('[data-characteristic-selected][name^="selected."]:checked'))
+            .map((input) => String(input.name ?? '').replace(/^selected\./, '').trim())
+            .filter((id) => validCharacteristicIds.has(id));
+        const customToggleInputs = Array.from(form.querySelectorAll('[data-characteristic-selected][name^="customSelected."]'));
+        const selectedCustom = new Set(customToggleInputs
+            .filter((input) => input.checked)
+            .map((input) => String(input.name ?? '').replace(/^customSelected\./, '').trim())
+            .filter(Boolean));
+        const custom = Array.from(form.querySelectorAll('[data-custom-characteristic-row]')).map((row, index) => {
+            const id = readFieldValue(row, 'input[name$=".id"]') || `custom-characteristic-${index + 1}`;
+            const nome = readFieldValue(row, 'input[name$=".nome"]');
+            const tipo = readFieldValue(row, 'input[name$=".tipo"]');
+            const categoria = readFieldValue(row, 'input[name$=".categoria"]');
+            const efeito_resumido = readFieldValue(row, 'textarea[name$=".efeito_resumido"]');
+            const formula_sugerida = readFieldValue(row, 'textarea[name$=".formula_sugerida"]');
+            const observacoes = readFieldValue(row, 'textarea[name$=".observacoes"]');
+            const modifica = readFieldValue(row, 'input[name$=".modifica"]')
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean);
+            if (!nome && !tipo && !categoria && !efeito_resumido && !formula_sugerida && !observacoes && modifica.length === 0) {
+                return null;
+            }
+            return {
+                id,
+                nome: nome || `Característica Custom ${index + 1}`,
+                tipo,
+                categoria,
+                efeito_resumido,
+                modifica,
+                formula_sugerida,
+                observacoes,
+                origem: 'custom',
+                enabled: customToggleInputs.some((input) => input.name === `customSelected.${id}`) ? selectedCustom.has(id) : true
+            };
+        }).filter(Boolean);
+        return { selected, custom };
+    }
+    static _bindJujutsuCharacteristicsConfigDialog(element, { saveCharacteristics, dialogApp } = {}) {
+        const form = element?.querySelector?.('form');
+        if (!form)
+            return;
+        form.querySelectorAll('[data-characteristic-row]').forEach((row) => {
+            const toggle = row.querySelector('[data-characteristic-selected]');
+            if (toggle) {
+                toggle.addEventListener('change', () => CharacterSheetV2._syncJujutsuCharacteristicConfigRow(row));
+            }
+            CharacterSheetV2._syncJujutsuCharacteristicConfigRow(row);
+        });
+        form.querySelectorAll('[data-custom-characteristic-row]').forEach((row) => {
+            CharacterSheetV2._bindJujutsuCharacteristicCustomRow(row);
+        });
+        const customList = form.querySelector('[data-characteristics-custom-list]');
+        const addCustomButton = form.querySelector('[data-add-custom-characteristic]');
+        if (customList && addCustomButton) {
+            addCustomButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                const nextIndex = CharacterSheetV2._toSafeNumber(customList.dataset.nextIndex, customList.children.length);
+                customList.insertAdjacentHTML('beforeend', CharacterSheetV2._createJujutsuCharacteristicCustomRow(nextIndex));
+                customList.dataset.nextIndex = String(nextIndex + 1);
+                const row = customList.lastElementChild;
+                if (row) {
+                    CharacterSheetV2._bindJujutsuCharacteristicCustomRow(row);
+                }
+            });
+        }
+        form.querySelectorAll('[data-save-characteristics]').forEach((button) => {
+            button.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                await saveCharacteristics?.(form, { refreshDialog: true });
+            });
+        });
+        form.querySelectorAll('[data-characteristics-search], [data-characteristics-type-filter], [data-characteristics-category-filter]').forEach((input) => {
+            input.addEventListener('input', () => CharacterSheetV2._applyJujutsuCharacteristicFilters(form));
+            input.addEventListener('change', () => CharacterSheetV2._applyJujutsuCharacteristicFilters(form));
+        });
+        CharacterSheetV2._applyJujutsuCharacteristicFilters(form);
+    }
+    static async configureJujutsuResistances(_event, _target) {
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const sheet = this;
+        const actor = this.actor ?? this.document;
+        const renderDialogContent = async (propsSource = actor.system.props ?? {}) => {
+            const currentJujutsu = prepareJujutsuSheetData(propsSource);
+            return foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-resistances-config.hbs`, {
+                resistanceDefinitions: currentJujutsu.resistanceDefinitions,
+                customResistances: currentJujutsu.props.resistanceConfig?.custom ?? []
+            });
+        };
+        const validResistanceIds = new Set((prepareJujutsuSheetData(actor.system.props ?? {}).resistanceDefinitions ?? [])
+            .filter((entry) => entry.origem !== 'custom')
+            .map((entry) => entry.id));
+        let dialogApp;
+        const saveResistances = async (form, { refreshDialog = false } = {}) => {
+            if (!form)
+                return false;
+            const resistanceConfig = CharacterSheetV2._collectJujutsuResistanceConfig(form, validResistanceIds);
+            const nextProps = foundry.utils.deepClone(actor.system.props ?? {});
+            nextProps.resistanceConfig = {
+                selected: resistanceConfig.selected,
+                custom: resistanceConfig.custom
+            };
+            try {
+                try {
+                    await actor.update({
+                        'system.props.resistanceConfig': nextProps.resistanceConfig
+                    });
+                }
+                catch (_nestedUpdateError) {
+                    await actor.update({
+                        system: {
+                            props: nextProps
+                        }
+                    });
+                }
+                actor.prepareData();
+                ui.notifications.info('Resistencias salvas.');
+                await sheet.render({ force: true });
+                if (refreshDialog && dialogApp) {
+                    const dialogContent = dialogApp.element?.querySelector?.('.dialog-content');
+                    if (dialogContent) {
+                        const scrollTop = dialogContent.scrollTop;
+                        dialogContent.innerHTML = await renderDialogContent(nextProps);
+                        dialogContent.scrollTop = scrollTop;
+                        CharacterSheetV2._bindJujutsuResistanceConfigDialog(dialogApp.element, {
+                            saveResistances,
+                            dialogApp
+                        });
+                    }
+                }
+                return true;
+            }
+            catch (error) {
+                const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
+                ui.notifications.error(`Nao foi possivel salvar as resistencias: ${message}`);
+                return false;
+            }
+        };
+        dialogApp = new CustomDialogV2({
+            modal: true,
+            content: await renderDialogContent(),
+            buttons: {
+                save: {
+                    default: true,
+                    icon: 'fa-solid fa-save',
+                    label: 'Salvar',
+                    callback: async (event, button, element) => {
+                        const form = element.querySelector('form');
+                        await saveResistances(form, { refreshDialog: true });
+                        return 'handled';
+                    }
+                },
+                cancel: {
+                    icon: 'fa-solid fa-xmark',
+                    label: 'Fechar',
+                    callback: async () => {
+                        await dialogApp?.close();
+                        return 'handled';
+                    }
+                }
+            },
+            onRender: (element) => {
+                element.classList.add('jj-characteristics-dialog');
+                CharacterSheetV2._bindJujutsuResistanceConfigDialog(element, {
+                    saveResistances,
+                    dialogApp
+                });
+            },
+            position: {
+                width: 920,
+                height: 780
+            },
+            window: {
+                title: 'Configurar Resistências'
+            }
+        });
+        await dialogApp.render({ force: true });
+    }
+    static async configureJujutsuTrainings(_event, _target) {
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const sheet = this;
+        const actor = this.actor ?? this.document;
+        const renderDialogContent = async (propsSource = actor.system.props ?? {}) => {
+            const currentJujutsu = prepareJujutsuSheetData(propsSource);
+            return foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-trainings-config.hbs`, {
+                trainingDefinitions: currentJujutsu.trainingDefinitions,
+                customTrainings: currentJujutsu.props.trainingConfig?.custom ?? []
+            });
+        };
+        let dialogApp;
+        const saveTrainings = async (form, { refreshDialog = false } = {}) => {
+            if (!form)
+                return false;
+            const trainingConfig = CharacterSheetV2._collectJujutsuTrainingConfig(form);
+            const nextProps = foundry.utils.deepClone(actor.system.props ?? {});
+            nextProps.trainingConfig = {
+                custom: trainingConfig.custom
+            };
+            try {
+                try {
+                    await actor.update({
+                        'system.props.trainingConfig': nextProps.trainingConfig
+                    });
+                }
+                catch (_nestedUpdateError) {
+                    await actor.update({
+                        system: {
+                            props: nextProps
+                        }
+                    });
+                }
+                actor.prepareData();
+                ui.notifications.info('Treinamentos salvos.');
+                await sheet.render({ force: true });
+                if (refreshDialog && dialogApp) {
+                    const dialogContent = dialogApp.element?.querySelector?.('.dialog-content');
+                    if (dialogContent) {
+                        const scrollTop = dialogContent.scrollTop;
+                        dialogContent.innerHTML = await renderDialogContent(nextProps);
+                        dialogContent.scrollTop = scrollTop;
+                        CharacterSheetV2._bindJujutsuTrainingConfigDialog(dialogApp.element, {
+                            saveTrainings,
+                            dialogApp
+                        });
+                    }
+                }
+                return true;
+            }
+            catch (error) {
+                const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
+                ui.notifications.error(`Nao foi possivel salvar os treinamentos: ${message}`);
+                return false;
+            }
+        };
+        dialogApp = new CustomDialogV2({
+            modal: true,
+            content: await renderDialogContent(),
+            buttons: {
+                save: {
+                    default: true,
+                    icon: 'fa-solid fa-save',
+                    label: 'Salvar',
+                    callback: async (event, button, element) => {
+                        const form = element.querySelector('form');
+                        await saveTrainings(form, { refreshDialog: true });
+                        return 'handled';
+                    }
+                },
+                cancel: {
+                    icon: 'fa-solid fa-xmark',
+                    label: 'Fechar',
+                    callback: async () => {
+                        await dialogApp?.close();
+                        return 'handled';
+                    }
+                }
+            },
+            onRender: (element) => {
+                element.classList.add('jj-characteristics-dialog');
+                CharacterSheetV2._bindJujutsuTrainingConfigDialog(element, {
+                    saveTrainings,
+                    dialogApp
+                });
+            },
+            position: {
+                width: 920,
+                height: 780
+            },
+            window: {
+                title: 'Configurar Treinamentos'
+            }
+        });
+        await dialogApp.render({ force: true });
+    }
+    static async configureJujutsuCharacteristics(_event, _target) {
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const sheet = this;
+        const actor = this.actor ?? this.document;
+        const renderDialogContent = async (propsSource = actor.system.props ?? {}) => {
+            const currentJujutsu = prepareJujutsuSheetData(propsSource);
+            return foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-characteristics-config.hbs`, {
+                characteristicDefinitions: currentJujutsu.characteristicDefinitions,
+                characteristicTypeOptions: currentJujutsu.characteristicTypeOptions,
+                characteristicCategoryOptions: currentJujutsu.characteristicCategoryOptions,
+                customCharacteristics: (currentJujutsu.props.characteristics?.custom ?? []).map((entry) => ({
+                    ...entry,
+                    modificaText: Array.isArray(entry.modifica) ? entry.modifica.join(', ') : ''
+                }))
+            });
+        };
+        const validCharacteristicIds = new Set(JUJUTSU_CHARACTERISTICS_CATALOG.map((entry) => entry.id));
+        let dialogApp;
+        const saveCharacteristics = async (form, { refreshDialog = false } = {}) => {
+            if (!form)
+                return false;
+            const characteristics = CharacterSheetV2._collectJujutsuCharacteristicsConfig(form, validCharacteristicIds);
+            const nextProps = foundry.utils.deepClone(actor.system.props ?? {});
+            nextProps.characteristics = {
+                selected: characteristics.selected,
+                custom: characteristics.custom
+            };
+            try {
+                try {
+                    await actor.update({
+                        'system.props.characteristics': nextProps.characteristics
+                    });
+                }
+                catch (_nestedUpdateError) {
+                    await actor.update({
+                        system: {
+                            props: nextProps
+                        }
+                    });
+                }
+                actor.prepareData();
+                ui.notifications.info('Caracteristicas salvas.');
+                await sheet.render({ force: true });
+                if (refreshDialog && dialogApp) {
+                    const dialogContent = dialogApp.element?.querySelector?.('.dialog-content');
+                    if (dialogContent) {
+                        const scrollTop = dialogContent.scrollTop;
+                        dialogContent.innerHTML = await renderDialogContent(nextProps);
+                        dialogContent.scrollTop = scrollTop;
+                        CharacterSheetV2._bindJujutsuCharacteristicsConfigDialog(dialogApp.element, {
+                            saveCharacteristics,
+                            dialogApp
+                        });
+                    }
+                }
+                return true;
+            }
+            catch (error) {
+                const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
+                ui.notifications.error(`Nao foi possivel salvar as caracteristicas: ${message}`);
+                return false;
+            }
+        };
+        dialogApp = new CustomDialogV2({
+            modal: true,
+            content: await renderDialogContent(),
+            form: {
+                closeOnSubmit: false
+            },
+            buttons: {
+                save: {
+                    default: false,
+                    icon: 'fa-solid fa-save',
+                    label: 'Salvar',
+                    callback: async (_event, _target, element) => {
+                        const form = element.querySelector('form');
+                        await saveCharacteristics(form, { refreshDialog: true });
+                        return 'handled';
+                    }
+                },
+                cancel: {
+                    icon: 'fa-solid fa-xmark',
+                    label: 'Fechar',
+                    callback: async () => {
+                        await dialogApp?.close();
+                        return 'handled';
+                    }
+                }
+            },
+            onRender: (element) => {
+                element.classList.add('jj-characteristics-dialog');
+                CharacterSheetV2._bindJujutsuCharacteristicsConfigDialog(element, {
+                    saveCharacteristics,
+                    dialogApp
+                });
+            },
+            position: {
+                width: 980,
+                height: 860
+            },
+            window: {
+                title: 'Configurar Características'
+            }
+        });
+        await dialogApp.render({ force: true });
+    }
+    /* ------------------------------------- */
+    dragDrop;
+    dragDropOptions = [
+        { dragSelector: '.item-list .item', dropSelector: null }
+    ];
+    constructor(options) {
+        super(options);
+        this.dragDrop = this.createDragDropHandlers();
+    }
+    _setJujutsuTab(tab) {
+        const allowedTabs = new Set(['resumo', 'pericias', 'habilidades', 'inventario', 'registro']);
+        this.activeJujutsuTab = allowedTabs.has(tab) ? tab : 'resumo';
+        this._syncJujutsuTabs();
+    }
+    _syncJujutsuTabs(root = this.element) {
+        if (!root)
+            return;
+        root.querySelectorAll('[data-tab-target]').forEach((button) => {
+            const isActive = button.dataset.tabTarget === this.activeJujutsuTab;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-selected', String(isActive));
+        });
+        const layout = root.querySelector('.jj-layout');
+        if (layout) {
+            layout.classList.toggle('is-resumo', this.activeJujutsuTab === 'resumo');
+            layout.classList.toggle('is-pericias', this.activeJujutsuTab === 'pericias');
+            layout.classList.toggle('is-habilidades', this.activeJujutsuTab === 'habilidades');
+            layout.classList.toggle('is-inventario', this.activeJujutsuTab === 'inventario');
+            layout.classList.toggle('is-registro', this.activeJujutsuTab === 'registro');
+        }
+        root.querySelectorAll('[data-tab-block]').forEach((block) => {
+            const tabs = (block.dataset.tabBlock ?? '').split(/\s+/);
+            const isActive = tabs.includes(this.activeJujutsuTab);
+            block.hidden = !isActive;
+            block.setAttribute('aria-hidden', String(!isActive));
+        });
+        root.querySelectorAll('[data-tab-panel]').forEach((panel) => {
+            const isActive = panel.dataset.tabPanel === this.activeJujutsuTab;
+            panel.classList.toggle('is-active', isActive);
+            panel.hidden = !isActive;
+            panel.setAttribute('aria-hidden', String(!isActive));
+        });
+    }
+    _updateAbilityModDisplays(root = this.element) {
+        if (!root)
+            return;
+        root.querySelectorAll('[data-ability-card]').forEach((card) => {
+            const valueInput = card.querySelector('[data-ability-value]');
+            const modDisplay = card.querySelector('[data-ability-mod-display]');
+            const modHidden = card.querySelector('[data-ability-mod-hidden]');
+            if (!valueInput || !modDisplay || !modHidden)
+                return;
+            const value = Number(valueInput.value);
+            const safeValue = Number.isFinite(value) ? value : 0;
+            const mod = Math.floor((safeValue - 10) / 2);
+            modDisplay.value = mod > 0 ? `+${mod}` : `${mod}`;
+            modHidden.value = String(mod);
+        });
+    }
+    _bindAbilityModDisplays(root = this.element) {
+        if (!root)
+            return;
+        root.querySelectorAll('[data-ability-value]').forEach((input) => {
+            const sync = () => {
+                this._updateAbilityModDisplays(root);
+                this._syncAttackTotals(root);
+                this._syncSkillTotals(root);
+                this._syncSavingThrowTotals(root);
+            };
+            input.addEventListener('input', sync);
+            input.addEventListener('change', sync);
+        });
+        this._updateAbilityModDisplays(root);
+    }
+    _syncTrainingBonusDisplays(root = this.element) {
+        if (!root)
+            return;
+        const level = CharacterSheetV2._getFormNumberValue(root, 'system.props.level', CharacterSheetV2._toSafeNumber(this.actor.system.props?.level, 1));
+        const trainingBonus = calculateJujutsuTrainingBonus(level);
+        root.querySelectorAll('[data-training-bonus-display]').forEach((element) => {
+            element.textContent = `+${trainingBonus}`;
+        });
+        root.querySelectorAll('[data-training-bonus-input]').forEach((input) => {
+            input.value = String(trainingBonus);
+        });
+    }
+    _syncAttackTotals(root = this.element) {
+        if (!root)
+            return;
+        const level = CharacterSheetV2._getFormNumberValue(root, 'system.props.level', CharacterSheetV2._toSafeNumber(this.actor.system.props?.level, 1));
+        const levelHalf = Math.floor(level / 2);
+        const baseTrainingBonus = calculateJujutsuTrainingBonus(level);
+        root.querySelectorAll('[data-attack-card]').forEach((card) => {
+            const attackKey = card.dataset.attackKey ?? '';
+            const attributeKey = card.dataset.attackAttribute ?? '';
+            const alwaysTrained = card.dataset.attackAlwaysTrained === 'true';
+            if (!attackKey || !attributeKey)
+                return;
+            const trainedInput = card.querySelector(`[name='system.props.attackBonuses.${attackKey}.t']`);
+            if (alwaysTrained && trainedInput && !trainedInput.checked) {
+                trainedInput.checked = true;
+                trainedInput.closest('.jj-checkbox')?.classList.add('is-checked');
+            }
+            const attributeValue = CharacterSheetV2._getFormNumberValue(root, `system.props.attributes.${attributeKey}.value`, 10);
+            const trained = alwaysTrained ? true : CharacterSheetV2._getScopedCheckboxValue(card, `[name='system.props.attackBonuses.${attackKey}.t']`, false);
+            const others = CharacterSheetV2._getScopedNumberValue(card, `[name='system.props.attackBonuses.${attackKey}.others']`, 0);
+            const attributeMod = calculateJujutsuAttributeMod(attributeValue);
+            const trainingBonus = trained ? baseTrainingBonus : 0;
+            const total = calculateJujutsuAttackTotal({
+                attributeValue,
+                level,
+                trained,
+                others
+            });
+            const attributeModInput = card.querySelector('[data-attack-attribute-mod]');
+            const levelHalfInput = card.querySelector('[data-attack-level-half]');
+            const trainingInput = card.querySelector('[data-attack-training-bonus]');
+            const totalInput = card.querySelector('[data-attack-total]');
+            if (attributeModInput) {
+                attributeModInput.value = String(attributeMod);
+            }
+            if (levelHalfInput) {
+                levelHalfInput.value = String(levelHalf);
+            }
+            if (trainingInput) {
+                trainingInput.value = String(trainingBonus);
+            }
+            if (totalInput) {
+                totalInput.value = String(total);
+            }
+        });
+        this._syncTrainingBonusDisplays(root);
+    }
+    _bindAttackTotals(root = this.element) {
+        if (!root)
+            return;
+        const levelInput = root.querySelector("[name='system.props.level']");
+        if (levelInput) {
+            levelInput.addEventListener('input', () => this._syncAttackTotals(root));
+            levelInput.addEventListener('change', () => this._syncAttackTotals(root));
+        }
+        root.querySelectorAll('[data-attack-others], [data-attack-trained]').forEach((input) => {
+            input.addEventListener('input', () => this._syncAttackTotals(root));
+            input.addEventListener('change', () => this._syncAttackTotals(root));
+        });
+        this._syncAttackTotals(root);
+    }
+    _syncSkillTotals(root = this.element) {
+        if (!root)
+            return;
+        const level = CharacterSheetV2._getFormNumberValue(root, 'system.props.level', CharacterSheetV2._toSafeNumber(this.actor.system.props?.level, 1));
+        root.querySelectorAll('[data-skill-row]').forEach((row) => {
+            const skillKey = row.dataset.skillKey ?? '';
+            const attributeInput = row.querySelector(`[name='system.props.skills.${skillKey}.attribute']`);
+            const attributeKey = attributeInput?.value ?? row.dataset.skillAttribute ?? '';
+            const attributeValue = CharacterSheetV2._getFormNumberValue(root, `system.props.attributes.${attributeKey}.value`, 10);
+            const others = CharacterSheetV2._getScopedNumberValue(row, `[name='system.props.skills.${skillKey}.others']`, 0);
+            const trained = CharacterSheetV2._getScopedCheckboxValue(row, `[name='system.props.skills.${skillKey}.t']`, false);
+            const master = CharacterSheetV2._getScopedCheckboxValue(row, `[name='system.props.skills.${skillKey}.m']`, false);
+            const total = calculateJujutsuSkillTotal({
+                attributeValue,
+                level,
+                trained,
+                master,
+                others
+            });
+            const totalInput = row.querySelector('[data-skill-total]');
+            if (totalInput) {
+                totalInput.value = String(total);
+            }
+        });
+        this._syncTrainingBonusDisplays(root);
+    }
+    _bindSkillTotals(root = this.element) {
+        if (!root)
+            return;
+        const levelInput = root.querySelector("[name='system.props.level']");
+        if (levelInput) {
+            levelInput.addEventListener('input', () => this._syncSkillTotals(root));
+            levelInput.addEventListener('change', () => this._syncSkillTotals(root));
+        }
+        root.querySelectorAll('[data-skill-others], [data-skill-trained], [data-skill-master], [data-skill-attribute-input]').forEach((input) => {
+            input.addEventListener('input', () => this._syncSkillTotals(root));
+            input.addEventListener('change', () => this._syncSkillTotals(root));
+        });
+        this._syncSkillTotals(root);
+    }
+    _getCurrentJujutsuAttackData(attackKey, root = this.element) {
+        if (!root || !attackKey)
+            return null;
+        const card = root.querySelector(`[data-attack-card][data-attack-key='${attackKey}']`);
+        if (!card)
+            return null;
+        const label = card.dataset.attackLabel ?? attackKey;
+        const attributeKey = card.dataset.attackAttribute ?? '';
+        const alwaysTrained = card.dataset.attackAlwaysTrained === 'true';
+        if (!attributeKey)
+            return null;
+        const level = CharacterSheetV2._getFormNumberValue(root, 'system.props.level', CharacterSheetV2._toSafeNumber(this.actor.system.props?.level, 1));
+        const attributeValue = CharacterSheetV2._getFormNumberValue(root, `system.props.attributes.${attributeKey}.value`, 10);
+        const trained = alwaysTrained ? true : CharacterSheetV2._getScopedCheckboxValue(card, `[name='system.props.attackBonuses.${attackKey}.t']`, false);
+        const others = CharacterSheetV2._getScopedNumberValue(card, `[name='system.props.attackBonuses.${attackKey}.others']`, 0);
+        const attributeMod = calculateJujutsuAttributeMod(attributeValue);
+        const levelHalf = Math.floor(level / 2);
+        const trainingBonus = trained ? calculateJujutsuTrainingBonus(level) : 0;
+        const total = calculateJujutsuAttackTotal({
+            attributeValue,
+            level,
+            trained,
+            others
+        });
+        return {
+            attackKey,
+            label,
+            attributeKey,
+            attributeMod,
+            level,
+            levelHalf,
+            trainingBonus,
+            trained,
+            alwaysTrained,
+            others,
+            total
+        };
+    }
+    async _rollJujutsuAttack(attackKey, root = this.element) {
+        const attackData = this._getCurrentJujutsuAttackData(attackKey, root);
+        if (!attackData)
+            return;
+        const roll = await new Roll('1d20 + (@modifier)', {
+            modifier: attackData.total
+        }).evaluate();
+        const speaker = foundry.documents.ChatMessage.implementation.getSpeaker({
+            actor: this.actor
+        });
+        const flavorParts = [
+            `<strong>Ataque: ${attackData.label}</strong>`,
+            `<div>Mod. Atr. ${CharacterSheetV2._toSignedNumber(attackData.attributeMod)} | Nível/2 ${CharacterSheetV2._toSignedNumber(attackData.levelHalf)} | Treino ${CharacterSheetV2._toSignedNumber(attackData.trainingBonus)} | Outros ${CharacterSheetV2._toSignedNumber(attackData.others)}</div>`
+        ];
+        if (attackData.alwaysTrained) {
+            flavorParts.push('<div>Treino base ativo para este ataque.</div>');
+        }
+        await roll.toMessage({
+            speaker,
+            flavor: flavorParts.join(''),
+            flags: {
+                [game.system.id]: {
+                    jujutsuAttackRoll: {
+                        key: attackData.attackKey,
+                        label: attackData.label,
+                        attribute: attackData.attributeKey,
+                        total: attackData.total,
+                        attributeMod: attackData.attributeMod,
+                        levelHalf: attackData.levelHalf,
+                        trainingBonus: attackData.trainingBonus,
+                        trained: attackData.trained,
+                        alwaysTrained: attackData.alwaysTrained,
+                        others: attackData.others
+                    }
+                }
+            }
+        }, {
+            rollMode: game.settings.get('core', 'rollMode')
+        });
+    }
+    _getCurrentJujutsuSkillData(skillKey, root = this.element) {
+        if (!root || !skillKey)
+            return null;
+        const row = root.querySelector(`[data-skill-row][data-skill-key='${skillKey}']`);
+        if (!row)
+            return null;
+        const baseLabel = row.dataset.skillLabel ?? skillKey;
+        const attributeInput = row.querySelector(`[name='system.props.skills.${skillKey}.attribute']`);
+        const attributeKey = attributeInput?.value ?? row.dataset.skillAttribute ?? '';
+        if (!attributeKey)
+            return null;
+        const nameInput = row.querySelector(`[name='system.props.skills.${skillKey}.name']`);
+        const customName = (nameInput?.value ?? '').trim();
+        const label = nameInput && customName ? `${baseLabel} (${customName})` : baseLabel;
+        const level = CharacterSheetV2._getFormNumberValue(root, 'system.props.level', CharacterSheetV2._toSafeNumber(this.actor.system.props?.level, 1));
+        const attributeValue = CharacterSheetV2._getFormNumberValue(root, `system.props.attributes.${attributeKey}.value`, 10);
+        const trained = CharacterSheetV2._getScopedCheckboxValue(row, `[name='system.props.skills.${skillKey}.t']`, false);
+        const master = CharacterSheetV2._getScopedCheckboxValue(row, `[name='system.props.skills.${skillKey}.m']`, false);
+        const others = CharacterSheetV2._getScopedNumberValue(row, `[name='system.props.skills.${skillKey}.others']`, 0);
+        const attributeMod = calculateJujutsuAttributeMod(attributeValue);
+        const levelHalf = Math.floor(level / 2);
+        const baseTrainingBonus = calculateJujutsuTrainingBonus(level);
+        const trainingBonus = master ? baseTrainingBonus + Math.floor(baseTrainingBonus / 2) : trained ? baseTrainingBonus : 0;
+        const total = calculateJujutsuSkillTotal({
+            attributeValue,
+            level,
+            trained,
+            master,
+            others
+        });
+        return {
+            skillKey,
+            label,
+            attributeKey,
+            attributeMod,
+            level,
+            levelHalf,
+            trainingBonus,
+            trained,
+            master,
+            others,
+            total
+        };
+    }
+    async _rollJujutsuSkill(skillKey, root = this.element) {
+        const skillData = this._getCurrentJujutsuSkillData(skillKey, root);
+        if (!skillData)
+            return;
+        const roll = await new Roll('1d20 + (@modifier)', {
+            modifier: skillData.total
+        }).evaluate();
+        const speaker = foundry.documents.ChatMessage.implementation.getSpeaker({
+            actor: this.actor
+        });
+        const flavorParts = [
+            `<strong>Perícia: ${skillData.label}</strong>`,
+            `<div>Mod. Atr. ${CharacterSheetV2._toSignedNumber(skillData.attributeMod)} | Nível/2 ${CharacterSheetV2._toSignedNumber(skillData.levelHalf)} | Treino ${CharacterSheetV2._toSignedNumber(skillData.trainingBonus)} | Outros ${CharacterSheetV2._toSignedNumber(skillData.others)}</div>`
+        ];
+        await roll.toMessage({
+            speaker,
+            flavor: flavorParts.join(''),
+            flags: {
+                [game.system.id]: {
+                    jujutsuSkillRoll: {
+                        key: skillData.skillKey,
+                        label: skillData.label,
+                        attribute: skillData.attributeKey,
+                        total: skillData.total,
+                        attributeMod: skillData.attributeMod,
+                        levelHalf: skillData.levelHalf,
+                        trainingBonus: skillData.trainingBonus,
+                        trained: skillData.trained,
+                        master: skillData.master,
+                        others: skillData.others
+                    }
+                }
+            }
+        }, {
+            rollMode: game.settings.get('core', 'rollMode')
+        });
+    }
+    _syncSavingThrowTotals(root = this.element) {
+        if (!root)
+            return;
+        const level = CharacterSheetV2._getFormNumberValue(root, 'system.props.level', CharacterSheetV2._toSafeNumber(this.actor.system.props?.level, 1));
+        root.querySelectorAll('[data-save-row]').forEach((row) => {
+            const saveKey = row.dataset.saveKey ?? '';
+            const attributeKey = row.dataset.saveAttribute ?? '';
+            if (!saveKey || !attributeKey)
+                return;
+            const attributeValue = CharacterSheetV2._getFormNumberValue(root, `system.props.attributes.${attributeKey}.value`, 10);
+            const others = CharacterSheetV2._getScopedNumberValue(row, `[name='system.props.savingThrows.${saveKey}.others']`, 0);
+            const trained = CharacterSheetV2._getScopedCheckboxValue(row, `[name='system.props.savingThrows.${saveKey}.t']`, false);
+            const master = CharacterSheetV2._getScopedCheckboxValue(row, `[name='system.props.savingThrows.${saveKey}.m']`, false);
+            const total = calculateJujutsuSavingThrowTotal({
+                attributeValue,
+                level,
+                trained,
+                master,
+                others
+            });
+            const totalInput = row.querySelector('[data-save-total]');
+            if (totalInput) {
+                totalInput.value = String(total);
+            }
+        });
+    }
+    _bindSavingThrowTotals(root = this.element) {
+        if (!root)
+            return;
+        const levelInput = root.querySelector("[name='system.props.level']");
+        if (levelInput) {
+            levelInput.addEventListener('input', () => this._syncSavingThrowTotals(root));
+            levelInput.addEventListener('change', () => this._syncSavingThrowTotals(root));
+        }
+        root.querySelectorAll('[data-save-others], [data-save-trained], [data-save-master]').forEach((input) => {
+            input.addEventListener('input', () => this._syncSavingThrowTotals(root));
+            input.addEventListener('change', () => this._syncSavingThrowTotals(root));
+        });
+        this._syncSavingThrowTotals(root);
+    }
+    _getCurrentJujutsuSavingThrowData(saveKey, root = this.element) {
+        if (!root || !saveKey)
+            return null;
+        const row = root.querySelector(`[data-save-row][data-save-key='${saveKey}']`);
+        if (!row)
+            return null;
+        const label = row.dataset.saveLabel ?? saveKey;
+        const attributeKey = row.dataset.saveAttribute ?? '';
+        const level = CharacterSheetV2._getFormNumberValue(root, 'system.props.level', CharacterSheetV2._toSafeNumber(this.actor.system.props?.level, 1));
+        const attributeValue = CharacterSheetV2._getFormNumberValue(root, `system.props.attributes.${attributeKey}.value`, 10);
+        const trained = CharacterSheetV2._getScopedCheckboxValue(row, `[name='system.props.savingThrows.${saveKey}.t']`, false);
+        const master = CharacterSheetV2._getScopedCheckboxValue(row, `[name='system.props.savingThrows.${saveKey}.m']`, false);
+        const others = CharacterSheetV2._getScopedNumberValue(row, `[name='system.props.savingThrows.${saveKey}.others']`, 0);
+        const attributeMod = calculateJujutsuAttributeMod(attributeValue);
+        const levelHalf = Math.floor(level / 2);
+        const baseTrainingBonus = calculateJujutsuTrainingBonus(level);
+        const trainingBonus = master ? baseTrainingBonus + Math.floor(baseTrainingBonus / 2) : trained ? baseTrainingBonus : 0;
+        const total = calculateJujutsuSavingThrowTotal({
+            attributeValue,
+            level,
+            trained,
+            master,
+            others
+        });
+        return {
+            saveKey,
+            label,
+            attributeKey,
+            attributeMod,
+            level,
+            levelHalf,
+            trainingBonus,
+            trained,
+            master,
+            others,
+            total
+        };
+    }
+    async _rollJujutsuSavingThrow(saveKey, root = this.element) {
+        const saveData = this._getCurrentJujutsuSavingThrowData(saveKey, root);
+        if (!saveData)
+            return;
+        const roll = await new Roll('1d20 + (@modifier)', {
+            modifier: saveData.total
+        }).evaluate();
+        const speaker = foundry.documents.ChatMessage.implementation.getSpeaker({
+            actor: this.actor
+        });
+        const flavorParts = [
+            `<strong>Teste de Resistência: ${saveData.label}</strong>`,
+            `<div>Mod. Atr. ${CharacterSheetV2._toSignedNumber(saveData.attributeMod)} | Nível/2 ${CharacterSheetV2._toSignedNumber(saveData.levelHalf)} | Treino ${CharacterSheetV2._toSignedNumber(saveData.trainingBonus)} | Outros ${CharacterSheetV2._toSignedNumber(saveData.others)}</div>`
+        ];
+        if (saveData.master) {
+            flavorParts.push('<div>Mestre ativo: o grau de sucesso pode chegar a sucesso crítico ao superar a CD em 10 ou mais.</div>');
+        }
+        await roll.toMessage({
+            speaker,
+            flavor: flavorParts.join(''),
+            flags: {
+                [game.system.id]: {
+                    jujutsuSavingThrow: {
+                        key: saveData.saveKey,
+                        label: saveData.label,
+                        attribute: saveData.attributeKey,
+                        total: saveData.total,
+                        attributeMod: saveData.attributeMod,
+                        levelHalf: saveData.levelHalf,
+                        trainingBonus: saveData.trainingBonus,
+                        trained: saveData.trained,
+                        master: saveData.master,
+                        others: saveData.others
+                    }
+                }
+            }
+        }, {
+            rollMode: game.settings.get('core', 'rollMode')
+        });
+    }
+    _getJujutsuTableEntry(tableKey, rowIndex) {
+        const jujutsu = prepareJujutsuSheetData(this.actor.system.props ?? {});
+        const rows = Array.isArray(jujutsu.props.tables?.[tableKey]) ? jujutsu.props.tables[tableKey] : [];
+        return rows[rowIndex] ?? null;
+    }
+    _buildJujutsuItemChatHeader(entry, subtitle = '') {
+        const escapeHtml = foundry.utils.escapeHTML ?? ((value) => String(value ?? ''));
+        const image = escapeHtml(entry?.image || 'icons/svg/mystery-man.svg');
+        const name = escapeHtml(entry?.name || 'Item');
+        const safeSubtitle = escapeHtml(subtitle);
+        return `
+            <div style="align-items:center; display:flex; gap:10px; margin-bottom:8px;">
+                <img src="${image}" alt="${name}" style="border:1px solid rgba(0,0,0,0.2); border-radius:6px; height:40px; object-fit:cover; width:40px;" />
+                <div style="min-width:0;">
+                    <div style="font-weight:700;">${name}</div>
+                    ${safeSubtitle ? `<div style="font-size:12px; opacity:0.8;">${safeSubtitle}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }
+    async _rollJujutsuTableAttack(rowIndex) {
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const attack = this._getJujutsuTableEntry('attacks', rowIndex);
+        if (!attack)
+            return;
+        const speaker = foundry.documents.ChatMessage.implementation.getSpeaker({
+            actor: this.actor
+        });
+        const attackRoll = new Roll(`1d20 + ${CharacterSheetV2._toSafeNumber(attack.acerto, 0)}`);
+        await attackRoll.evaluate({ async: true });
+        await attackRoll.toMessage({
+            speaker,
+            flavor: `${this._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Ataque')}<p><strong>Acerto</strong></p>`
+        });
+        const damageFormula = String(attack.damage ?? '').trim();
+        if (!damageFormula)
+            return;
+        try {
+            const damageRoll = new Roll(damageFormula);
+            await damageRoll.evaluate({ async: true });
+            await damageRoll.toMessage({
+                speaker,
+                flavor: `${this._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Ataque')}<p><strong>Dano</strong></p>`
+            });
+        }
+        catch (error) {
+            const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
+            ui.notifications.error(`Nao foi possivel rolar o dano de ${attack.name}: ${message}`);
+        }
+    }
+    async _useJujutsuTableFeature(tableKey, rowIndex) {
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const entry = this._getJujutsuTableEntry(tableKey, rowIndex);
+        if (!entry)
+            return;
+        const cost = CharacterSheetV2._toSafeNumber(entry.cost, 0);
+        const currentEnergy = CharacterSheetV2._toSafeNumber(this.actor.system.props?.resources?.energia?.atuais, 0);
+        const nextEnergy = Math.max(0, currentEnergy - Math.max(0, cost));
+        if (cost > 0) {
+            await this.actor.update({
+                'system.props.resources.energia.atuais': nextEnergy
+            });
+        }
+        const speaker = foundry.documents.ChatMessage.implementation.getSpeaker({
+            actor: this.actor
+        });
+        const escapeHtml = foundry.utils.escapeHTML ?? ((value) => String(value ?? ''));
+        const description = escapeHtml(entry.description || 'Sem descrição.');
+        const costLine = cost > 0
+            ? `<p><strong>Custo:</strong> ${cost} PE</p><p><strong>PE restante:</strong> ${nextEnergy}</p>`
+            : `<p><strong>Custo:</strong> 0 PE</p>`;
+        await foundry.documents.ChatMessage.implementation.create({
+            speaker,
+            content: `${this._buildJujutsuItemChatHeader(entry, tableKey === 'talents' ? 'Talento' : 'Habilidade')}<p>${description}</p>${costLine}`
+        });
+        await this.render({ force: true });
+    }
+    async _rollJujutsuInventoryItem(rowIndex) {
+        await CharacterSheetV2.rollJujutsuInventoryItem(this.actor, { rowIndex });
+    }
+    _onJujutsuInventoryDragStart(event, element) {
+        if (!event.dataTransfer) {
+            return;
+        }
+        const rowIndex = Number(element?.dataset?.rowIndex ?? -1);
+        const rowId = String(element?.dataset?.entryId ?? '').trim() || null;
+        const dragData = CharacterSheetV2._createJujutsuInventoryDragData(this.actor, {
+            rowId,
+            rowIndex
+        });
+        if (!dragData) {
+            return;
+        }
+        const serialized = JSON.stringify(dragData);
+        event.dataTransfer.setData('text/plain', serialized);
+        event.dataTransfer.setData('application/json', serialized);
+        event.dataTransfer.effectAllowed = 'copy';
+        const dragPreview = element?.closest?.('.jj-inventory-item-main') ?? element;
+        const dragBox = dragPreview?.getBoundingClientRect?.();
+        if (dragPreview && dragBox) {
+            event.dataTransfer.setDragImage(dragPreview, Math.min(24, dragBox.width / 2), dragBox.height / 2);
+        }
+    }
+    _syncCheckboxVisuals(root = this.element) {
+        if (!root)
+            return;
+        root.querySelectorAll('.jj-checkbox').forEach((checkbox) => {
+            const input = checkbox.querySelector('.jj-checkbox-input');
+            checkbox.classList.toggle('is-checked', !!input?.checked);
+        });
+    }
+    _syncDeathTrackCounters(root = this.element) {
+        if (!root)
+            return;
+        const successCount = Array.from(root.querySelectorAll('[data-death-track="successes"]')).filter((input) => input.checked).length;
+        const failureCount = Array.from(root.querySelectorAll('[data-death-track="failures"]')).filter((input) => input.checked).length;
+        const successDisplay = root.querySelector('[data-death-count="successes"]');
+        const failureDisplay = root.querySelector('[data-death-count="failures"]');
+        if (successDisplay) {
+            successDisplay.value = String(successCount);
+        }
+        if (failureDisplay) {
+            failureDisplay.value = String(failureCount);
+        }
+    }
+    _bindCheckboxVisuals(root = this.element) {
+        if (!root)
+            return;
+        root.querySelectorAll('.jj-checkbox-input').forEach((input) => {
+            const sync = () => {
+                const checkbox = input.closest('.jj-checkbox');
+                if (checkbox) {
+                    checkbox.classList.toggle('is-checked', input.checked);
+                }
+                if (input.dataset.deathTrack) {
+                    this._syncDeathTrackCounters(root);
+                }
+            };
+            input.addEventListener('input', sync);
+            input.addEventListener('change', sync);
+            sync();
+        });
+        this._syncCheckboxVisuals(root);
+        this._syncDeathTrackCounters(root);
+    }
+    async _prepareContext(options) {
+        const context = await super._prepareContext(options);
+        const jujutsu = prepareJujutsuSheetData(context.document.system.props ?? {});
+        const skillAttributeLabels = {
+            for: 'FOR',
+            des: 'DEX',
+            int: 'INT',
+            sab: 'SAB',
+            pre: 'PRE',
+            con: 'CON'
+        };
+        const skillDisplay = jujutsu.skills.map((skill) => ({
+            ...skill,
+            attributeDisplay: skillAttributeLabels[skill.attribute] ?? String(skill.attribute ?? '').toUpperCase()
+        }));
+        const skillColumnSize = Math.ceil(skillDisplay.length / 2);
+        jujutsu.skillColumns = [skillDisplay.slice(0, skillColumnSize), skillDisplay.slice(skillColumnSize)];
+        return {
+            ...context,
+            jujutsu
+        };
+    }
+    createDragDropHandlers() {
+        return this.dragDropOptions.map((d) => {
+            d.permissions = {
+                dragstart: this._canDragStart.bind(this),
+                drop: this._canDragDrop.bind(this)
+            };
+            d.callbacks = {
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                dragstart: this._onDragStart.bind(this),
+                dragover: this._onDragOver.bind(this),
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                drop: this._onDrop.bind(this)
+            };
+            return new DragDrop.implementation(d);
+        });
+    }
+    /**
+     * Define whether a user is able to begin a dragstart workflow for a given drag selector
+     * @param selector       The candidate HTML selector for dragging
+     * @returns              Can the current user drag this selector?
+     * @protected
+     * @override
+     * @ignore
+     */
+    _canDragStart(_selector) {
+        return this.isEditable;
+    }
+    /* -------------------------------------------- */
+    /**
+     * Define whether a user is able to conclude a drag-and-drop workflow for a given drop selector
+     * @param selector       The candidate HTML selector for the drop target
+     * @returns              Can the current user drop on this selector?
+     * @protected
+     * @override
+     * @ignore
+     */
+    _canDragDrop(_selector) {
+        return this.isEditable;
+    }
+    /**
+     * Actions performed after any render of the Application.
+     * Post-render steps are not awaited by the render process.
+     */
+    async _onRender(context, options) {
+        await super._onRender(context, options);
+        this.dragDrop.forEach((d) => d.bind(this.element));
+        const root = this.element;
+        if (root) {
+            root.querySelectorAll('[data-action="addJujutsuRow"]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void CharacterSheetV2.addJujutsuRow.call(this, event, button);
+                });
+            });
+            root.querySelectorAll('[data-action="editJujutsuRow"]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void CharacterSheetV2.editJujutsuRow.call(this, event, button);
+                });
+            });
+            root.querySelectorAll('[data-action="removeJujutsuRow"]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void CharacterSheetV2.removeJujutsuRow.call(this, event, button);
+                });
+            });
+            root.querySelectorAll('[data-roll-table-attack]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void this._rollJujutsuTableAttack(Number(button.dataset.rowIndex));
+                });
+            });
+            root.querySelectorAll('[data-use-table-feature]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void this._useJujutsuTableFeature(button.dataset.collection ?? '', Number(button.dataset.rowIndex));
+                });
+            });
+            root.querySelectorAll('[data-roll-inventory-item]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void this._rollJujutsuInventoryItem(Number(button.dataset.rowIndex));
+                });
+            });
+            root.querySelectorAll('[data-jujutsu-inventory-drag]').forEach((element) => {
+                element.addEventListener('dragstart', (event) => {
+                    this._onJujutsuInventoryDragStart(event, element);
+                });
+            });
+            root.querySelectorAll('[data-action="configureJujutsuRds"]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void CharacterSheetV2.configureJujutsuRds.call(this, event, button);
+                });
+            });
+            root.querySelectorAll('[data-action="configureJujutsuResistances"]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void CharacterSheetV2.configureJujutsuResistances.call(this, event, button);
+                });
+            });
+            root.querySelectorAll('[data-action="configureJujutsuTrainings"]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void CharacterSheetV2.configureJujutsuTrainings.call(this, event, button);
+                });
+            });
+            root.querySelectorAll('[data-action="configureJujutsuCharacteristics"]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void CharacterSheetV2.configureJujutsuCharacteristics.call(this, event, button);
+                });
+            });
+            root.querySelectorAll('[data-tab-target]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this._setJujutsuTab(button.dataset.tabTarget ?? 'resumo');
+                });
+            });
+            root.querySelectorAll('[data-roll-saving-throw]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void this._rollJujutsuSavingThrow(button.dataset.saveKey ?? '', root);
+                });
+            });
+            root.querySelectorAll('[data-roll-attack]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void this._rollJujutsuAttack(button.dataset.attackKey ?? '', root);
+                });
+            });
+            root.querySelectorAll('[data-roll-skill]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void this._rollJujutsuSkill(button.dataset.skillKey ?? '', root);
+                });
+            });
+            this._syncJujutsuTabs(root);
+            this._bindAbilityModDisplays(root);
+            this._bindCheckboxVisuals(root);
+            this._bindAttackTotals(root);
+            this._bindSkillTotals(root);
+            this._bindSavingThrowTotals(root);
+        }
+    }
+    /**
+     * Callback actions which occur at the beginning of a drag start workflow.
+     * @param {DragEvent} event       The originating DragEvent
+     * @protected
+     */
+    async _onDragStart(event) {
+        // Extract the data you need
+        const dragData = null;
+        if (!dragData)
+            return;
+        // Set data transfer
+        event.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+    }
+    /**
+     * Callback actions which occur when a dragged element is over a drop target.
+     * @protected
+     */
+    _onDragOver(_event) { }
+    /**
+     * Callback actions which occur when a dragged element is dropped on a target.
+     * @param {DragEvent} event       The originating DragEvent
+     * @protected
+     */
+    async _onDrop(event) {
+        if (!this.actor.isOwner)
+            return;
+        const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event);
+        if (data) {
+            const dragData = data;
+            // Handle different data types
+            switch (dragData.type) {
+                case 'Item':
+                    void this._onDropItem(event, dragData);
+            }
+        }
+    }
+    /**
+     * Handle dropping of an item reference or item data onto an Actor Sheet
+     * @returns   The created or updated Item instances, or false if the drop was not permitted.
+     * @protected
+     */
+    async _onDropItem(event, data) {
+        if (!this.actor.isOwner)
+            return null;
+        const item = await Item.implementation.fromDropData(data);
+        if (item && CustomItem.isEquippableItem(item)) {
+            // Handle item sorting within the same Actor
+            if (this.actor.uuid === item.parent?.uuid) {
+                if (item.system.container !== null && item.system.container !== undefined) {
+                    const originalParent = this.actor.items.get(item.system.container);
+                    return ((await item.update({ system: { container: null } }).then(() => {
+                        originalParent.render(false);
+                        void this.render({ force: false });
+                    })) ?? null);
+                }
+            }
+            // Create the owned item
+            return (await this._onDropItemCreate(item, event))[0] ?? null;
+        }
+        return null;
+    }
+    /**
+     * Handle the final creation of dropped Item data on the Actor.
+     * @protected
+     */
+    async _onDropItemCreate(itemData, _event) {
+        const items = itemData instanceof Array ? itemData : [itemData];
+        // Create the owned items & contents as normal
+        const toCreate = await CustomItem.createWithContents(items);
+        Logger.info('Created item contents ' + toCreate.map((item) => item._id).join(', '));
+        return CustomItem.createDocuments(toCreate, { pack: this.actor.pack, parent: this.actor, keepId: true });
+    }
+    async _processSubmitData(event, form, submitData) {
+        const deathSuccesses = Array.from(form.querySelectorAll('[data-death-track="successes"]')).map((input) => input.checked);
+        const deathFailures = Array.from(form.querySelectorAll('[data-death-track="failures"]')).map((input) => input.checked);
+        foundry.utils.setProperty(submitData, 'system.props.deathTests.successes', deathSuccesses);
+        foundry.utils.setProperty(submitData, 'system.props.deathTests.failures', deathFailures);
+        const currentProps = this.actor.system.props ?? {};
+        const previousLevel = CharacterSheetV2._toSafeNumber(currentProps.level, 1);
+        const submittedLevel = CharacterSheetV2._toSafeNumber(foundry.utils.getProperty(submitData, 'system.props.level'), previousLevel);
+        const nextLevel = CharacterSheetV2._getFormNumberValue(form, 'system.props.level', submittedLevel);
+        foundry.utils.setProperty(submitData, 'system.props.level', nextLevel);
+        foundry.utils.setProperty(submitData, 'system.props.treinamento', calculateJujutsuTrainingBonus(nextLevel));
+        form.querySelectorAll('[data-attack-card]').forEach((card) => {
+            const attackKey = card.dataset.attackKey ?? '';
+            const attributeKey = card.dataset.attackAttribute ?? '';
+            const alwaysTrained = card.dataset.attackAlwaysTrained === 'true';
+            if (!attackKey || !attributeKey)
+                return;
+            const attributeValue = CharacterSheetV2._getFormNumberValue(form, `system.props.attributes.${attributeKey}.value`, 10);
+            const trained = alwaysTrained ? true : CharacterSheetV2._getFormCheckboxValue(form, `system.props.attackBonuses.${attackKey}.t`, false);
+            const others = CharacterSheetV2._getFormNumberValue(form, `system.props.attackBonuses.${attackKey}.others`, 0);
+            const bonus = trained ? calculateJujutsuTrainingBonus(nextLevel) : 0;
+            const total = calculateJujutsuAttackTotal({
+                attributeValue,
+                level: nextLevel,
+                trained,
+                others
+            });
+            foundry.utils.setProperty(submitData, `system.props.attackBonuses.${attackKey}.attribute`, attributeKey);
+            foundry.utils.setProperty(submitData, `system.props.attackBonuses.${attackKey}.bonus`, bonus);
+            foundry.utils.setProperty(submitData, `system.props.attackBonuses.${attackKey}.others`, others);
+            foundry.utils.setProperty(submitData, `system.props.attackBonuses.${attackKey}.t`, trained);
+            foundry.utils.setProperty(submitData, `system.props.attackBonuses.${attackKey}.total`, total);
+        });
+        form.querySelectorAll('[data-save-row]').forEach((row) => {
+            const saveKey = row.dataset.saveKey ?? '';
+            const attributeKey = row.dataset.saveAttribute ?? '';
+            if (!saveKey || !attributeKey)
+                return;
+            const attributeValue = CharacterSheetV2._getFormNumberValue(form, `system.props.attributes.${attributeKey}.value`, 10);
+            const others = CharacterSheetV2._getFormNumberValue(form, `system.props.savingThrows.${saveKey}.others`, 0);
+            const trained = CharacterSheetV2._getFormCheckboxValue(form, `system.props.savingThrows.${saveKey}.t`, false);
+            const master = CharacterSheetV2._getFormCheckboxValue(form, `system.props.savingThrows.${saveKey}.m`, false);
+            const total = calculateJujutsuSavingThrowTotal({
+                attributeValue,
+                level: nextLevel,
+                trained,
+                master,
+                others
+            });
+            foundry.utils.setProperty(submitData, `system.props.savingThrows.${saveKey}.bonus`, others);
+            foundry.utils.setProperty(submitData, `system.props.savingThrows.${saveKey}.others`, others);
+            foundry.utils.setProperty(submitData, `system.props.savingThrows.${saveKey}.t`, trained);
+            foundry.utils.setProperty(submitData, `system.props.savingThrows.${saveKey}.m`, master);
+            foundry.utils.setProperty(submitData, `system.props.savingThrows.${saveKey}.o`, false);
+            foundry.utils.setProperty(submitData, `system.props.savingThrows.${saveKey}.total`, total);
+        });
+        form.querySelectorAll('[data-skill-row]').forEach((row) => {
+            const skillKey = row.dataset.skillKey ?? '';
+            const attributeInput = form.querySelector(`[name='system.props.skills.${skillKey}.attribute']`);
+            const attributeKey = attributeInput?.value ?? row.dataset.skillAttribute ?? '';
+            if (!skillKey || !attributeKey)
+                return;
+            const nameInput = form.querySelector(`[name='system.props.skills.${skillKey}.name']`);
+            const attributeValue = CharacterSheetV2._getFormNumberValue(form, `system.props.attributes.${attributeKey}.value`, 10);
+            const others = CharacterSheetV2._getFormNumberValue(form, `system.props.skills.${skillKey}.others`, 0);
+            const trained = CharacterSheetV2._getFormCheckboxValue(form, `system.props.skills.${skillKey}.t`, false);
+            const master = CharacterSheetV2._getFormCheckboxValue(form, `system.props.skills.${skillKey}.m`, false);
+            const total = calculateJujutsuSkillTotal({
+                attributeValue,
+                level: nextLevel,
+                trained,
+                master,
+                others
+            });
+            if (nameInput) {
+                foundry.utils.setProperty(submitData, `system.props.skills.${skillKey}.name`, nameInput.value ?? '');
+            }
+            if (attributeInput) {
+                foundry.utils.setProperty(submitData, `system.props.skills.${skillKey}.attribute`, attributeInput.value ?? row.dataset.skillAttribute ?? '');
+            }
+            foundry.utils.setProperty(submitData, `system.props.skills.${skillKey}.others`, others);
+            foundry.utils.setProperty(submitData, `system.props.skills.${skillKey}.t`, trained);
+            foundry.utils.setProperty(submitData, `system.props.skills.${skillKey}.m`, master);
+            foundry.utils.setProperty(submitData, `system.props.skills.${skillKey}.total`, total);
+        });
+        const previousRobustez = CharacterSheetV2._toBoolean(currentProps.extra?.robustez);
+        const previousVigorInf = CharacterSheetV2._toBoolean(currentProps.extra?.vigorInf);
+        const submittedRobustez = CharacterSheetV2._toBoolean(foundry.utils.getProperty(submitData, 'system.props.extra.robustez'));
+        const submittedVigorInf = CharacterSheetV2._toBoolean(foundry.utils.getProperty(submitData, 'system.props.extra.vigorInf'));
+        const nextRobustez = CharacterSheetV2._getFormCheckboxValue(form, 'system.props.extra.robustez', submittedRobustez);
+        const nextVigorInf = CharacterSheetV2._getFormCheckboxValue(form, 'system.props.extra.vigorInf', submittedVigorInf);
+        foundry.utils.setProperty(submitData, 'system.props.extra.robustez', nextRobustez);
+        foundry.utils.setProperty(submitData, 'system.props.extra.vigorInf', nextVigorInf);
+        const submittedVidaMax = CharacterSheetV2._toSafeNumber(
+            foundry.utils.getProperty(submitData, 'system.props.resources.vida.maximos'),
+            CharacterSheetV2._toSafeNumber(currentProps.resources?.vida?.maximos)
+        );
+        const submittedEnergiaMax = CharacterSheetV2._toSafeNumber(
+            foundry.utils.getProperty(submitData, 'system.props.resources.energia.maximos'),
+            CharacterSheetV2._toSafeNumber(currentProps.resources?.energia?.maximos)
+        );
+        const currentVidaMax = CharacterSheetV2._getFormNumberValue(form, 'system.props.resources.vida.maximos', submittedVidaMax);
+        const currentEnergiaMax = CharacterSheetV2._getFormNumberValue(form, 'system.props.resources.energia.maximos', submittedEnergiaMax);
+        foundry.utils.setProperty(submitData, 'system.props.resources.vida.maximos', CharacterSheetV2._applyLevelScaledResourceBonus({
+            currentMax: currentVidaMax,
+            previousLevel,
+            nextLevel,
+            previousEnabled: previousRobustez,
+            nextEnabled: nextRobustez
+        }));
+        foundry.utils.setProperty(submitData, 'system.props.resources.energia.maximos', CharacterSheetV2._applyLevelScaledResourceBonus({
+            currentMax: currentEnergiaMax,
+            previousLevel,
+            nextLevel,
+            previousEnabled: previousVigorInf,
+            nextEnabled: nextVigorInf
+        }));
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && event.type === 'change') {
+            return this.actor.templateSystem.handleSheetSubmit();
+        }
+        else {
+            this.actor.templateSystem.isModified = false;
+            return super._processSubmitData(event, form, submitData);
+        }
+    }
+    async close(options) {
+        if (options?.renderContext !== 'deleteActor')
+            await this.submit();
+        return super.close(options);
+    }
+}

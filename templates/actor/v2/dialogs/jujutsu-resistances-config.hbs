@@ -1,0 +1,72 @@
+<section class='jj-rd-config jj-characteristics-config jj-resistances-config'>
+    <header class='jj-rd-config-header'>
+        <h2>Resistências</h2>
+        <p>Selecione as resistências ativas. As resistências base usam os mesmos tipos de dano de RDs e indicam que a personagem recebe apenas 50% desse dano.</p>
+    </header>
+
+    <div class='jj-rd-config-list jj-resistances-config-list'>
+        {{#if resistanceDefinitions.length}}
+            {{#each resistanceDefinitions as |resistance|}}
+                <div class='jj-rd-config-row jj-resistances-config-row {{#if resistance.enabled}}is-enabled{{/if}}' data-resistance-row>
+                    <label class='jj-rd-config-main' for='jj-resistance-enabled-{{resistance.id}}'>
+                        <input
+                            id='jj-resistance-enabled-{{resistance.id}}'
+                            class='jj-rd-config-toggle'
+                            data-resistance-enabled
+                            type='checkbox'
+                            name='{{resistance.selectionName}}'
+                            {{checked resistance.selected}}
+                        />
+                        <span class='jj-rd-config-code'>{{resistance.code}}</span>
+                        <span class='jj-rd-config-text'>
+                            <strong>{{resistance.label}}</strong>
+                            <span>{{resistance.summary}}</span>
+                        </span>
+                    </label>
+                </div>
+            {{/each}}
+        {{else}}
+            <p class='jj-rd-empty'>Nenhuma resistência custom criada ainda.</p>
+        {{/if}}
+    </div>
+
+    <section class='jj-characteristics-custom-section'>
+        <div class='jj-rd-heading'>
+            <h3>Resistências Custom</h3>
+        </div>
+        <div class='jj-characteristics-custom-list' data-resistances-custom-list data-next-index='{{customResistances.length}}'>
+            {{#each customResistances as |resistance idx|}}
+                <div class='jj-characteristics-custom-row' data-custom-resistance-row>
+                    <input type='hidden' name='custom.{{idx}}.id' value='{{resistance.id}}' />
+                    <input type='hidden' name='custom.{{idx}}.origem' value='custom' />
+                    <div class='jj-characteristics-custom-grid'>
+                        <label class='jj-characteristics-custom-field'>
+                            <span>Nome</span>
+                            <input name='custom.{{idx}}.label' type='text' value='{{resistance.label}}' />
+                        </label>
+                        <label class='jj-characteristics-custom-field'>
+                            <span>Sigla</span>
+                            <input name='custom.{{idx}}.code' type='text' value='{{resistance.code}}' maxlength='6' placeholder='RES' />
+                        </label>
+                        <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+                            <span>Descrição</span>
+                            <textarea name='custom.{{idx}}.description' rows='2'>{{resistance.description}}</textarea>
+                        </label>
+                        <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+                            <span>Observações</span>
+                            <textarea name='custom.{{idx}}.observations' rows='2'>{{resistance.observations}}</textarea>
+                        </label>
+                    </div>
+                    <div class='jj-characteristics-custom-actions'>
+                        <button class='jj-action-button jj-action-button--danger' type='button' data-remove-custom-resistance>Remover custom</button>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+        <div class='jj-characteristics-custom-toolbar'>
+            <button class='jj-action-button' type='button' data-add-custom-resistance>Adicionar Resistência Custom</button>
+            <button class='jj-action-button jj-action-button--primary' type='button' data-save-resistances>Salvar e adicionar à ficha</button>
+        </div>
+        <p class='jj-characteristics-custom-note'>As resistências custom são salvas na configuração própria de Resistências e já entram ativas ao serem adicionadas.</p>
+    </section>
+</section>

@@ -1,0 +1,71 @@
+<form class='jj-item-config-form jj-inventory-dialog-form'>
+    <div class='jj-item-config-grid jj-inventory-config-grid'>
+        <div class='jj-item-image-picker'>
+            <img
+                class='jj-item-image-picker__preview'
+                src='{{entry.image}}'
+                alt='Imagem do Item'
+                data-item-image-preview
+            />
+            <input type='hidden' name='image' value='{{entry.image}}' data-item-image-input />
+            <button type='button' class='jj-action-button jj-action-button--secondary' data-pick-item-image>
+                Escolher Imagem
+            </button>
+        </div>
+
+        <label class='jj-characteristics-custom-field'>
+            <span>Nome do Item</span>
+            <input type='text' name='name' value='{{entry.name}}' />
+        </label>
+
+        <label class='jj-characteristics-custom-field'>
+            <span>Quantidade</span>
+            <input type='number' name='quantity' min='0' step='1' value='{{entry.quantity}}' />
+        </label>
+
+        <label class='jj-characteristics-custom-field'>
+            <span>Peso</span>
+            <input type='number' name='weight' min='0' step='0.1' value='{{entry.weight}}' />
+        </label>
+
+        <label class='jj-characteristics-custom-field'>
+            <span>Preço</span>
+            <input type='number' name='price' min='0' step='0.1' value='{{entry.price}}' />
+        </label>
+
+        <label class='jj-inventory-config-checkbox'>
+            <input type='checkbox' name='hasRoll' {{checked entry.hasRoll}} />
+            <span>Terá rolagem?</span>
+        </label>
+
+        <div class='jj-inventory-roll-grid' data-inventory-roll-field hidden>
+            <label class='jj-characteristics-custom-field'>
+                <span>Quantidade de dados</span>
+                <input type='number' name='rollCount' min='1' step='1' value='{{entry.rollCount}}' />
+            </label>
+
+            <label class='jj-characteristics-custom-field'>
+                <span>Tipo de dado da rolagem</span>
+                <select name='rollDie'>
+                    {{#each rollOptions as |option|}}
+                        <option value='{{option.value}}' {{#if option.selected}}selected{{/if}}>{{option.label}}</option>
+                    {{/each}}
+                </select>
+            </label>
+
+            <label class='jj-characteristics-custom-field'>
+                <span>Bônus</span>
+                <input type='number' name='rollBonus' step='1' value='{{entry.rollBonus}}' />
+            </label>
+
+            <label class='jj-characteristics-custom-field'>
+                <span>Atributo usado</span>
+                <select name='rollAttribute'>
+                    {{#each attributeOptions as |option|}}
+                        <option value='{{option.value}}' {{#if option.selected}}selected{{/if}}>{{option.label}}</option>
+                    {{/each}}
+                </select>
+            </label>
+        </div>
+    </div>
+</form>

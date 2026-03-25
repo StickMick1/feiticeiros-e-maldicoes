@@ -1,0 +1,123 @@
+<section class='jj-rd-config jj-characteristics-config'>
+    <header class='jj-rd-config-header'>
+        <h2>Características</h2>
+        <p>Selecione características pré-cadastradas e gerencie características custom da ficha.</p>
+    </header>
+
+    <div class='jj-characteristics-config-toolbar'>
+        <label class='jj-characteristics-filter'>
+            <span>Pesquisar</span>
+            <input type='search' data-characteristics-search placeholder='Buscar por nome, categoria ou efeito' />
+        </label>
+        <label class='jj-characteristics-filter'>
+            <span>Tipo</span>
+            <select data-characteristics-type-filter>
+                <option value=''>Todos</option>
+                {{#each characteristicTypeOptions as |type|}}
+                    <option value='{{type}}'>{{type}}</option>
+                {{/each}}
+            </select>
+        </label>
+        <label class='jj-characteristics-filter'>
+            <span>Categoria</span>
+            <select data-characteristics-category-filter>
+                <option value=''>Todas</option>
+                {{#each characteristicCategoryOptions as |category|}}
+                    <option value='{{category}}'>{{category}}</option>
+                {{/each}}
+            </select>
+        </label>
+    </div>
+
+    <div class='jj-characteristics-filter-status' data-characteristics-filter-count></div>
+
+    <div class='jj-rd-config-list jj-characteristics-config-list'>
+        {{#each characteristicDefinitions as |characteristic|}}
+            <div
+                class='jj-rd-config-row jj-characteristics-config-row {{#if characteristic.selected}}is-enabled{{/if}} {{#if characteristic.isCustom}}is-custom{{/if}}'
+                data-characteristic-row
+                data-name='{{characteristic.nome}}'
+                data-type='{{characteristic.tipo}}'
+                data-category='{{characteristic.categoria}}'
+                data-search-text='{{characteristic.searchText}}'
+            >
+                <label class='jj-rd-config-main' for='jj-characteristic-selected-{{characteristic.id}}'>
+                    <input
+                        id='jj-characteristic-selected-{{characteristic.id}}'
+                        class='jj-rd-config-toggle'
+                        data-characteristic-selected
+                        type='checkbox'
+                        name='{{characteristic.selectionName}}'
+                        {{checked characteristic.selected}}
+                    />
+                    <span class='jj-rd-config-code'>{{characteristic.typeShort}}</span>
+                    <span class='jj-rd-config-text'>
+                        <strong>{{characteristic.nome}}</strong>
+                        <span>{{characteristic.meta}}</span>
+                    </span>
+                </label>
+
+                <div class='jj-characteristics-config-summary'>
+                    <p>{{characteristic.efeito_resumido}}</p>
+                </div>
+            </div>
+        {{/each}}
+    </div>
+
+    <section class='jj-characteristics-custom-section'>
+        <div class='jj-rd-heading'>
+            <h3>Características Custom</h3>
+        </div>
+        <div class='jj-characteristics-custom-list' data-characteristics-custom-list data-next-index='{{customCharacteristics.length}}'>
+            {{#each customCharacteristics as |characteristic idx|}}
+                <div class='jj-characteristics-custom-row' data-custom-characteristic-row>
+                    <input type='hidden' name='custom.{{idx}}.id' value='{{characteristic.id}}' />
+                    <input type='hidden' name='custom.{{idx}}.origem' value='custom' />
+                    <div class='jj-characteristics-custom-grid'>
+                        <label class='jj-characteristics-custom-field'>
+                            <span>Nome</span>
+                            <input name='custom.{{idx}}.nome' type='text' value='{{characteristic.nome}}' />
+                        </label>
+                        <label class='jj-characteristics-custom-field'>
+                            <span>Tipo</span>
+                            <input name='custom.{{idx}}.tipo' type='text' value='{{characteristic.tipo}}' placeholder='custom' />
+                        </label>
+                        <label class='jj-characteristics-custom-field'>
+                            <span>Categoria</span>
+                            <input name='custom.{{idx}}.categoria' type='text' value='{{characteristic.categoria}}' />
+                        </label>
+                        <label class='jj-characteristics-custom-field'>
+                            <span>Modifica</span>
+                            <input name='custom.{{idx}}.modifica' type='text' value='{{characteristic.modificaText}}' placeholder='atributo1, atributo2' />
+                        </label>
+                        <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+                            <span>Efeito Resumido</span>
+                            <textarea name='custom.{{idx}}.efeito_resumido' rows='2'>{{characteristic.efeito_resumido}}</textarea>
+                        </label>
+                        <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+                            <span>Fórmula Sugerida</span>
+                            <textarea
+                                name='custom.{{idx}}.formula_sugerida'
+                                rows='2'
+                                placeholder='Campo descritivo para registrar a lógica da característica. Ex.: if (nivel >= 6) pvMax += 2; ou periciaEscolhida += 2'
+                            >{{characteristic.formula_sugerida}}</textarea>
+                            <small class='jj-characteristics-custom-help'>Campo descritivo. Ele não executa a fórmula automaticamente; serve para documentar a lógica da característica para uso futuro.</small>
+                        </label>
+                        <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+                            <span>Observações</span>
+                            <textarea name='custom.{{idx}}.observacoes' rows='2'>{{characteristic.observacoes}}</textarea>
+                        </label>
+                    </div>
+                    <div class='jj-characteristics-custom-actions'>
+                        <button class='jj-action-button jj-action-button--danger' type='button' data-remove-custom-characteristic>Remover custom</button>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+        <div class='jj-characteristics-custom-toolbar'>
+            <button class='jj-action-button' type='button' data-add-custom-characteristic>Adicionar característica custom</button>
+            <button class='jj-action-button jj-action-button--primary' type='button' data-save-characteristics>Salvar e adicionar à ficha</button>
+        </div>
+        <p class='jj-characteristics-custom-note'>As características custom são salvas junto com as pré-cadastradas ao usar esse botão.</p>
+    </section>
+</section>

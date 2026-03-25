@@ -1,0 +1,1126 @@
+<div class='{{cssClass}} custom-system-entity jj-sheet'>
+    <header class='jj-header jj-span-2'>
+        <div class='jj-hero'>
+            <div class='jj-hero-brand'>
+                <div class='jj-hero-title'>
+                    <div class='jj-kicker'>FEITICEIROS & MALDIÇÕES</div>
+                    <input class='jj-hero-name' name='name' type='text' value='{{document.name}}' />
+                </div>
+                <div class='jj-hero-tags'>
+                    <label><span>Jogador</span><input name='system.props.jogador' type='text' value='{{jujutsu.props.jogador}}' /></label>
+                    <label><span>Origem</span><input name='system.props.origem' type='text' value='{{jujutsu.props.origem}}' /></label>
+                    <label><span>Espec.</span><input name='system.props.especializacao' type='text' value='{{jujutsu.props.especializacao}}' /></label>
+                    <label><span>Tecnica</span><input name='system.props.tecnica' type='text' value='{{jujutsu.props.tecnica}}' /></label>
+                </div>
+            </div>
+            <div class='jj-hero-meta'>
+                <div class='jj-hero-badges jj-hero-badges--text'>
+                    <label class='jj-badge'>
+                        <span>Campanha</span>
+                        <input name='system.props.campanha' type='text' value='{{jujutsu.props.campanha}}' />
+                    </label>
+                    <label class='jj-badge'>
+                        <span>Grau</span>
+                        <input name='system.props.grau' type='text' value='{{jujutsu.props.grau}}' />
+                    </label>
+                    <label class='jj-badge'>
+                        <span>Experiencia</span>
+                        <input name='system.props.experiencia' type='text' value='{{jujutsu.props.experiencia}}' />
+                    </label>
+                </div>
+                <div class='jj-hero-badges jj-hero-badges--number'>
+                    <label class='jj-badge jj-badge--number'>
+                        <span>Nivel</span>
+                        <input name='system.props.level' type='number' data-dtype='Number' value='{{jujutsu.props.level}}' />
+                    </label>
+                    <label class='jj-badge jj-badge--number'>
+                        <span>Treina.</span>
+                        <input name='system.props.treinamento' type='number' data-dtype='Number' value='{{jujutsu.computed.trainingBonus}}' data-training-bonus-input readonly />
+                    </label>
+                </div>
+            </div>
+        </div>
+        <nav class='jj-page-nav' role='tablist' aria-label='Navegacao da ficha'>
+            <button class='jj-tab is-active' type='button' role='tab' data-tab-target='resumo' aria-selected='true'>Resumo</button>
+            <button class='jj-tab' type='button' role='tab' data-tab-target='pericias' aria-selected='false'>Pericias</button>
+            <button class='jj-tab' type='button' role='tab' data-tab-target='habilidades' aria-selected='false'>Habilidades</button>
+            <button class='jj-tab' type='button' role='tab' data-tab-target='inventario' aria-selected='false'>Inventário</button>
+            <button class='jj-tab' type='button' role='tab' data-tab-target='registro' aria-selected='false'>Registro</button>
+        </nav>
+    </header>
+
+    <div class='jj-layout jj-span-2 is-resumo'>
+        <aside class='jj-sidebar'>
+                    <section class='jj-panel jj-panel--sidebar jj-character-panel' data-tab-block='resumo'>
+                        <h2>{{document.name}}</h2>
+                <div class='jj-character-card'>
+                    <div class='jj-portrait-shell'>
+                        <div class='jj-portrait-frame'>
+                            <img class='jj-portrait' src='{{document.img}}' data-action='editImage' data-field='img' title='{{document.name}}' />
+                        </div>
+                        <div class='jj-portrait-badge'>
+                            <span>{{jujutsu.props.level}}</span>
+                        </div>
+                    </div>
+                    <div class='jj-lozenges'>
+                        <div class='jj-lozenge'>
+                            <div class='jj-lozenge-value'>{{jujutsu.computed.initiativeTotal}}</div>
+                            <div class='jj-lozenge-label'>Iniciativa</div>
+                        </div>
+                        <div class='jj-lozenge'>
+                            <div class='jj-lozenge-value'>{{jujutsu.props.movement}}</div>
+                            <div class='jj-lozenge-label'>Desloc.</div>
+                        </div>
+                        <div class='jj-lozenge'>
+                            <div class='jj-lozenge-value' data-training-bonus-display>+{{jujutsu.computed.trainingBonus}}</div>
+                            <div class='jj-lozenge-label'>Treino</div>
+                        </div>
+                    </div>
+                </div>
+                <div class='jj-resource jj-resource--vida'>
+                    <div class='jj-resource-top'>
+                        <strong>Pontos de Vida</strong>
+                    </div>
+                    <div class='jj-resource-bar'>
+                        <span class='jj-resource-fill' style='width: {{jujutsu.computed.resources.vida.percent}}%;'></span>
+                        <span class='jj-resource-extra' style='left: {{jujutsu.computed.resources.vida.percent}}%; width: {{jujutsu.computed.resources.vida.extraPercent}}%;'></span>
+                        {{#if jujutsu.computed.resources.vida.extra}}
+                            <span class='jj-resource-extra-label'>+{{jujutsu.computed.resources.vida.extra}}</span>
+                        {{/if}}
+                        <div class='jj-resource-values'>
+                            <div class='jj-resource-values-inner'>
+                                <input name='system.props.resources.vida.atuais' type='number' data-dtype='Number' value='{{jujutsu.props.resources.vida.atuais}}' />
+                                <span>/</span>
+                                <input name='system.props.resources.vida.maximos' type='number' data-dtype='Number' value='{{jujutsu.props.resources.vida.maximos}}' />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class='jj-resource jj-resource--energia'>
+                    <div class='jj-resource-top'>
+                        <strong>Pontos de Energia</strong>
+                    </div>
+                    <div class='jj-resource-bar'>
+                        <span class='jj-resource-fill' style='width: {{jujutsu.computed.resources.energia.percent}}%;'></span>
+                        <span class='jj-resource-extra' style='left: {{jujutsu.computed.resources.energia.percent}}%; width: {{jujutsu.computed.resources.energia.extraPercent}}%;'></span>
+                        {{#if jujutsu.computed.resources.energia.extra}}
+                            <span class='jj-resource-extra-label'>+{{jujutsu.computed.resources.energia.extra}}</span>
+                        {{/if}}
+                        <div class='jj-resource-values'>
+                            <div class='jj-resource-values-inner'>
+                                <input name='system.props.resources.energia.atuais' type='number' data-dtype='Number' value='{{jujutsu.props.resources.energia.atuais}}' />
+                                <span>/</span>
+                                <input name='system.props.resources.energia.maximos' type='number' data-dtype='Number' value='{{jujutsu.props.resources.energia.maximos}}' />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class='jj-resource jj-resource--integridade'>
+                    <div class='jj-resource-top'>
+                        <strong>Integridade</strong>
+                    </div>
+                    <div class='jj-resource-bar'>
+                        <span class='jj-resource-fill' style='width: {{jujutsu.computed.resources.integridade.percent}}%;'></span>
+                        <span class='jj-resource-extra' style='left: {{jujutsu.computed.resources.integridade.percent}}%; width: {{jujutsu.computed.resources.integridade.extraPercent}}%;'></span>
+                        {{#if jujutsu.computed.resources.integridade.extra}}
+                            <span class='jj-resource-extra-label'>+{{jujutsu.computed.resources.integridade.extra}}</span>
+                        {{/if}}
+                        <div class='jj-resource-values'>
+                            <div class='jj-resource-values-inner'>
+                                <input name='system.props.resources.integridade.atual' type='number' data-dtype='Number' value='{{jujutsu.props.resources.integridade.atual}}' />
+                                <span>/</span>
+                                <input name='system.props.resources.integridade.maxima' type='number' data-dtype='Number' value='{{jujutsu.props.resources.integridade.maxima}}' />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type='hidden' name='system.props.resources.vida.perdidos' value='{{jujutsu.computed.resources.vida.lost}}' />
+                <input type='hidden' name='system.props.resources.energia.perdidos' value='{{jujutsu.computed.resources.energia.lost}}' />
+                <input type='hidden' name='system.props.resources.integridade.perdidos' value='{{jujutsu.computed.resources.integridade.lost}}' />
+                <div class='jj-character-status'>
+                    <h3>Condição</h3>
+                    <div class='jj-character-condition-list'>
+                        <label class='jj-character-condition jj-checkbox {{#if jujutsu.props.extra.robustez}}is-checked{{/if}}'>
+                            <input class='jj-checkbox-input' name='system.props.extra.robustez' type='checkbox' {{checked jujutsu.props.extra.robustez}} />
+                            <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                            <span class='jj-checkbox-label'>Robustez</span>
+                        </label>
+                        <label class='jj-character-condition jj-checkbox {{#if jujutsu.props.extra.desExa}}is-checked{{/if}}' data-tooltip='Desenvolvimento Exagerado de Feto Amaldiçoado' aria-label='Desenvolvimento Exagerado de Feto Amaldiçoado'>
+                            <input class='jj-checkbox-input' name='system.props.extra.desExa' type='checkbox' {{checked jujutsu.props.extra.desExa}} />
+                            <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                            <span class='jj-checkbox-label'>Des. Exa.</span>
+                        </label>
+                        <label class='jj-character-condition jj-checkbox {{#if jujutsu.props.extra.vigorInf}}is-checked{{/if}}' data-tooltip='Vigor Infindável de Restringido' aria-label='Vigor Infindável de Restringido'>
+                            <input class='jj-checkbox-input' name='system.props.extra.vigorInf' type='checkbox' {{checked jujutsu.props.extra.vigorInf}} />
+                            <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                            <span class='jj-checkbox-label'>Vigor INF</span>
+                        </label>
+                        <label class='jj-character-condition jj-checkbox {{#if jujutsu.props.extra.kamo}}is-checked{{/if}}'>
+                            <input class='jj-checkbox-input' name='system.props.extra.kamo' type='checkbox' {{checked jujutsu.props.extra.kamo}} />
+                            <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                            <span class='jj-checkbox-label'>Kamo</span>
+                        </label>
+                    </div>
+                    <div class='jj-character-status-fields'>
+                        <label class='jj-character-status-field'>
+                            <span>Outros</span>
+                            <input name='system.props.extra.outros' type='number' data-dtype='Number' value='{{jujutsu.props.extra.outros}}' />
+                        </label>
+                    </div>
+                </div>
+            </section>
+            <section class='jj-panel jj-saving-throws-panel' data-tab-block='resumo'>
+                <h2>Testes de Resistência</h2>
+                <table class='jj-table jj-table--saving-throws'>
+                    <colgroup>
+                        <col class='jj-save-name-col' />
+                        <col class='jj-save-bonus-col' />
+                        <col class='jj-save-check-col' />
+                        <col class='jj-save-check-col' />
+                        <col class='jj-save-total-col' />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Teste</th>
+                            <th>Outros</th>
+                            <th>T</th>
+                            <th>M</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each jujutsu.savingThrows as |save|}}
+                            <tr data-save-row data-save-key='{{save.key}}' data-save-attribute='{{save.attribute}}' data-save-label='{{save.label}}'>
+                                <td class='jj-save-name-cell'>
+                                    <div class='jj-save-name'>
+                                        <button
+                                            class='jj-save-roll-button'
+                                            type='button'
+                                            data-roll-saving-throw
+                                            data-save-key='{{save.key}}'
+                                            data-tooltip='Rolar {{save.label}}'
+                                            aria-label='Rolar {{save.label}}'
+                                        >
+                                            <i class='fas fa-dice-d20'></i>
+                                        </button>
+                                        <span>{{save.label}}</span>
+                                    </div>
+                                </td>
+                                <td class='jj-save-others-cell'><input name='system.props.savingThrows.{{save.key}}.others' type='number' data-dtype='Number' value='{{save.others}}' data-save-others /></td>
+                                <td class='jj-checkbox-cell'>
+                                    <label class='jj-checkbox jj-checkbox--compact {{#if save.t}}is-checked{{/if}}'>
+                                        <input class='jj-checkbox-input' name='system.props.savingThrows.{{save.key}}.t' type='checkbox' data-save-trained {{checked save.t}} />
+                                        <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                                    </label>
+                                </td>
+                                <td class='jj-checkbox-cell'>
+                                    <label class='jj-checkbox jj-checkbox--compact {{#if save.m}}is-checked{{/if}}'>
+                                        <input class='jj-checkbox-input' name='system.props.savingThrows.{{save.key}}.m' type='checkbox' data-save-master {{checked save.m}} />
+                                        <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                                    </label>
+                                </td>
+                                <td class='jj-save-total-cell'><input type='number' value='{{save.total}}' data-save-total readonly /></td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </section>
+
+        </aside>
+
+        <section class='jj-main-shell'>
+            <section class='jj-panel jj-attributes-panel' data-tab-block='resumo'>
+                <h2>Atributos</h2>
+                <div class='jj-abilities'>
+                    {{#each jujutsu.attributes as |attribute|}}
+                                <div class='jj-ability-card' data-ability-card>
+                                    <h3>{{attribute.label}}</h3>
+                                    <input class='jj-ability-score' aria-label='Valor' name='system.props.attributes.{{attribute.key}}.value' type='number' data-dtype='Number' value='{{attribute.value}}' data-ability-value />
+                                    <input class='jj-ability-mod' aria-label='Modificador' type='text' value='{{attribute.signedMod}}' readonly tabindex='-1' data-ability-mod-display />
+                                    <input name='system.props.attributes.{{attribute.key}}.mod' type='hidden' data-dtype='Number' value='{{attribute.mod}}' data-ability-mod-hidden />
+                                </div>
+                    {{/each}}
+                </div>
+            </section>
+
+                    <div class='jj-main-columns'>
+                        <div class='jj-main-primary'>
+                            <section class='jj-panel' data-tab-block='resumo'>
+                                <h2>Combate</h2>
+                                <div class='jj-combat-summary-grid'>
+                                    {{#each jujutsu.attackBonuses as |attack|}}
+                                        <div
+                                            class='jj-card jj-derived-card jj-attack-card'
+                                            data-attack-card
+                                            data-attack-key='{{attack.key}}'
+                                            data-attack-attribute='{{attack.attribute}}'
+                                            data-attack-label='{{attack.label}}'
+                                            data-attack-always-trained='{{#if attack.alwaysTrained}}true{{else}}false{{/if}}'
+                                        >
+                                            <h3 class='jj-attack-card-heading'>
+                                                <button
+                                                    class='jj-attack-roll-button'
+                                                    type='button'
+                                                    data-roll-attack
+                                                    data-attack-key='{{attack.key}}'
+                                                    data-tooltip='Rolar {{attack.label}}'
+                                                    aria-label='Rolar {{attack.label}}'
+                                                >
+                                                    <i class='fas fa-dice-d20'></i>
+                                                </button>
+                                                <span>{{attack.label}}</span>
+                                            </h3>
+                                            <div class='jj-derived-body'>
+                                                <div class='jj-derived-total'>
+                                                    <span>Total</span>
+                                                    <input type='number' value='{{attack.total}}' data-attack-total readonly />
+                                                </div>
+                                                <div class='jj-derived-fields'>
+                                                    <label class='jj-derived-row'>
+                                                        <span>Treino</span>
+                                                        <input type='number' value='{{attack.proficiencyBonus}}' data-attack-training-bonus readonly />
+                                                    </label>
+                                                    <div class='jj-derived-row jj-derived-row--checkbox'>
+                                                        <span>Treinado</span>
+                                                        <label class='jj-checkbox jj-checkbox--compact {{#if attack.t}}is-checked{{/if}} {{#if attack.alwaysTrained}}is-disabled{{/if}}' {{#if attack.alwaysTrained}}data-tooltip='Sempre treinado no sistema base' aria-label='Sempre treinado no sistema base'{{/if}}>
+                                                            <input class='jj-checkbox-input' name='system.props.attackBonuses.{{attack.key}}.t' type='checkbox' data-attack-trained {{checked attack.t}} />
+                                                            <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                                                        </label>
+                                                    </div>
+                                                    <label class='jj-derived-row'>
+                                                        <span>Atributo</span>
+                                                        <input type='text' value='{{attack.attributeDisplay}}' readonly />
+                                                    </label>
+                                                    <label class='jj-derived-row'>
+                                                        <span>Mod. Atr.</span>
+                                                        <input type='number' value='{{attack.attributeMod}}' data-attack-attribute-mod readonly />
+                                                    </label>
+                                                    <label class='jj-derived-row'>
+                                                        <span>Nível/2</span>
+                                                        <input type='number' value='{{attack.levelHalf}}' data-attack-level-half readonly />
+                                                    </label>
+                                                    <label class='jj-derived-row'>
+                                                        <span>Outros</span>
+                                                        <input name='system.props.attackBonuses.{{attack.key}}.others' type='number' data-dtype='Number' value='{{attack.others}}' data-attack-others />
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {{/each}}
+                                </div>
+                            </section>
+                            <section class='jj-panel' data-tab-block='resumo'>
+                                <h2>Informações</h2>
+                                <div class='jj-card jj-card--rd'>
+                                    <div class='jj-rd-block {{#unless jujutsu.hasActiveRds}}is-empty{{/unless}}'>
+                                        <div class='jj-rd-heading'>
+                                            {{#if editable}}
+                                                <button
+                                                    class='jj-rd-config-button'
+                                                    type='button'
+                                                    data-action='configureJujutsuRds'
+                                                    data-tooltip='Configurar Redução de Danos (RDs)'
+                                                    aria-label='Configurar Redução de Danos (RDs)'
+                                                >
+                                                    <i class='fas fa-cog'></i>
+                                                </button>
+                                            {{/if}}
+                                            <h3>Redução de Danos (RDs)</h3>
+                                        </div>
+                                        {{#if jujutsu.hasActiveRds}}
+                                            <ul class='jj-rd-pills'>
+                                                {{#each jujutsu.activeRdValues as |rd|}}
+                                                    <li class='jj-rd-pill' data-tooltip='{{rd.tooltip}}' aria-label='{{rd.tooltip}}'>{{rd.code}}</li>
+                                                {{/each}}
+                                            </ul>
+                                        {{else}}
+                                            <p class='jj-rd-empty'>Nenhuma redução configurada.</p>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                                <div class='jj-card jj-card--rd'>
+                                    <div class='jj-rd-block jj-resistances-block {{#unless jujutsu.hasActiveResistances}}is-empty{{/unless}}'>
+                                        <div class='jj-rd-heading'>
+                                            {{#if editable}}
+                                                <button
+                                                    class='jj-rd-config-button'
+                                                    type='button'
+                                                    data-action='configureJujutsuResistances'
+                                                    data-tooltip='Configurar Resistências'
+                                                    aria-label='Configurar Resistências'
+                                                >
+                                                    <i class='fas fa-cog'></i>
+                                                </button>
+                                            {{/if}}
+                                            <h3>Resistências</h3>
+                                        </div>
+                                        {{#if jujutsu.hasActiveResistances}}
+                                            <ul class='jj-rd-pills jj-resistances-pills'>
+                                                {{#each jujutsu.activeResistanceDefinitions as |resistance|}}
+                                                    <li class='jj-rd-pill jj-resistance-pill' data-tooltip='{{resistance.tooltip}}' aria-label='{{resistance.tooltip}}'>{{resistance.label}}</li>
+                                                {{/each}}
+                                            </ul>
+                                        {{else}}
+                                            <p class='jj-rd-empty'>Nenhuma resistência configurada.</p>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                                <div class='jj-card jj-card--rd'>
+                                    <div class='jj-rd-block jj-trainings-block {{#unless jujutsu.hasActiveTrainings}}is-empty{{/unless}}'>
+                                        <div class='jj-rd-heading'>
+                                            {{#if editable}}
+                                                <button
+                                                    class='jj-rd-config-button'
+                                                    type='button'
+                                                    data-action='configureJujutsuTrainings'
+                                                    data-tooltip='Configurar Treinamentos'
+                                                    aria-label='Configurar Treinamentos'
+                                                >
+                                                    <i class='fas fa-cog'></i>
+                                                </button>
+                                            {{/if}}
+                                            <h3>Treinamentos</h3>
+                                        </div>
+                                        {{#if jujutsu.hasActiveTrainings}}
+                                            <ul class='jj-rd-pills jj-trainings-pills'>
+                                                {{#each jujutsu.activeTrainingDefinitions as |training|}}
+                                                    <li class='jj-rd-pill jj-training-pill' data-tooltip='{{training.tooltip}}' aria-label='{{training.tooltip}}'>{{training.label}}</li>
+                                                {{/each}}
+                                            </ul>
+                                        {{else}}
+                                            <p class='jj-rd-empty'>Nenhum treinamento configurado.</p>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                                <div class='jj-card jj-card--rd'>
+                                    <div class='jj-rd-block jj-characteristics-block {{#unless jujutsu.hasActiveCharacteristics}}is-empty{{/unless}}'>
+                                        <div class='jj-rd-heading'>
+                                            {{#if editable}}
+                                                <button
+                                                    class='jj-rd-config-button'
+                                                    type='button'
+                                                    data-action='configureJujutsuCharacteristics'
+                                                    data-tooltip='Configurar Características'
+                                                    aria-label='Configurar Características'
+                                                >
+                                                    <i class='fas fa-cog'></i>
+                                                </button>
+                                            {{/if}}
+                                            <h3>Características</h3>
+                                        </div>
+                                        {{#if jujutsu.hasActiveCharacteristics}}
+                                            <ul class='jj-rd-pills jj-characteristics-pills'>
+                                                {{#each jujutsu.activeCharacteristics as |characteristic|}}
+                                                    <li class='jj-rd-pill jj-characteristic-pill {{#if characteristic.isCustom}}is-custom{{/if}}' data-tooltip='{{characteristic.tooltip}}' aria-label='{{characteristic.tooltip}}'>{{characteristic.nome}}</li>
+                                                {{/each}}
+                                            </ul>
+                                        {{else}}
+                                            <p class='jj-rd-empty'>Nenhuma característica selecionada.</p>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </section>
+                    <section class='jj-panel' id='jj-pericias' data-tab-block='pericias'>
+                        <h2>Pericias</h2>
+                        <div class='jj-skills-columns'>
+                            {{#each jujutsu.skillColumns as |columnSkills|}}
+                                <div class='jj-skills-column'>
+                                    <table class='jj-table jj-table--skills'>
+                                        <colgroup>
+                                            <col class='jj-skill-name-col' />
+                                            <col class='jj-skill-attribute-col' />
+                                            <col class='jj-skill-others-col' />
+                                            <col class='jj-skill-check-col' />
+                                            <col class='jj-skill-check-col' />
+                                            <col class='jj-skill-total-col' />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th>Perícia</th>
+                                                <th class='jj-skill-attribute-head'>Atributo</th>
+                                                <th class='jj-skill-others-head'>Outros</th>
+                                                <th class='jj-skill-check-head'>T</th>
+                                                <th class='jj-skill-check-head'>M</th>
+                                                <th class='jj-skill-total-head'>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {{#each columnSkills as |skill|}}
+                                                <tr data-skill-row data-skill-key='{{skill.key}}' data-skill-attribute='{{skill.attribute}}' data-skill-label='{{skill.label}}'>
+                                                    <td class='jj-skill-name'>
+                                                        <div class='jj-skill-name-content'>
+                                                            <button
+                                                                class='jj-skill-roll-button'
+                                                                type='button'
+                                                                data-roll-skill
+                                                                data-skill-key='{{skill.key}}'
+                                                                data-tooltip='Rolar {{skill.label}}'
+                                                                aria-label='Rolar {{skill.label}}'
+                                                            >
+                                                                <i class='fas fa-dice-d20'></i>
+                                                            </button>
+                                                            {{#if skill.customName}}
+                                                                <div class='jj-skill-custom-name'>
+                                                                    <span>{{skill.label}} (</span>
+                                                                    <input
+                                                                        class='jj-skill-custom-name-input'
+                                                                        name='system.props.skills.{{skill.key}}.name'
+                                                                        type='text'
+                                                                        value='{{skill.name}}'
+                                                                        placeholder='nome'
+                                                                    />
+                                                                    <span>)</span>
+                                                                </div>
+                                                            {{else}}
+                                                                <span>{{skill.label}}</span>
+                                                            {{/if}}
+                                                        </div>
+                                                    </td>
+                                                    <td class='jj-skill-attribute-cell'>
+                                                        {{#if skill.customAttribute}}
+                                                            <select class='jj-skill-attribute-select' name='system.props.skills.{{skill.key}}.attribute' data-skill-attribute-input>
+                                                                {{#each ../../jujutsu.attributeOptions as |opt|}}
+                                                                    <option value='{{opt.key}}' {{#if (eq opt.key skill.attribute)}}selected{{/if}}>{{opt.label}}</option>
+                                                                {{/each}}
+                                                            </select>
+                                                        {{else}}
+                                                            {{skill.attributeDisplay}}
+                                                        {{/if}}
+                                                    </td>
+                                                    <td class='jj-skill-others-cell'><input name='system.props.skills.{{skill.key}}.others' type='number' data-dtype='Number' value='{{skill.others}}' data-skill-others /></td>
+                                                    <td class='jj-checkbox-cell'>
+                                                        <label class='jj-checkbox jj-checkbox--compact {{#if skill.t}}is-checked{{/if}}'>
+                                                            <input class='jj-checkbox-input' name='system.props.skills.{{skill.key}}.t' type='checkbox' data-skill-trained {{checked skill.t}} />
+                                                            <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                                                        </label>
+                                                    </td>
+                                                    <td class='jj-checkbox-cell'>
+                                                        <label class='jj-checkbox jj-checkbox--compact {{#if skill.m}}is-checked{{/if}}'>
+                                                            <input class='jj-checkbox-input' name='system.props.skills.{{skill.key}}.m' type='checkbox' data-skill-master {{checked skill.m}} />
+                                                            <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                                                        </label>
+                                                    </td>
+                                                    <td class='jj-skill-total-cell'><input name='system.props.skills.{{skill.key}}.total' type='number' data-dtype='Number' value='{{skill.total}}' data-skill-total readonly /></td>
+                                                </tr>
+                                            {{/each}}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {{/each}}
+                        </div>
+                    </section>
+
+                    <section class='jj-panel' data-tab-block='habilidades'>
+                        <h2>Ataques</h2>
+                        <table class='jj-table'>
+                            <thead>
+                                <tr>
+                                    <th>Ataque</th>
+                                    <th>Arma</th>
+                                    <th>Bonus</th>
+                                    <th>Dano</th>
+                                    <th>Crit.</th>
+                                    <th>Tipo</th>
+                                    <th>Alcance</th>
+                                    <th>Propriedades</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each jujutsu.props.tables.attacks as |attack idx|}}
+                                    <tr>
+                                        <td class='jj-table-item-cell'>
+                                            <div class='jj-table-item'>
+                                                <img class='jj-table-item-thumb' src='{{attack.image}}' alt='{{attack.name}}' />
+                                                <div class='jj-table-item-text'>
+                                                    <strong>{{attack.name}}</strong>
+                                                    <span>Acerto: {{attack.acerto}}</span>
+                                                </div>
+                                                <div class='jj-table-item-actions'>
+                                                    <button class='jj-table-icon-button' type='button' data-roll-table-attack data-row-index='{{idx}}' data-tooltip='Rolar {{attack.name}}' aria-label='Rolar {{attack.name}}'>
+                                                        <i class='fas fa-dice-d20'></i>
+                                                    </button>
+                                                    <button class='jj-table-icon-button' type='button' data-action='editJujutsuRow' data-table-path='tables.attacks' data-row-index='{{idx}}' data-tooltip='Editar {{attack.name}}' aria-label='Editar {{attack.name}}'>
+                                                        <i class='fas fa-pen'></i>
+                                                    </button>
+                                                    <button class='jj-table-icon-button jj-table-icon-button--danger' type='button' data-action='removeJujutsuRow' data-table-path='tables.attacks' data-row-index='{{idx}}' data-tooltip='Excluir {{attack.name}}' aria-label='Excluir {{attack.name}}'>
+                                                        <i class='fas fa-trash'></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{attack.weapon}}</td>
+                                        <td>{{attack.bonus}}</td>
+                                        <td>{{attack.damage}}</td>
+                                        <td>{{attack.crit}}</td>
+                                        <td>{{attack.type}}</td>
+                                        <td>{{attack.range}}</td>
+                                        <td>{{attack.properties}}</td>
+                                    </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                        <button class='jj-action-button' type='button' data-action='addJujutsuRow' data-table-path='tables.attacks' data-row-type='attack'>Adicionar ataque</button>
+                    </section>
+
+                    <section class='jj-panel' id='jj-habilidades' data-tab-block='habilidades'>
+                        <h2>Habilidades</h2>
+                        <table class='jj-table'>
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Atual</th>
+                                    <th>Max.</th>
+                                    <th>Custo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each jujutsu.props.tables.abilities as |ability idx|}}
+                                    <tr>
+                                        <td class='jj-table-item-cell'>
+                                            <div class='jj-table-item'>
+                                                <img class='jj-table-item-thumb' src='{{ability.image}}' alt='{{ability.name}}' />
+                                                <div class='jj-table-item-text'>
+                                                    <strong>{{ability.name}}</strong>
+                                                    <span>Acerto: {{ability.acerto}}</span>
+                                                </div>
+                                                <div class='jj-table-item-actions'>
+                                                    <button class='jj-table-icon-button' type='button' data-use-table-feature data-collection='abilities' data-row-index='{{idx}}' data-tooltip='Usar {{ability.name}}' aria-label='Usar {{ability.name}}'>
+                                                        <i class='fas fa-dice-d20'></i>
+                                                    </button>
+                                                    <button class='jj-table-icon-button' type='button' data-action='editJujutsuRow' data-table-path='tables.abilities' data-row-index='{{idx}}' data-tooltip='Editar {{ability.name}}' aria-label='Editar {{ability.name}}'>
+                                                        <i class='fas fa-pen'></i>
+                                                    </button>
+                                                    <button class='jj-table-icon-button jj-table-icon-button--danger' type='button' data-action='removeJujutsuRow' data-table-path='tables.abilities' data-row-index='{{idx}}' data-tooltip='Excluir {{ability.name}}' aria-label='Excluir {{ability.name}}'>
+                                                        <i class='fas fa-trash'></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ability.current}}</td>
+                                        <td>{{ability.max}}</td>
+                                        <td>{{ability.cost}}</td>
+                                    </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                        <button class='jj-action-button' type='button' data-action='addJujutsuRow' data-table-path='tables.abilities' data-row-type='ability'>Adicionar habilidade</button>
+                    </section>
+
+                    <section class='jj-panel' id='jj-talentos' data-tab-block='habilidades'>
+                        <h2>Talentos</h2>
+                        <table class='jj-table'>
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Atual</th>
+                                    <th>Max.</th>
+                                    <th>Custo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each jujutsu.props.tables.talents as |talent idx|}}
+                                    <tr>
+                                        <td class='jj-table-item-cell'>
+                                            <div class='jj-table-item'>
+                                                <img class='jj-table-item-thumb' src='{{talent.image}}' alt='{{talent.name}}' />
+                                                <div class='jj-table-item-text'>
+                                                    <strong>{{talent.name}}</strong>
+                                                    <span>Acerto: {{talent.acerto}}</span>
+                                                </div>
+                                                <div class='jj-table-item-actions'>
+                                                    <button class='jj-table-icon-button' type='button' data-use-table-feature data-collection='talents' data-row-index='{{idx}}' data-tooltip='Usar {{talent.name}}' aria-label='Usar {{talent.name}}'>
+                                                        <i class='fas fa-dice-d20'></i>
+                                                    </button>
+                                                    <button class='jj-table-icon-button' type='button' data-action='editJujutsuRow' data-table-path='tables.talents' data-row-index='{{idx}}' data-tooltip='Editar {{talent.name}}' aria-label='Editar {{talent.name}}'>
+                                                        <i class='fas fa-pen'></i>
+                                                    </button>
+                                                    <button class='jj-table-icon-button jj-table-icon-button--danger' type='button' data-action='removeJujutsuRow' data-table-path='tables.talents' data-row-index='{{idx}}' data-tooltip='Excluir {{talent.name}}' aria-label='Excluir {{talent.name}}'>
+                                                        <i class='fas fa-trash'></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{talent.current}}</td>
+                                        <td>{{talent.max}}</td>
+                                        <td>{{talent.cost}}</td>
+                                    </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                        <button class='jj-action-button' type='button' data-action='addJujutsuRow' data-table-path='tables.talents' data-row-type='talent'>Adicionar talento</button>
+                    </section>
+
+                    <section class='jj-panel' data-tab-block='inventario'>
+                        <h2>Inventário</h2>
+                        <div class='jj-inventory-toolbar'>
+                            <div class='jj-inventory-space-grid'>
+                                <label class='jj-card jj-inventory-space-card'>
+                                    <span class='jj-inventory-space-label'>Limite de Espaços</span>
+                                    <input
+                                        name='system.props.inventory.spaceLimit'
+                                        type='number'
+                                        min='0'
+                                        step='1'
+                                        data-dtype='Number'
+                                        value='{{jujutsu.props.inventory.spaceLimit}}'
+                                    />
+                                </label>
+                                <div class='jj-card jj-inventory-space-card'>
+                                    <span class='jj-inventory-space-label'>Espaços Restantes</span>
+                                    <strong class='jj-inventory-space-value'>{{jujutsu.computed.inventory.spaceRemaining}}</strong>
+                                </div>
+                                <div class='jj-card jj-inventory-space-card'>
+                                    <span class='jj-inventory-space-label'>Itens Cadastrados</span>
+                                    <strong class='jj-inventory-space-value'>{{jujutsu.computed.inventory.usedSpaces}}</strong>
+                                </div>
+                            </div>
+                            <button class='jj-action-button' type='button' data-action='addJujutsuRow' data-table-path='tables.inventory' data-row-type='inventory'>
+                                Adicionar item
+                            </button>
+                        </div>
+                        <div class='jj-card jj-inventory-card'>
+                            <table class='jj-inventory-table' data-table-path='tables.inventory'>
+                                <colgroup>
+                                    <col class='jj-inventory-col--item' />
+                                    <col class='jj-inventory-col--number' />
+                                    <col class='jj-inventory-col--number' />
+                                    <col class='jj-inventory-col--number' />
+                                    <col class='jj-inventory-col--actions' />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>Nome do Item</th>
+                                        <th class='jj-inventory-col--number'>Quant.</th>
+                                        <th class='jj-inventory-col--number'>Peso</th>
+                                        <th class='jj-inventory-col--number'>Preço</th>
+                                        <th class='jj-inventory-col--actions'>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{#if jujutsu.props.tables.inventory.length}}
+                                        {{#each jujutsu.props.tables.inventory as |item|}}
+                                            <tr>
+                                                <td>
+                                                    <div
+                                                        class='jj-inventory-item-main jj-inventory-item-main--draggable'
+                                                        draggable='true'
+                                                        data-jujutsu-inventory-drag
+                                                        data-row-index='{{@index}}'
+                                                        data-entry-id='{{item.id}}'
+                                                        title='Arraste para a barra de hotkeys'
+                                                    >
+                                                        <img class='jj-inventory-item-image' src='{{item.image}}' alt='{{item.name}}' />
+                                                        <div class='jj-inventory-item-text'>
+                                                            <strong>{{item.name}}</strong>
+                                                            {{#if item.hasRoll}}
+                                                                <span class='jj-inventory-roll-chip'>{{item.rollLabel}}</span>
+                                                            {{/if}}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class='jj-inventory-cell--number'>{{item.quantity}}</td>
+                                                <td class='jj-inventory-cell--number'>{{item.weight}}</td>
+                                                <td class='jj-inventory-cell--number'>{{item.price}}</td>
+                                                <td class='jj-inventory-actions-cell' data-table-path='tables.inventory'>
+                                                    <div class='jj-inventory-actions'>
+                                                        {{#if item.hasRoll}}
+                                                            <button
+                                                                type='button'
+                                                                class='jj-table-icon-button'
+                                                                data-roll-inventory-item
+                                                                data-row-index='{{@index}}'
+                                                                title='Rolar {{item.rollLabel}}'
+                                                            >
+                                                                <i class='fas fa-dice-d20'></i>
+                                                            </button>
+                                                        {{/if}}
+                                                        <button
+                                                            type='button'
+                                                            class='jj-table-icon-button'
+                                                            data-action='editJujutsuRow'
+                                                            data-table-path='tables.inventory'
+                                                            data-row-index='{{@index}}'
+                                                            title='Editar item'
+                                                        >
+                                                            <i class='fas fa-pen'></i>
+                                                        </button>
+                                                        <button
+                                                            type='button'
+                                                            class='jj-table-icon-button'
+                                                            data-action='removeJujutsuRow'
+                                                            data-table-path='tables.inventory'
+                                                            data-row-index='{{@index}}'
+                                                            title='Excluir item'
+                                                        >
+                                                            <i class='fas fa-trash'></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {{/each}}
+                                    {{else}}
+                                        <tr>
+                                            <td colspan='5' class='jj-inventory-empty'>Nenhum item cadastrado no inventário.</td>
+                                        </tr>
+                                    {{/if}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class='jj-panel' data-tab-block='registro'>
+                        <h2>Registro</h2>
+                        <div class='jj-card'>
+                            <h3>Em preparação</h3>
+                            <p>Esta aba está pronta para receber anotações, histórico e registros do personagem.</p>
+                        </div>
+                    </section>
+                </div>
+
+                <div class='jj-main-secondary'>
+                    <section class='jj-panel' data-tab-block='resumo'>
+                        <h2>Resumo</h2>
+                        <div class='jj-summary-grid'>
+                            <div class='jj-secondary-split'>
+                                <div class='jj-card jj-derived-card'>
+                                    <h3>Atenção</h3>
+                                    <div class='jj-derived-body'>
+                                        <div class='jj-derived-total'>
+                                            <span>Total</span>
+                                            <input type='number' value='{{jujutsu.computed.attentionTotal}}' readonly />
+                                        </div>
+                                        <div class='jj-derived-fields'>
+                                            <label class='jj-derived-row'>
+                                                <span>Base</span>
+                                                <input name='system.props.attention.base' type='number' data-dtype='Number' value='{{jujutsu.props.attention.base}}' />
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Percep.</span>
+                                                <input name='system.props.attention.perception' type='number' data-dtype='Number' value='{{jujutsu.props.attention.perception}}' />
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Outros</span>
+                                                <input name='system.props.attention.others' type='number' data-dtype='Number' value='{{jujutsu.props.attention.others}}' />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='jj-card jj-derived-card'>
+                                    <h3>Iniciativa</h3>
+                                    <div class='jj-derived-body'>
+                                        <div class='jj-derived-total'>
+                                            <span>Total</span>
+                                            <input type='number' value='{{jujutsu.computed.initiativeTotal}}' readonly />
+                                        </div>
+                                        <div class='jj-derived-fields'>
+                                            <label class='jj-derived-row'>
+                                                <span>Destreza</span>
+                                                <input type='number' value='{{jujutsu.computed.initiativeDex}}' readonly />
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Outros</span>
+                                                <input name='system.props.initiative.others' type='number' data-dtype='Number' value='{{jujutsu.props.initiative.others}}' />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='jj-secondary-split'>
+                                <div class='jj-card jj-derived-card'>
+                                    <h3>Defesa</h3>
+                                    <div class='jj-derived-body'>
+                                        <div class='jj-derived-total'>
+                                            <span>Total</span>
+                                            <input type='number' value='{{jujutsu.computed.defenseTotal}}' readonly />
+                                        </div>
+                                        <div class='jj-derived-fields'>
+                                            <label class='jj-derived-row'>
+                                                <span>Base</span>
+                                                <input name='system.props.defense.base' type='number' data-dtype='Number' value='{{jujutsu.props.defense.base}}' />
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Equip.</span>
+                                                <input name='system.props.defense.equip' type='number' data-dtype='Number' value='{{jujutsu.props.defense.equip}}' />
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Destreza</span>
+                                                <input name='system.props.defense.dex' type='number' data-dtype='Number' value='{{jujutsu.props.defense.dex}}' />
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Nível/2</span>
+                                                <input type='number' value='{{jujutsu.computed.levelHalf}}' readonly />
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Outros</span>
+                                                <input name='system.props.defense.others' type='number' data-dtype='Number' value='{{jujutsu.props.defense.others}}' />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='jj-card jj-derived-card'>
+                                    <h3>CD Especialização</h3>
+                                    <div class='jj-derived-body'>
+                                        <div class='jj-derived-total'>
+                                            <span>Total</span>
+                                            <input type='number' value='{{jujutsu.computed.specializationCdTotal}}' readonly />
+                                        </div>
+                                        <div class='jj-derived-fields'>
+                                            <label class='jj-derived-row'>
+                                                <span>Base</span>
+                                                <input name='system.props.specializationCd.base' type='number' data-dtype='Number' value='{{jujutsu.props.specializationCd.base}}' />
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Atributo</span>
+                                                <select name='system.props.specializationCd.attribute'>
+                                                    {{#each jujutsu.attributeOptions as |opt|}}
+                                                        <option value='{{opt.key}}' {{#if (eq opt.key ../jujutsu.props.specializationCd.attribute)}}selected{{/if}}>{{opt.label}}</option>
+                                                    {{/each}}
+                                                </select>
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Mod. Atr.</span>
+                                                <input type='number' value='{{jujutsu.computed.cdAttrMod}}' readonly />
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Treino</span>
+                                                <input name='system.props.specializationCd.treino' type='number' data-dtype='Number' value='{{jujutsu.props.specializationCd.treino}}' />
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Outros</span>
+                                                <input name='system.props.specializationCd.others' type='number' data-dtype='Number' value='{{jujutsu.props.specializationCd.others}}' />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='jj-secondary-split'>
+                                <div class='jj-card jj-derived-card'>
+                                    <h3>Testes de Morte</h3>
+                                    <div class='jj-derived-body'>
+                                        <div class='jj-derived-total-grid'>
+                                            <div class='jj-derived-total'>
+                                                <span>Sucessos</span>
+                                                <input type='number' value='{{jujutsu.computed.deathSuccessCount}}' data-death-count='successes' readonly />
+                                            </div>
+                                            <div class='jj-derived-total'>
+                                                <span>Falhas</span>
+                                                <input type='number' value='{{jujutsu.computed.deathFailureCount}}' data-death-count='failures' readonly />
+                                            </div>
+                                        </div>
+                                        <div class='jj-death-track-grid'>
+                                            <div class='jj-death-track'>
+                                                <span>Sucessos</span>
+                                                <div class='jj-death-pips'>
+                                                    {{#each jujutsu.deathSuccesses as |isChecked idx|}}
+                                                        <label class='jj-death-pip jj-checkbox jj-checkbox--compact {{#if isChecked}}is-checked{{/if}}'>
+                                                            <input
+                                                                class='jj-checkbox-input'
+                                                                name='system.props.deathTests.successes.{{idx}}'
+                                                                type='checkbox'
+                                                                data-death-track='successes'
+                                                                data-death-index='{{idx}}'
+                                                                {{checked isChecked}}
+                                                            />
+                                                            <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                                                        </label>
+                                                    {{/each}}
+                                                </div>
+                                            </div>
+                                            <div class='jj-death-track'>
+                                                <span>Falhas</span>
+                                                <div class='jj-death-pips'>
+                                                    {{#each jujutsu.deathFailures as |isChecked idx|}}
+                                                        <label class='jj-death-pip jj-checkbox jj-checkbox--compact {{#if isChecked}}is-checked{{/if}}'>
+                                                            <input
+                                                                class='jj-checkbox-input'
+                                                                name='system.props.deathTests.failures.{{idx}}'
+                                                                type='checkbox'
+                                                                data-death-track='failures'
+                                                                data-death-index='{{idx}}'
+                                                                {{checked isChecked}}
+                                                            />
+                                                            <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                                                        </label>
+                                                    {{/each}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='jj-card jj-derived-card'>
+                                    <h3>Dados de Vida</h3>
+                                    <div class='jj-derived-body'>
+                                        <div class='jj-derived-total-grid'>
+                                            <div class='jj-derived-total'>
+                                                <span>Disp.</span>
+                                                <input type='number' value='{{jujutsu.computed.hitDiceAvailableTotal}}' readonly />
+                                            </div>
+                                            <div class='jj-derived-total'>
+                                                <span>Gastos</span>
+                                                <input type='number' value='{{jujutsu.computed.hitDiceSpentTotal}}' readonly />
+                                            </div>
+                                        </div>
+                                        <div class='jj-hit-dice-list'>
+                                            <div class='jj-hit-dice-header'>
+                                                <span></span>
+                                                <span>Gastos</span>
+                                                <span>Disp.</span>
+                                            </div>
+                                            <div class='jj-hit-dice-row'>
+                                                <span class='jj-hit-dice-die'>d8</span>
+                                                <input name='system.props.hitDice.d8.gastos' type='number' data-dtype='Number' value='{{jujutsu.props.hitDice.d8.gastos}}' />
+                                                <input name='system.props.hitDice.d8.disponiveis' type='number' data-dtype='Number' value='{{jujutsu.props.hitDice.d8.disponiveis}}' />
+                                            </div>
+                                            <div class='jj-hit-dice-row'>
+                                                <span class='jj-hit-dice-die'>d10</span>
+                                                <input name='system.props.hitDice.d10.gastos' type='number' data-dtype='Number' value='{{jujutsu.props.hitDice.d10.gastos}}' />
+                                                <input name='system.props.hitDice.d10.disponiveis' type='number' data-dtype='Number' value='{{jujutsu.props.hitDice.d10.disponiveis}}' />
+                                            </div>
+                                            <div class='jj-hit-dice-row'>
+                                                <span class='jj-hit-dice-die'>d12</span>
+                                                <input name='system.props.hitDice.d12.gastos' type='number' data-dtype='Number' value='{{jujutsu.props.hitDice.d12.gastos}}' />
+                                                <input name='system.props.hitDice.d12.disponiveis' type='number' data-dtype='Number' value='{{jujutsu.props.hitDice.d12.disponiveis}}' />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+
+            <section class='jj-panel' data-tab-block='inventario'>
+                <h2>Inventário</h2>
+                <div class='jj-inventory-toolbar'>
+                    <div class='jj-inventory-space-grid'>
+                        <label class='jj-card jj-inventory-space-card'>
+                            <span class='jj-inventory-space-label'>Limite de Espaços</span>
+                            <input
+                                name='system.props.inventory.spaceLimit'
+                                type='number'
+                                min='0'
+                                step='1'
+                                data-dtype='Number'
+                                value='{{jujutsu.props.inventory.spaceLimit}}'
+                            />
+                        </label>
+                        <div class='jj-card jj-inventory-space-card'>
+                            <span class='jj-inventory-space-label'>Espaços Restantes</span>
+                            <strong class='jj-inventory-space-value'>{{jujutsu.computed.inventory.spaceRemaining}}</strong>
+                        </div>
+                        <div class='jj-card jj-inventory-space-card'>
+                            <span class='jj-inventory-space-label'>Itens Cadastrados</span>
+                            <strong class='jj-inventory-space-value'>{{jujutsu.computed.inventory.usedSpaces}}</strong>
+                        </div>
+                    </div>
+                    <button class='jj-action-button' type='button' data-action='addJujutsuRow' data-table-path='tables.inventory' data-row-type='inventory'>
+                        Adicionar item
+                    </button>
+                </div>
+                <div class='jj-card jj-inventory-card'>
+                    <table class='jj-inventory-table' data-table-path='tables.inventory'>
+                        <colgroup>
+                            <col class='jj-inventory-col--item' />
+                            <col class='jj-inventory-col--number' />
+                            <col class='jj-inventory-col--number' />
+                            <col class='jj-inventory-col--number' />
+                            <col class='jj-inventory-col--actions' />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Nome do Item</th>
+                                <th class='jj-inventory-col--number'>Quant.</th>
+                                <th class='jj-inventory-col--number'>Peso</th>
+                                <th class='jj-inventory-col--number'>Preço</th>
+                                <th class='jj-inventory-col--actions'>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#if jujutsu.props.tables.inventory.length}}
+                                {{#each jujutsu.props.tables.inventory as |item|}}
+                                    <tr>
+                                        <td>
+                                            <div
+                                                class='jj-inventory-item-main jj-inventory-item-main--draggable'
+                                                draggable='true'
+                                                data-jujutsu-inventory-drag
+                                                data-row-index='{{@index}}'
+                                                data-entry-id='{{item.id}}'
+                                                title='Arraste para a barra de hotkeys'
+                                            >
+                                                <img class='jj-inventory-item-image' src='{{item.image}}' alt='{{item.name}}' />
+                                                <div class='jj-inventory-item-text'>
+                                                    <strong>{{item.name}}</strong>
+                                                    {{#if item.hasRoll}}
+                                                        <span class='jj-inventory-roll-chip'>{{item.rollLabel}}</span>
+                                                    {{/if}}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class='jj-inventory-cell--number'>{{item.quantity}}</td>
+                                        <td class='jj-inventory-cell--number'>{{item.weight}}</td>
+                                        <td class='jj-inventory-cell--number'>{{item.price}}</td>
+                                        <td class='jj-inventory-actions-cell' data-table-path='tables.inventory'>
+                                            <div class='jj-inventory-actions'>
+                                                {{#if item.hasRoll}}
+                                                    <button
+                                                        type='button'
+                                                        class='jj-table-icon-button'
+                                                        data-roll-inventory-item
+                                                        data-row-index='{{@index}}'
+                                                        title='Rolar {{item.rollLabel}}'
+                                                    >
+                                                        <i class='fas fa-dice-d20'></i>
+                                                    </button>
+                                                {{else}}
+                                                    <span class='jj-table-icon-button jj-table-icon-button--ghost' aria-hidden='true'></span>
+                                                {{/if}}
+                                                <button
+                                                    type='button'
+                                                    class='jj-table-icon-button'
+                                                    data-action='editJujutsuRow'
+                                                    data-table-path='tables.inventory'
+                                                    data-row-index='{{@index}}'
+                                                    title='Editar item'
+                                                >
+                                                    <i class='fas fa-pen'></i>
+                                                </button>
+                                                <button
+                                                    type='button'
+                                                    class='jj-table-icon-button'
+                                                    data-action='removeJujutsuRow'
+                                                    data-table-path='tables.inventory'
+                                                    data-row-index='{{@index}}'
+                                                    title='Excluir item'
+                                                >
+                                                    <i class='fas fa-trash'></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {{/each}}
+                            {{else}}
+                                <tr>
+                                    <td colspan='5' class='jj-inventory-empty'>Nenhum item cadastrado no inventário.</td>
+                                </tr>
+                            {{/if}}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class='jj-panel' data-tab-block='registro'>
+                <h2>Registro</h2>
+                <div class='jj-card'>
+                    <h3>Em preparação</h3>
+                    <p>Esta aba está pronta para receber anotações, histórico e registros do personagem.</p>
+                </div>
+            </section>
+        </section>
+    </div>
+
+    <div class='custom-system-customHeader' style='display:none;'></div>
+    <div class='custom-system-customBody' style='display:none;'></div>
+</div>

@@ -1,0 +1,43 @@
+<section class='jj-rd-config'>
+    <header class='jj-rd-config-header'>
+        <h2>Redução de Danos (RDs)</h2>
+        <p>Selecione as reduções ativas e informe o valor de cada uma.</p>
+    </header>
+
+    <div class='jj-rd-config-list'>
+        {{#each rdDefinitions as |rd|}}
+            <div class='jj-rd-config-row {{#if rd.enabled}}is-enabled{{/if}}' data-rd-row>
+                <label class='jj-rd-config-main' for='jj-rd-enabled-{{rd.type}}'>
+                    <input
+                        id='jj-rd-enabled-{{rd.type}}'
+                        class='jj-rd-config-toggle'
+                        data-rd-enabled
+                        type='checkbox'
+                        name='rds.{{rd.type}}.enabled'
+                        {{checked rd.enabled}}
+                    />
+                    <span class='jj-rd-config-code'>{{rd.code}}</span>
+                    <span class='jj-rd-config-text'>
+                        <strong>{{rd.label}}</strong>
+                        <span>Exibida na ficha como {{rd.code}}</span>
+                    </span>
+                </label>
+
+                <label class='jj-rd-config-value' for='jj-rd-value-{{rd.type}}'>
+                    <span>Redução</span>
+                    <input
+                        id='jj-rd-value-{{rd.type}}'
+                        data-rd-value
+                        type='number'
+                        min='0'
+                        step='1'
+                        inputmode='numeric'
+                        name='rds.{{rd.type}}.value'
+                        value='{{rd.value}}'
+                        {{#unless rd.enabled}}disabled{{/unless}}
+                    />
+                </label>
+            </div>
+        {{/each}}
+    </div>
+</section>
