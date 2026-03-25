@@ -530,10 +530,20 @@
                                     <tr>
                                         <td class='jj-table-item-cell'>
                                             <div class='jj-table-item'>
-                                                <img class='jj-table-item-thumb' src='{{attack.image}}' alt='{{attack.name}}' />
-                                                <div class='jj-table-item-text'>
-                                                    <strong>{{attack.name}}</strong>
-                                                    <span>Acerto: {{attack.acerto}}</span>
+                                                <div
+                                                    class='jj-table-item-main jj-table-item-main--draggable'
+                                                    draggable='true'
+                                                    data-jujutsu-table-drag
+                                                    data-table-key='attacks'
+                                                    data-row-index='{{idx}}'
+                                                    data-entry-id='{{attack.id}}'
+                                                    title='Arraste para a barra de hotkeys'
+                                                >
+                                                    <img class='jj-table-item-thumb' src='{{attack.image}}' alt='{{attack.name}}' />
+                                                    <div class='jj-table-item-text'>
+                                                        <strong>{{attack.name}}</strong>
+                                                        <span>Acerto: {{attack.acerto}}</span>
+                                                    </div>
                                                 </div>
                                                 <div class='jj-table-item-actions'>
                                                     <button class='jj-table-icon-button' type='button' data-roll-table-attack data-row-index='{{idx}}' data-tooltip='Rolar {{attack.name}}' aria-label='Rolar {{attack.name}}'>
@@ -578,10 +588,20 @@
                                     <tr>
                                         <td class='jj-table-item-cell'>
                                             <div class='jj-table-item'>
-                                                <img class='jj-table-item-thumb' src='{{ability.image}}' alt='{{ability.name}}' />
-                                                <div class='jj-table-item-text'>
-                                                    <strong>{{ability.name}}</strong>
-                                                    <span>Acerto: {{ability.acerto}}</span>
+                                                <div
+                                                    class='jj-table-item-main jj-table-item-main--draggable'
+                                                    draggable='true'
+                                                    data-jujutsu-table-drag
+                                                    data-table-key='abilities'
+                                                    data-row-index='{{idx}}'
+                                                    data-entry-id='{{ability.id}}'
+                                                    title='Arraste para a barra de hotkeys'
+                                                >
+                                                    <img class='jj-table-item-thumb' src='{{ability.image}}' alt='{{ability.name}}' />
+                                                    <div class='jj-table-item-text'>
+                                                        <strong>{{ability.name}}</strong>
+                                                        <span>Acerto: {{ability.acerto}}</span>
+                                                    </div>
                                                 </div>
                                                 <div class='jj-table-item-actions'>
                                                     <button class='jj-table-icon-button' type='button' data-use-table-feature data-collection='abilities' data-row-index='{{idx}}' data-tooltip='Usar {{ability.name}}' aria-label='Usar {{ability.name}}'>
@@ -622,10 +642,20 @@
                                     <tr>
                                         <td class='jj-table-item-cell'>
                                             <div class='jj-table-item'>
-                                                <img class='jj-table-item-thumb' src='{{talent.image}}' alt='{{talent.name}}' />
-                                                <div class='jj-table-item-text'>
-                                                    <strong>{{talent.name}}</strong>
-                                                    <span>Acerto: {{talent.acerto}}</span>
+                                                <div
+                                                    class='jj-table-item-main jj-table-item-main--draggable'
+                                                    draggable='true'
+                                                    data-jujutsu-table-drag
+                                                    data-table-key='talents'
+                                                    data-row-index='{{idx}}'
+                                                    data-entry-id='{{talent.id}}'
+                                                    title='Arraste para a barra de hotkeys'
+                                                >
+                                                    <img class='jj-table-item-thumb' src='{{talent.image}}' alt='{{talent.name}}' />
+                                                    <div class='jj-table-item-text'>
+                                                        <strong>{{talent.name}}</strong>
+                                                        <span>Acerto: {{talent.acerto}}</span>
+                                                    </div>
                                                 </div>
                                                 <div class='jj-table-item-actions'>
                                                     <button class='jj-table-icon-button' type='button' data-use-table-feature data-collection='talents' data-row-index='{{idx}}' data-tooltip='Usar {{talent.name}}' aria-label='Usar {{talent.name}}'>

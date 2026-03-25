@@ -924,7 +924,23 @@
     align-items: center;
     display: grid;
     gap: 8px;
-    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.jj-table-item-main {
+    align-items: center;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 40px minmax(0, 1fr);
+    min-width: 0;
+}
+
+.jj-table-item-main--draggable {
+    cursor: grab;
+}
+
+.jj-table-item-main--draggable:active {
+    cursor: grabbing;
 }
 
 .jj-table-item-thumb {

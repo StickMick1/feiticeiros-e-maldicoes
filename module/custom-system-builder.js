@@ -368,6 +368,9 @@ async function initHook() {
                 },
                 TemplateSystem,
                 Jujutsu: {
+                    rollTableAttack: CharacterSheetV2.rollJujutsuTableAttack,
+                    useTableFeature: CharacterSheetV2.useJujutsuTableFeature,
+                    createTableMacro: CharacterSheetV2.createJujutsuTableMacro,
                     rollInventoryItem: CharacterSheetV2.rollJujutsuInventoryItem,
                     createInventoryMacro: CharacterSheetV2.createJujutsuInventoryMacro
                 },
@@ -411,6 +414,10 @@ async function readyHook() {
     }
     await processMigrations();
     Hooks.on('hotbarDrop', (_bar, data, slot) => {
+        if (data?.type === 'JujutsuTableEntry') {
+            void CharacterSheetV2.createJujutsuTableMacro(data, slot);
+            return false;
+        }
         if (data?.type === 'JujutsuInventoryItem') {
             void CharacterSheetV2.createJujutsuInventoryMacro(data, slot);
             return false;
