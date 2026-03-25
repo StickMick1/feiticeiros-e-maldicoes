@@ -193,6 +193,17 @@ const CHARACTERISTIC_TYPE_SHORT = {
 };
 
 const cleanText = (value) => (typeof value === 'string' ? value.trim() : '');
+const coerceTextValue = (value) => {
+    if (typeof value === 'string')
+        return value;
+    if (Array.isArray(value))
+        return value.map((entry) => coerceTextValue(entry)).find((entry) => entry !== '') ?? '';
+    if (value && typeof value === 'object')
+        return Object.values(value).map((entry) => coerceTextValue(entry)).find((entry) => entry !== '') ?? '';
+    if (value === null || value === undefined)
+        return '';
+    return String(value);
+};
 const toArrayValues = (value) => {
     if (Array.isArray(value))
         return value;
@@ -632,6 +643,24 @@ export const createJujutsuDefaultProps = () => {
         resistencias: '',
         treinamentos: '',
         notes: '',
+        registro: {
+            aparencia: '',
+            nome: '',
+            idade: '',
+            altura: '',
+            peso: '',
+            genero: '',
+            cabelos: '',
+            olhos: '',
+            pele: '',
+            roupas: '',
+            marca: '',
+            tracosPersonalidade: '',
+            ideais: '',
+            ligacoes: '',
+            complicacoes: '',
+            dominioInato: ''
+        },
         inventory: {
             spaceLimit: 18
         },
@@ -685,6 +714,25 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         desExa: b(props.extra?.desExa),
         vigorInf: b(props.extra?.vigorInf),
         outros: n(props.extra?.outros)
+    };
+
+    props.registro = {
+        aparencia: coerceTextValue(props.registro?.aparencia),
+        nome: coerceTextValue(props.registro?.nome),
+        idade: coerceTextValue(props.registro?.idade),
+        altura: coerceTextValue(props.registro?.altura),
+        peso: coerceTextValue(props.registro?.peso),
+        genero: coerceTextValue(props.registro?.genero),
+        cabelos: coerceTextValue(props.registro?.cabelos),
+        olhos: coerceTextValue(props.registro?.olhos),
+        pele: coerceTextValue(props.registro?.pele),
+        roupas: coerceTextValue(props.registro?.roupas),
+        marca: coerceTextValue(props.registro?.marca),
+        tracosPersonalidade: coerceTextValue(props.registro?.tracosPersonalidade),
+        ideais: coerceTextValue(props.registro?.ideais),
+        ligacoes: coerceTextValue(props.registro?.ligacoes),
+        complicacoes: coerceTextValue(props.registro?.complicacoes),
+        dominioInato: coerceTextValue(props.registro?.dominioInato)
     };
 
     const attributeMap = {};

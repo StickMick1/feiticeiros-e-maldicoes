@@ -367,6 +367,84 @@
     display: none;
 }
 
+.jj-registro-layout {
+    display: grid;
+    gap: 12px;
+}
+
+.jj-registro-top-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+}
+
+.jj-registro-photo-card,
+.jj-registro-details-card,
+.jj-registro-text-card {
+    align-content: start;
+}
+
+.jj-registro-portrait-frame {
+    background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.18) 66%),
+        url('../../dnd5e/ui/texture-gray1.webp') center / cover no-repeat;
+    border: 1px solid rgba(183, 163, 123, 0.24);
+    border-radius: 14px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+    padding: 8px;
+}
+
+.jj-registro-portrait {
+    aspect-ratio: 4 / 5;
+    border-radius: 10px;
+    cursor: pointer;
+    display: block;
+    height: auto;
+    object-fit: cover;
+    width: 100%;
+}
+
+.jj-registro-quick-fields,
+.jj-registro-sections {
+    display: grid;
+    gap: 10px;
+}
+
+.jj-registro-quick-field {
+    align-items: center;
+    gap: 10px;
+    grid-template-columns: 112px minmax(0, 1fr);
+}
+
+.jj-registro-quick-field > span {
+    color: var(--jj-gold);
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+}
+
+.jj-registro-quick-field > input {
+    min-height: 32px;
+    padding: 6px 8px !important;
+}
+
+.jj-registro-text-card textarea {
+    min-height: 118px;
+    padding: 10px 12px;
+}
+
+@media (max-width: 900px) {
+    .jj-registro-top-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 680px) {
+    .jj-registro-quick-field {
+        grid-template-columns: 1fr;
+    }
+}
+
 .jj-inventory-toolbar {
     display: grid;
     gap: 14px;

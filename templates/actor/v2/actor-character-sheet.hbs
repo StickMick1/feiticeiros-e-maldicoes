@@ -798,13 +798,6 @@
                         </div>
                     </section>
 
-                    <section class='jj-panel' data-tab-block='registro'>
-                        <h2>Registro</h2>
-                        <div class='jj-card'>
-                            <h3>Em preparação</h3>
-                            <p>Esta aba está pronta para receber anotações, histórico e registros do personagem.</p>
-                        </div>
-                    </section>
                 </div>
 
                 <div class='jj-main-secondary'>
@@ -1141,11 +1134,91 @@
                 </div>
             </section>
 
-            <section class='jj-panel' data-tab-block='registro'>
+            <section class='jj-panel jj-registro-panel' data-tab-block='registro'>
                 <h2>Registro</h2>
-                <div class='jj-card'>
-                    <h3>Em preparação</h3>
-                    <p>Esta aba está pronta para receber anotações, histórico e registros do personagem.</p>
+                <div class='jj-registro-layout'>
+                    <div class='jj-registro-top-grid'>
+                        <div class='jj-card jj-registro-photo-card'>
+                            <h3>Aparência</h3>
+                            <div class='jj-registro-portrait-frame'>
+                                <img
+                                    class='jj-registro-portrait'
+                                    src='{{#if jujutsu.props.registro.aparencia}}{{jujutsu.props.registro.aparencia}}{{else}}icons/svg/mystery-man.svg{{/if}}'
+                                    data-action='editImage'
+                                    data-field='system.props.registro.aparencia'
+                                    title='{{document.name}}'
+                                    alt='{{document.name}}'
+                                />
+                            </div>
+                        </div>
+                        <div class='jj-card jj-registro-details-card'>
+                            <h3>Dados Pessoais</h3>
+                            <div class='jj-registro-quick-fields'>
+                                <label class='jj-registro-quick-field'>
+                                    <span>Nome</span>
+                                    <input name='system.props.registro.nome' type='text' value='{{jujutsu.props.registro.nome}}' />
+                                </label>
+                                <label class='jj-registro-quick-field'>
+                                    <span>Idade</span>
+                                    <input name='system.props.registro.idade' type='text' value='{{jujutsu.props.registro.idade}}' />
+                                </label>
+                                <label class='jj-registro-quick-field'>
+                                    <span>Altura</span>
+                                    <input name='system.props.registro.altura' type='text' value='{{jujutsu.props.registro.altura}}' />
+                                </label>
+                                <label class='jj-registro-quick-field'>
+                                    <span>Peso</span>
+                                    <input name='system.props.registro.peso' type='text' value='{{jujutsu.props.registro.peso}}' />
+                                </label>
+                                <label class='jj-registro-quick-field'>
+                                    <span>Gênero</span>
+                                    <input name='system.props.registro.genero' type='text' value='{{jujutsu.props.registro.genero}}' />
+                                </label>
+                                <label class='jj-registro-quick-field'>
+                                    <span>Cabelos</span>
+                                    <input name='system.props.registro.cabelos' type='text' value='{{jujutsu.props.registro.cabelos}}' />
+                                </label>
+                                <label class='jj-registro-quick-field'>
+                                    <span>Olhos</span>
+                                    <input name='system.props.registro.olhos' type='text' value='{{jujutsu.props.registro.olhos}}' />
+                                </label>
+                                <label class='jj-registro-quick-field'>
+                                    <span>Pele</span>
+                                    <input name='system.props.registro.pele' type='text' value='{{jujutsu.props.registro.pele}}' />
+                                </label>
+                                <label class='jj-registro-quick-field'>
+                                    <span>Roupas</span>
+                                    <input name='system.props.registro.roupas' type='text' value='{{jujutsu.props.registro.roupas}}' />
+                                </label>
+                                <label class='jj-registro-quick-field'>
+                                    <span>Marca</span>
+                                    <input name='system.props.registro.marca' type='text' value='{{jujutsu.props.registro.marca}}' />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='jj-registro-sections'>
+                        <div class='jj-card jj-registro-text-card'>
+                            <h3>Traços de Personalidade</h3>
+                            <textarea name='system.props.registro.tracosPersonalidade' rows='4'>{{jujutsu.props.registro.tracosPersonalidade}}</textarea>
+                        </div>
+                        <div class='jj-card jj-registro-text-card'>
+                            <h3>Ideais</h3>
+                            <textarea name='system.props.registro.ideais' rows='4'>{{jujutsu.props.registro.ideais}}</textarea>
+                        </div>
+                        <div class='jj-card jj-registro-text-card'>
+                            <h3>Ligações</h3>
+                            <textarea name='system.props.registro.ligacoes' rows='4'>{{jujutsu.props.registro.ligacoes}}</textarea>
+                        </div>
+                        <div class='jj-card jj-registro-text-card'>
+                            <h3>Complicações</h3>
+                            <textarea name='system.props.registro.complicacoes' rows='4'>{{jujutsu.props.registro.complicacoes}}</textarea>
+                        </div>
+                        <div class='jj-card jj-registro-text-card'>
+                            <h3>Domínio Inato</h3>
+                            <textarea name='system.props.registro.dominioInato' rows='4'>{{jujutsu.props.registro.dominioInato}}</textarea>
+                        </div>
+                    </div>
                 </div>
             </section>
         </section>
