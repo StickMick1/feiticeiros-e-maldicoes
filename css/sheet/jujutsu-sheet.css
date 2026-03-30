@@ -316,6 +316,8 @@
 .jj-layout.is-resumo [data-tab-block~='resumo'],
 .jj-layout.is-pericias [data-tab-block~='pericias'],
 .jj-layout.is-habilidades [data-tab-block~='habilidades'],
+.jj-layout.is-aptidoes [data-tab-block~='aptidoes'],
+.jj-layout.is-perfil-a [data-tab-block~='perfil-a'],
 .jj-layout.is-inventario [data-tab-block~='inventario'],
 .jj-layout.is-registro [data-tab-block~='registro'] {
     display: grid;
@@ -323,6 +325,8 @@
 
 .jj-layout.is-pericias,
 .jj-layout.is-habilidades,
+.jj-layout.is-aptidoes,
+.jj-layout.is-perfil-a,
 .jj-layout.is-inventario,
 .jj-layout.is-registro {
     grid-template-columns: 1fr;
@@ -330,6 +334,8 @@
 
 .jj-layout.is-pericias .jj-sidebar,
 .jj-layout.is-habilidades .jj-sidebar,
+.jj-layout.is-aptidoes .jj-sidebar,
+.jj-layout.is-perfil-a .jj-sidebar,
 .jj-layout.is-inventario .jj-sidebar,
 .jj-layout.is-registro .jj-sidebar {
     display: none;
@@ -343,11 +349,15 @@
     grid-template-columns: 1fr;
 }
 
+.jj-layout.is-aptidoes .jj-main-columns,
+.jj-layout.is-perfil-a .jj-main-columns,
 .jj-layout.is-inventario .jj-main-columns,
 .jj-layout.is-registro .jj-main-columns {
     grid-template-columns: 1fr;
 }
 
+.jj-layout.is-aptidoes .jj-main-columns,
+.jj-layout.is-perfil-a .jj-main-columns,
 .jj-layout.is-inventario .jj-main-columns,
 .jj-layout.is-registro .jj-main-columns {
     display: none;
@@ -362,9 +372,154 @@
     display: none;
 }
 
+.jj-layout.is-aptidoes .jj-main-secondary,
+.jj-layout.is-perfil-a .jj-main-secondary,
 .jj-layout.is-inventario .jj-main-secondary,
 .jj-layout.is-registro .jj-main-secondary {
     display: none;
+}
+
+.jj-aptitude-level-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.jj-aptitude-level-card {
+    align-items: center;
+    background:
+        linear-gradient(180deg, rgba(183, 163, 123, 0.18) 0%, rgba(95, 79, 52, 0.16) 100%),
+        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+    border: 1px solid rgba(183, 163, 123, 0.24);
+    gap: 8px;
+    justify-items: center;
+    min-height: 150px;
+    padding: 14px 10px;
+    text-align: center;
+}
+
+.jj-aptitude-level-input {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #fff6dd !important;
+    font-family: 'JJRobotoSlab', serif;
+    font-size: 2rem !important;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0 !important;
+    text-align: center;
+    width: 100%;
+}
+
+.jj-aptitude-level-card > span {
+    color: var(--jj-text);
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    text-transform: none;
+}
+
+.jj-profile-layout {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: minmax(0, 280px) minmax(0, 1fr) minmax(0, 280px);
+}
+
+.jj-profile-side,
+.jj-profile-main {
+    display: grid;
+    gap: 14px;
+}
+
+.jj-profile-fields {
+    align-content: start;
+    gap: 12px;
+}
+
+.jj-profile-summary-body {
+    gap: 12px;
+}
+
+.jj-profile-cd-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.jj-profile-cd-card {
+    min-width: 0;
+}
+
+.jj-profile-cd-card > h3 {
+    font-size: 0.95rem;
+}
+
+.jj-profile-cd-card .jj-derived-row {
+    grid-template-columns: minmax(0, 1fr) 52px;
+}
+
+.jj-profile-cd-card .jj-derived-row > span {
+    line-height: 1.15;
+}
+
+.jj-profile-field {
+    gap: 6px;
+}
+
+.jj-profile-field > input {
+    min-height: 34px;
+    padding: 6px 8px !important;
+}
+
+.jj-profile-field > textarea {
+    min-height: 220px;
+    padding: 10px 12px;
+    resize: vertical;
+}
+
+.jj-profile-spells-body {
+    gap: 12px;
+}
+
+.jj-profile-spells-toolbar {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.jj-profile-spell-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.jj-spell-group-card {
+    min-height: 250px;
+}
+
+.jj-spell-group-body {
+    align-content: start;
+    gap: 8px;
+}
+
+.jj-spell-entry-list {
+    display: grid;
+    gap: 8px;
+}
+
+.jj-spell-entry {
+    align-items: center;
+    background: rgba(8, 10, 15, 0.28);
+    border: 1px solid rgba(183, 163, 123, 0.14);
+    border-radius: 10px;
+    padding: 8px;
+}
+
+.jj-spell-empty {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.78rem;
+    margin: 0;
+    text-align: center;
 }
 
 .jj-registro-layout {
@@ -434,12 +589,33 @@
 }
 
 @media (max-width: 900px) {
+    .jj-aptitude-level-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .jj-profile-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-profile-spell-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .jj-registro-top-grid {
         grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 680px) {
+    .jj-aptitude-level-grid,
+    .jj-profile-spell-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-profile-cd-grid {
+        grid-template-columns: 1fr;
+    }
+
     .jj-registro-quick-field {
         grid-template-columns: 1fr;
     }

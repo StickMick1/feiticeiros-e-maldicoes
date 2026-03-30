@@ -36,6 +36,16 @@
             <span>Custo</span>
             <input name='cost' type='number' value='{{entry.cost}}' />
         </label>
+        {{#if levelOptions.length}}
+            <label class='jj-characteristics-custom-field'>
+                <span>Nível</span>
+                <select name='level'>
+                    {{#each levelOptions as |option|}}
+                        <option value='{{option.value}}' {{#if option.selected}}selected{{/if}}>{{option.label}}</option>
+                    {{/each}}
+                </select>
+            </label>
+        {{/if}}
         <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
             <span>Descrição</span>
             <textarea name='description' rows='3'>{{entry.description}}</textarea>

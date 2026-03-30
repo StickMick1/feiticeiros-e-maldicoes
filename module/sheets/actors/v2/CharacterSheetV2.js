@@ -109,6 +109,30 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                     dialogTitle: 'Adicionar Talento',
                     templatePath: `systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-feature-entry-config.hbs`
                 };
+            case 'aptitude':
+            case 'tables.aptitudes':
+                return {
+                    rowType: 'aptitude',
+                    tablePath: 'tables.aptitudes',
+                    entryTypeLabel: 'Aptidão',
+                    entryTypeLabelLower: 'a aptidão',
+                    dialogTitle: 'Adicionar Aptidão',
+                    templatePath: `systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-feature-entry-config.hbs`
+                };
+            case 'spell':
+            case 'tables.spells':
+                return {
+                    rowType: 'spell',
+                    tablePath: 'tables.spells',
+                    entryTypeLabel: 'Feitiço',
+                    entryTypeLabelLower: 'o feitiço',
+                    dialogTitle: 'Adicionar Feitiço',
+                    templatePath: `systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-feature-entry-config.hbs`,
+                    levelOptions: [0, 1, 2, 3, 4, 5].map((level) => ({
+                        value: level,
+                        label: `Nível ${level}`
+                    }))
+                };
             case 'inventory':
             case 'tables.inventory':
                 return {
@@ -152,6 +176,10 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             entryTypeLabel: config.entryTypeLabel,
             entryTypeLabelLower: config.entryTypeLabelLower,
             entry,
+            levelOptions: (config.levelOptions ?? []).map((option) => ({
+                ...option,
+                selected: Number(option.value) === Number(entry?.level ?? 0)
+            })),
             attributeOptions: (config.attributeOptions ?? []).map((option) => ({
                 ...option,
                 selected: option.value === (entry?.rollAttribute ?? '')
@@ -270,6 +298,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             current: getNumber('current'),
             max: getNumber('max'),
             cost: getNumber('cost'),
+            level: Math.max(0, Math.min(5, Math.trunc(getNumber('level')))),
             description: getValue('description'),
             observations: getValue('observations')
         };
@@ -438,6 +467,10 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 return 'Habilidade';
             case 'talents':
                 return 'Talento';
+            case 'aptitudes':
+                return 'Aptidão';
+            case 'spells':
+                return 'Feitiço';
             case 'inventory':
                 return 'Item';
             default:
@@ -450,6 +483,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 return 'icons/svg/sword.svg';
             case 'abilities':
             case 'talents':
+            case 'aptitudes':
+            case 'spells':
                 return 'icons/svg/book.svg';
             case 'inventory':
                 return 'icons/svg/item-bag.svg';
@@ -517,7 +552,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
     }
     static _createJujutsuTableDragData(actor, tableKey, { rowId = null, rowIndex = -1 } = {}) {
         const normalizedTableKey = String(tableKey ?? '').trim().toLowerCase();
-        if (!actor?.uuid || !['attacks', 'abilities', 'talents'].includes(normalizedTableKey)) {
+        if (!actor?.uuid || !['attacks', 'abilities', 'talents', 'aptitudes', 'spells'].includes(normalizedTableKey)) {
             return null;
         }
         const { entry, rowIndex: resolvedRowIndex } = CharacterSheetV2._getPreparedJujutsuTableEntry(actor, normalizedTableKey, {
@@ -610,7 +645,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             return null;
         }
         const normalizedTableKey = String(tableKey ?? '').trim().toLowerCase();
-        if (!['abilities', 'talents'].includes(normalizedTableKey)) {
+        if (!['abilities', 'talents', 'aptitudes', 'spells'].includes(normalizedTableKey)) {
             ui.notifications.warn('Tipo de habilidade invalido para a hotbar.');
             return null;
         }
@@ -639,9 +674,12 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const costLine = cost > 0
             ? `<p><strong>Custo:</strong> ${cost} PE</p><p><strong>PE restante:</strong> ${nextEnergy}</p>`
             : `<p><strong>Custo:</strong> 0 PE</p>`;
+        const subtitle = normalizedTableKey === 'spells'
+            ? `Feitiço • Nível ${CharacterSheetV2._toSafeNumber(entry.level, 0)}`
+            : CharacterSheetV2._getJujutsuTableLabel(normalizedTableKey);
         await foundry.documents.ChatMessage.implementation.create({
             speaker,
-            content: `${CharacterSheetV2._buildJujutsuItemChatHeader(entry, normalizedTableKey === 'talents' ? 'Talento' : 'Habilidade')}<p>${description}</p>${costLine}`
+            content: `${CharacterSheetV2._buildJujutsuItemChatHeader(entry, subtitle)}<p>${description}</p>${costLine}`
         });
         return entry;
     }
@@ -699,7 +737,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             return null;
         }
         const tableKey = String(dropData?.tableKey ?? '').trim().toLowerCase();
-        if (!['attacks', 'abilities', 'talents'].includes(tableKey)) {
+        if (!['attacks', 'abilities', 'talents', 'aptitudes', 'spells'].includes(tableKey)) {
             ui.notifications.warn('Tipo de entrada invalido para criar macro.');
             return null;
         }
@@ -1629,7 +1667,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         this.dragDrop = this.createDragDropHandlers();
     }
     _setJujutsuTab(tab) {
-        const allowedTabs = new Set(['resumo', 'pericias', 'habilidades', 'inventario', 'registro']);
+        const allowedTabs = new Set(['resumo', 'pericias', 'habilidades', 'aptidoes', 'perfil-a', 'inventario', 'registro']);
         this.activeJujutsuTab = allowedTabs.has(tab) ? tab : 'resumo';
         this._syncJujutsuTabs();
     }
@@ -1646,6 +1684,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             layout.classList.toggle('is-resumo', this.activeJujutsuTab === 'resumo');
             layout.classList.toggle('is-pericias', this.activeJujutsuTab === 'pericias');
             layout.classList.toggle('is-habilidades', this.activeJujutsuTab === 'habilidades');
+            layout.classList.toggle('is-aptidoes', this.activeJujutsuTab === 'aptidoes');
+            layout.classList.toggle('is-perfil-a', this.activeJujutsuTab === 'perfil-a');
             layout.classList.toggle('is-inventario', this.activeJujutsuTab === 'inventario');
             layout.classList.toggle('is-registro', this.activeJujutsuTab === 'registro');
         }
@@ -2200,7 +2240,23 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             attributeDisplay: skillAttributeLabels[skill.attribute] ?? String(skill.attribute ?? '').toUpperCase()
         }));
         const skillColumnSize = Math.ceil(skillDisplay.length / 2);
+        const preparedSpells = (jujutsu.props.tables?.spells ?? []).map((spell, rowIndex) => ({
+            ...spell,
+            rowIndex
+        }));
         jujutsu.skillColumns = [skillDisplay.slice(0, skillColumnSize), skillDisplay.slice(skillColumnSize)];
+        jujutsu.aptitudeLevelCards = [
+            { key: 'aura', label: 'Aptidão em Aura', value: jujutsu.props.aptitudeLevels?.aura ?? 0 },
+            { key: 'controleLeitura', label: 'Aptidão em Controle e Leitura', value: jujutsu.props.aptitudeLevels?.controleLeitura ?? 0 },
+            { key: 'barreira', label: 'Aptidão em Barreira', value: jujutsu.props.aptitudeLevels?.barreira ?? 0 },
+            { key: 'dominio', label: 'Aptidão em Domínio', value: jujutsu.props.aptitudeLevels?.dominio ?? 0 },
+            { key: 'energiaReversa', label: 'Aptidão em Energia Reversa', value: jujutsu.props.aptitudeLevels?.energiaReversa ?? 0 }
+        ];
+        jujutsu.spellLevels = [0, 1, 2, 3, 4, 5].map((level) => ({
+            level,
+            title: `Feitiços Nível ${level}`,
+            entries: preparedSpells.filter((spell) => CharacterSheetV2._toSafeNumber(spell?.level, 0) === level)
+        }));
         return {
             ...context,
             jujutsu

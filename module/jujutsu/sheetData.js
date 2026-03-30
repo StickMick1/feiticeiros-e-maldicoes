@@ -471,6 +471,7 @@ const normalizeFeatureTableEntry = (entry, index = 0, prefix = 'feature-entry', 
         current: n(entry?.current),
         max: n(entry?.max),
         cost: n(entry?.cost),
+        level: Math.max(0, Math.min(5, Math.trunc(n(entry?.level)))),
         description: cleanText(entry?.description),
         observations: cleanText(entry?.observations)
     };
@@ -531,6 +532,14 @@ export const createJujutsuTableRow = (type) => {
     }
     if (type === 'ability') {
         return normalizeFeatureTableEntry({}, 0, 'ability-entry', 'Habilidade');
+    }
+    if (type === 'aptitude') {
+        return normalizeFeatureTableEntry({}, 0, 'aptitude-entry', 'Aptidão');
+    }
+    if (type === 'spell') {
+        return normalizeFeatureTableEntry({
+            level: 0
+        }, 0, 'spell-entry', 'Feitiço');
     }
     if (type === 'inventory') {
         return normalizeInventoryTableEntry({
@@ -661,6 +670,29 @@ export const createJujutsuDefaultProps = () => {
             complicacoes: '',
             dominioInato: ''
         },
+        aptitudeLevels: {
+            aura: 0,
+            controleLeitura: 0,
+            barreira: 0,
+            dominio: 0,
+            energiaReversa: 0
+        },
+        perfilAmaldicoado: {
+            tecnicaNome: '',
+            tecnicaDescricao: '',
+            expansaoNome: '',
+            expansaoTipo: '',
+            expansaoDescricao: '',
+            tecnicaMaximaNome: '',
+            tecnicaMaximaDescricao: '',
+            atributoPrincipal: 'des',
+            cdTecnica: {
+                others: 0
+            },
+            cdAmaldicoada: {
+                others: 0
+            }
+        },
         inventory: {
             spaceLimit: 18
         },
@@ -669,6 +701,8 @@ export const createJujutsuDefaultProps = () => {
             attacks: [],
             abilities: [],
             talents: [],
+            aptitudes: [],
+            spells: [],
             inventory: []
         }
     };
@@ -733,6 +767,32 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         ligacoes: coerceTextValue(props.registro?.ligacoes),
         complicacoes: coerceTextValue(props.registro?.complicacoes),
         dominioInato: coerceTextValue(props.registro?.dominioInato)
+    };
+
+    props.aptitudeLevels = {
+        aura: Math.max(0, Math.trunc(n(props.aptitudeLevels?.aura))),
+        controleLeitura: Math.max(0, Math.trunc(n(props.aptitudeLevels?.controleLeitura))),
+        barreira: Math.max(0, Math.trunc(n(props.aptitudeLevels?.barreira))),
+        dominio: Math.max(0, Math.trunc(n(props.aptitudeLevels?.dominio))),
+        energiaReversa: Math.max(0, Math.trunc(n(props.aptitudeLevels?.energiaReversa)))
+    };
+
+    const perfilAmaldicoadoAttributeKey = cleanText(props.perfilAmaldicoado?.atributoPrincipal).toLowerCase();
+    props.perfilAmaldicoado = {
+        tecnicaNome: coerceTextValue(props.perfilAmaldicoado?.tecnicaNome),
+        tecnicaDescricao: coerceTextValue(props.perfilAmaldicoado?.tecnicaDescricao),
+        expansaoNome: coerceTextValue(props.perfilAmaldicoado?.expansaoNome),
+        expansaoTipo: coerceTextValue(props.perfilAmaldicoado?.expansaoTipo),
+        expansaoDescricao: coerceTextValue(props.perfilAmaldicoado?.expansaoDescricao),
+        tecnicaMaximaNome: coerceTextValue(props.perfilAmaldicoado?.tecnicaMaximaNome),
+        tecnicaMaximaDescricao: coerceTextValue(props.perfilAmaldicoado?.tecnicaMaximaDescricao),
+        atributoPrincipal: ATTRIBUTE_KEYS.has(perfilAmaldicoadoAttributeKey) ? perfilAmaldicoadoAttributeKey : 'des',
+        cdTecnica: {
+            others: n(props.perfilAmaldicoado?.cdTecnica?.others)
+        },
+        cdAmaldicoada: {
+            others: n(props.perfilAmaldicoado?.cdAmaldicoada?.others)
+        }
     };
 
     const attributeMap = {};
@@ -857,6 +917,8 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         attacks: toArrayValues(props.tables?.attacks).map((entry, index) => normalizeAttackTableEntry(entry, index)),
         abilities: toArrayValues(props.tables?.abilities).map((entry, index) => normalizeFeatureTableEntry(entry, index, 'ability-entry', 'Habilidade')),
         talents: toArrayValues(props.tables?.talents).map((entry, index) => normalizeFeatureTableEntry(entry, index, 'talent-entry', 'Talento')),
+        aptitudes: toArrayValues(props.tables?.aptitudes).map((entry, index) => normalizeFeatureTableEntry(entry, index, 'aptitude-entry', 'Aptidão')),
+        spells: toArrayValues(props.tables?.spells).map((entry, index) => normalizeFeatureTableEntry(entry, index, 'spell-entry', 'Feitiço')),
         inventory: toArrayValues(props.tables?.inventory).map((entry, index) => normalizeInventoryTableEntry(entry, index))
     };
     const inventorySpaceLimitValue = Number(props.inventory?.spaceLimit);
@@ -868,6 +930,31 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
     const inventorySpaceRemaining = props.inventory.spaceLimit - inventoryUsedSpaces;
 
     const attributeDisplay = (key) => ATTRIBUTE_OPTIONS.find((option) => option.key === key)?.label ?? String(key ?? '').toUpperCase();
+    const perfilAmaldicoadoAttrKey = props.perfilAmaldicoado?.atributoPrincipal ?? 'des';
+    const perfilAmaldicoadoAttrMod = getAttrMod(perfilAmaldicoadoAttrKey);
+    const perfilAmaldicoadoKnownSpells = props.tables.spells.filter((spell) => {
+        const spellLevel = Math.trunc(n(spell?.level));
+        return spellLevel >= 1 && spellLevel <= 5;
+    }).length;
+    const perfilAmaldicoadoCdTecnicaOthers = n(props.perfilAmaldicoado?.cdTecnica?.others);
+    const perfilAmaldicoadoCdAmaldicoadaOthers = n(props.perfilAmaldicoado?.cdAmaldicoada?.others);
+    const perfilAmaldicoado = {
+        knownSpells: perfilAmaldicoadoKnownSpells,
+        attributeKey: perfilAmaldicoadoAttrKey,
+        attributeLabel: attributeDisplay(perfilAmaldicoadoAttrKey),
+        attributeMod: perfilAmaldicoadoAttrMod,
+        levelHalf,
+        cdTecnica: {
+            attribute: perfilAmaldicoadoAttrMod,
+            others: perfilAmaldicoadoCdTecnicaOthers,
+            total: perfilAmaldicoadoAttrMod + levelHalf + perfilAmaldicoadoCdTecnicaOthers
+        },
+        cdAmaldicoada: {
+            attribute: perfilAmaldicoadoAttrMod,
+            others: perfilAmaldicoadoCdAmaldicoadaOthers,
+            total: perfilAmaldicoadoAttrMod + levelHalf + perfilAmaldicoadoCdAmaldicoadaOthers
+        }
+    };
     // Attack cards and chat rolls both rely on this derived attack model.
     const attackBonuses = ATTACK_BONUSES.map((attackBonus) => {
         const entry = props.attackBonuses?.[attackBonus.key] ?? {};
@@ -1027,6 +1114,7 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
             defenseTotal,
             cdAttrMod,
             specializationCdTotal,
+            perfilAmaldicoado,
             deathSuccessCount,
             deathFailureCount,
             hitDiceSpentTotal,

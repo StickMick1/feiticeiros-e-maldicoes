@@ -44,6 +44,8 @@
             <button class='jj-tab is-active' type='button' role='tab' data-tab-target='resumo' aria-selected='true'>Resumo</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='pericias' aria-selected='false'>Pericias</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='habilidades' aria-selected='false'>Habilidades</button>
+            <button class='jj-tab' type='button' role='tab' data-tab-target='aptidoes' aria-selected='false'>Aptidões</button>
+            <button class='jj-tab' type='button' role='tab' data-tab-target='perfil-a' aria-selected='false'>Perfil A.</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='inventario' aria-selected='false'>Inventário</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='registro' aria-selected='false'>Registro</button>
         </nav>
@@ -1131,6 +1133,259 @@
                             {{/if}}
                         </tbody>
                     </table>
+                </div>
+            </section>
+
+            <section class='jj-panel' data-tab-block='aptidoes'>
+                <h2>Aptidões Amaldiçoadas</h2>
+                <table class='jj-table'>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Atual</th>
+                            <th>Max.</th>
+                            <th>Custo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#if jujutsu.props.tables.aptitudes.length}}
+                            {{#each jujutsu.props.tables.aptitudes as |aptitude idx|}}
+                                <tr>
+                                    <td class='jj-table-item-cell'>
+                                        <div class='jj-table-item'>
+                                            <div
+                                                class='jj-table-item-main jj-table-item-main--draggable'
+                                                draggable='true'
+                                                data-jujutsu-table-drag
+                                                data-table-key='aptitudes'
+                                                data-row-index='{{idx}}'
+                                                data-entry-id='{{aptitude.id}}'
+                                                title='Arraste para a barra de hotkeys'
+                                            >
+                                                <img class='jj-table-item-thumb' src='{{aptitude.image}}' alt='{{aptitude.name}}' />
+                                                <div class='jj-table-item-text'>
+                                                    <strong>{{aptitude.name}}</strong>
+                                                    <span>Atual {{aptitude.current}} / {{aptitude.max}} • Custo {{aptitude.cost}}</span>
+                                                </div>
+                                            </div>
+                                            <div class='jj-table-item-actions'>
+                                                <button class='jj-table-icon-button' type='button' data-use-table-feature data-collection='aptitudes' data-row-index='{{idx}}' data-tooltip='Usar {{aptitude.name}}' aria-label='Usar {{aptitude.name}}'>
+                                                    <i class='fas fa-dice-d20'></i>
+                                                </button>
+                                                <button class='jj-table-icon-button' type='button' data-action='editJujutsuRow' data-table-path='tables.aptitudes' data-row-index='{{idx}}' data-tooltip='Editar {{aptitude.name}}' aria-label='Editar {{aptitude.name}}'>
+                                                    <i class='fas fa-pen'></i>
+                                                </button>
+                                                <button class='jj-table-icon-button jj-table-icon-button--danger' type='button' data-action='removeJujutsuRow' data-table-path='tables.aptitudes' data-row-index='{{idx}}' data-tooltip='Excluir {{aptitude.name}}' aria-label='Excluir {{aptitude.name}}'>
+                                                    <i class='fas fa-trash'></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{aptitude.current}}</td>
+                                    <td>{{aptitude.max}}</td>
+                                    <td>{{aptitude.cost}}</td>
+                                </tr>
+                            {{/each}}
+                        {{else}}
+                            <tr>
+                                <td colspan='4' class='jj-inventory-empty'>Nenhuma aptidão cadastrada.</td>
+                            </tr>
+                        {{/if}}
+                    </tbody>
+                </table>
+                <button class='jj-action-button' type='button' data-action='addJujutsuRow' data-table-path='tables.aptitudes' data-row-type='aptitude'>Adicionar aptidão</button>
+            </section>
+
+            <section class='jj-panel' data-tab-block='aptidoes'>
+                <h2>Níveis de Aptidão</h2>
+                <div class='jj-aptitude-level-grid'>
+                    {{#each jujutsu.aptitudeLevelCards as |card|}}
+                        <label class='jj-card jj-aptitude-level-card'>
+                            <input
+                                class='jj-aptitude-level-input'
+                                name='system.props.aptitudeLevels.{{card.key}}'
+                                type='number'
+                                min='0'
+                                step='1'
+                                data-dtype='Number'
+                                value='{{card.value}}'
+                            />
+                            <span>{{card.label}}</span>
+                        </label>
+                    {{/each}}
+                </div>
+            </section>
+
+            <section class='jj-panel jj-profile-panel' data-tab-block='perfil-a'>
+                <h2>Perfil Amaldiçoado</h2>
+                <div class='jj-profile-layout'>
+                    <div class='jj-profile-side'>
+                        <div class='jj-card jj-derived-card'>
+                            <h3>Técnica Amaldiçoada</h3>
+                            <div class='jj-derived-body jj-profile-fields'>
+                                <label class='jj-profile-field'>
+                                    <span>Nome da Técnica</span>
+                                    <input name='system.props.perfilAmaldicoado.tecnicaNome' type='text' value='{{jujutsu.props.perfilAmaldicoado.tecnicaNome}}' />
+                                </label>
+                                <label class='jj-profile-field jj-profile-field--textarea'>
+                                    <span>Descrição da Técnica</span>
+                                    <textarea name='system.props.perfilAmaldicoado.tecnicaDescricao' rows='10'>{{jujutsu.props.perfilAmaldicoado.tecnicaDescricao}}</textarea>
+                                </label>
+                            </div>
+                        </div>
+                        <div class='jj-card jj-derived-card jj-profile-summary-card'>
+                            <h3>Perfil Amaldiçoado</h3>
+                            <div class='jj-derived-body jj-profile-summary-body'>
+                                <label class='jj-derived-row jj-derived-row--wide'>
+                                    <span>Feitiços Conhecidos</span>
+                                    <input type='number' value='{{jujutsu.computed.perfilAmaldicoado.knownSpells}}' readonly />
+                                </label>
+                                <label class='jj-derived-row jj-derived-row--wide'>
+                                    <span>Atributo Principal</span>
+                                    <select name='system.props.perfilAmaldicoado.atributoPrincipal'>
+                                        {{#each jujutsu.attributeOptions as |opt|}}
+                                            <option value='{{opt.key}}' {{#if (eq opt.key ../jujutsu.props.perfilAmaldicoado.atributoPrincipal)}}selected{{/if}}>{{opt.label}}</option>
+                                        {{/each}}
+                                    </select>
+                                </label>
+                                <div class='jj-profile-cd-grid'>
+                                    <div class='jj-card jj-derived-card jj-profile-cd-card'>
+                                        <h3>CD Técnica</h3>
+                                        <div class='jj-derived-body'>
+                                            <div class='jj-derived-total'>
+                                                <span>Total</span>
+                                                <input type='number' value='{{jujutsu.computed.perfilAmaldicoado.cdTecnica.total}}' readonly />
+                                            </div>
+                                            <div class='jj-derived-fields'>
+                                                <label class='jj-derived-row'>
+                                                    <span>Atributo {{jujutsu.computed.perfilAmaldicoado.attributeLabel}}</span>
+                                                    <input type='number' value='{{jujutsu.computed.perfilAmaldicoado.cdTecnica.attribute}}' readonly />
+                                                </label>
+                                                <label class='jj-derived-row'>
+                                                    <span>Nível/2</span>
+                                                    <input type='number' value='{{jujutsu.computed.perfilAmaldicoado.levelHalf}}' readonly />
+                                                </label>
+                                                <label class='jj-derived-row'>
+                                                    <span>Outros</span>
+                                                    <input name='system.props.perfilAmaldicoado.cdTecnica.others' type='number' data-dtype='Number' value='{{jujutsu.props.perfilAmaldicoado.cdTecnica.others}}' />
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class='jj-card jj-derived-card jj-profile-cd-card'>
+                                        <h3>CD Amaldiçoada</h3>
+                                        <div class='jj-derived-body'>
+                                            <div class='jj-derived-total'>
+                                                <span>Total</span>
+                                                <input type='number' value='{{jujutsu.computed.perfilAmaldicoado.cdAmaldicoada.total}}' readonly />
+                                            </div>
+                                            <div class='jj-derived-fields'>
+                                                <label class='jj-derived-row'>
+                                                    <span>Atributo {{jujutsu.computed.perfilAmaldicoado.attributeLabel}}</span>
+                                                    <input type='number' value='{{jujutsu.computed.perfilAmaldicoado.cdAmaldicoada.attribute}}' readonly />
+                                                </label>
+                                                <label class='jj-derived-row'>
+                                                    <span>Nível/2</span>
+                                                    <input type='number' value='{{jujutsu.computed.perfilAmaldicoado.levelHalf}}' readonly />
+                                                </label>
+                                                <label class='jj-derived-row'>
+                                                    <span>Outros</span>
+                                                    <input name='system.props.perfilAmaldicoado.cdAmaldicoada.others' type='number' data-dtype='Number' value='{{jujutsu.props.perfilAmaldicoado.cdAmaldicoada.others}}' />
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='jj-profile-main'>
+                        <div class='jj-card jj-derived-card jj-profile-spells-card'>
+                            <h3>Lista de Feitiços</h3>
+                            <div class='jj-derived-body jj-profile-spells-body'>
+                                <div class='jj-profile-spells-toolbar'>
+                                    <button class='jj-action-button' type='button' data-action='addJujutsuRow' data-table-path='tables.spells' data-row-type='spell'>Adicionar feitiço</button>
+                                </div>
+                                <div class='jj-profile-spell-grid'>
+                                    {{#each jujutsu.spellLevels as |group|}}
+                                        <div class='jj-card jj-derived-card jj-spell-group-card'>
+                                            <h3>{{group.title}}</h3>
+                                            <div class='jj-derived-body jj-spell-group-body'>
+                                                {{#if group.entries.length}}
+                                                    <div class='jj-spell-entry-list'>
+                                                        {{#each group.entries as |spell|}}
+                                                            <div class='jj-table-item jj-spell-entry'>
+                                                                <div
+                                                                    class='jj-table-item-main jj-table-item-main--draggable'
+                                                                    draggable='true'
+                                                                    data-jujutsu-table-drag
+                                                                    data-table-key='spells'
+                                                                    data-row-index='{{spell.rowIndex}}'
+                                                                    data-entry-id='{{spell.id}}'
+                                                                    title='Arraste para a barra de hotkeys'
+                                                                >
+                                                                    <img class='jj-table-item-thumb' src='{{spell.image}}' alt='{{spell.name}}' />
+                                                                    <div class='jj-table-item-text'>
+                                                                        <strong>{{spell.name}}</strong>
+                                                                        <span>Atual {{spell.current}} / {{spell.max}} • Custo {{spell.cost}}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div class='jj-table-item-actions'>
+                                                                    <button class='jj-table-icon-button' type='button' data-use-table-feature data-collection='spells' data-row-index='{{spell.rowIndex}}' data-tooltip='Usar {{spell.name}}' aria-label='Usar {{spell.name}}'>
+                                                                        <i class='fas fa-dice-d20'></i>
+                                                                    </button>
+                                                                    <button class='jj-table-icon-button' type='button' data-action='editJujutsuRow' data-table-path='tables.spells' data-row-index='{{spell.rowIndex}}' data-tooltip='Editar {{spell.name}}' aria-label='Editar {{spell.name}}'>
+                                                                        <i class='fas fa-pen'></i>
+                                                                    </button>
+                                                                    <button class='jj-table-icon-button jj-table-icon-button--danger' type='button' data-action='removeJujutsuRow' data-table-path='tables.spells' data-row-index='{{spell.rowIndex}}' data-tooltip='Excluir {{spell.name}}' aria-label='Excluir {{spell.name}}'>
+                                                                        <i class='fas fa-trash'></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        {{/each}}
+                                                    </div>
+                                                {{else}}
+                                                    <p class='jj-spell-empty'>Nenhum feitiço cadastrado.</p>
+                                                {{/if}}
+                                            </div>
+                                        </div>
+                                    {{/each}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='jj-profile-side'>
+                        <div class='jj-card jj-derived-card'>
+                            <h3>Expansão de Domínio</h3>
+                            <div class='jj-derived-body jj-profile-fields'>
+                                <label class='jj-profile-field'>
+                                    <span>Nome da Expansão</span>
+                                    <input name='system.props.perfilAmaldicoado.expansaoNome' type='text' value='{{jujutsu.props.perfilAmaldicoado.expansaoNome}}' />
+                                </label>
+                                <label class='jj-profile-field'>
+                                    <span>Tipo de Expansão</span>
+                                    <input name='system.props.perfilAmaldicoado.expansaoTipo' type='text' value='{{jujutsu.props.perfilAmaldicoado.expansaoTipo}}' />
+                                </label>
+                                <label class='jj-profile-field jj-profile-field--textarea'>
+                                    <span>Descrição da Expansão</span>
+                                    <textarea name='system.props.perfilAmaldicoado.expansaoDescricao' rows='10'>{{jujutsu.props.perfilAmaldicoado.expansaoDescricao}}</textarea>
+                                </label>
+                            </div>
+                        </div>
+                        <div class='jj-card jj-derived-card'>
+                            <h3>Técnica Máxima</h3>
+                            <div class='jj-derived-body jj-profile-fields'>
+                                <label class='jj-profile-field'>
+                                    <span>Nome da Técnica</span>
+                                    <input name='system.props.perfilAmaldicoado.tecnicaMaximaNome' type='text' value='{{jujutsu.props.perfilAmaldicoado.tecnicaMaximaNome}}' />
+                                </label>
+                                <label class='jj-profile-field jj-profile-field--textarea'>
+                                    <span>Descrição da Técnica Máxima</span>
+                                    <textarea name='system.props.perfilAmaldicoado.tecnicaMaximaDescricao' rows='10'>{{jujutsu.props.perfilAmaldicoado.tecnicaMaximaDescricao}}</textarea>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
