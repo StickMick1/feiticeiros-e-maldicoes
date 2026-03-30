@@ -318,6 +318,7 @@
 .jj-layout.is-habilidades [data-tab-block~='habilidades'],
 .jj-layout.is-aptidoes [data-tab-block~='aptidoes'],
 .jj-layout.is-perfil-a [data-tab-block~='perfil-a'],
+.jj-layout.is-expansao [data-tab-block~='expansao'],
 .jj-layout.is-inventario [data-tab-block~='inventario'],
 .jj-layout.is-registro [data-tab-block~='registro'] {
     display: grid;
@@ -327,6 +328,7 @@
 .jj-layout.is-habilidades,
 .jj-layout.is-aptidoes,
 .jj-layout.is-perfil-a,
+.jj-layout.is-expansao,
 .jj-layout.is-inventario,
 .jj-layout.is-registro {
     grid-template-columns: 1fr;
@@ -336,6 +338,7 @@
 .jj-layout.is-habilidades .jj-sidebar,
 .jj-layout.is-aptidoes .jj-sidebar,
 .jj-layout.is-perfil-a .jj-sidebar,
+.jj-layout.is-expansao .jj-sidebar,
 .jj-layout.is-inventario .jj-sidebar,
 .jj-layout.is-registro .jj-sidebar {
     display: none;
@@ -351,6 +354,7 @@
 
 .jj-layout.is-aptidoes .jj-main-columns,
 .jj-layout.is-perfil-a .jj-main-columns,
+.jj-layout.is-expansao .jj-main-columns,
 .jj-layout.is-inventario .jj-main-columns,
 .jj-layout.is-registro .jj-main-columns {
     grid-template-columns: 1fr;
@@ -358,6 +362,7 @@
 
 .jj-layout.is-aptidoes .jj-main-columns,
 .jj-layout.is-perfil-a .jj-main-columns,
+.jj-layout.is-expansao .jj-main-columns,
 .jj-layout.is-inventario .jj-main-columns,
 .jj-layout.is-registro .jj-main-columns {
     display: none;
@@ -374,6 +379,7 @@
 
 .jj-layout.is-aptidoes .jj-main-secondary,
 .jj-layout.is-perfil-a .jj-main-secondary,
+.jj-layout.is-expansao .jj-main-secondary,
 .jj-layout.is-inventario .jj-main-secondary,
 .jj-layout.is-registro .jj-main-secondary {
     display: none;
@@ -422,13 +428,19 @@
 .jj-profile-layout {
     display: grid;
     gap: 14px;
-    grid-template-columns: minmax(0, 280px) minmax(0, 1fr) minmax(0, 280px);
+    grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
 }
 
 .jj-profile-side,
 .jj-profile-main {
     display: grid;
     gap: 14px;
+}
+
+.jj-profile-bottom-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .jj-profile-fields {
@@ -597,6 +609,10 @@
         grid-template-columns: 1fr;
     }
 
+    .jj-profile-bottom-grid {
+        grid-template-columns: 1fr;
+    }
+
     .jj-profile-spell-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -613,6 +629,10 @@
     }
 
     .jj-profile-cd-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-profile-bottom-grid {
         grid-template-columns: 1fr;
     }
 

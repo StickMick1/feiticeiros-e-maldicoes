@@ -46,6 +46,7 @@
             <button class='jj-tab' type='button' role='tab' data-tab-target='habilidades' aria-selected='false'>Habilidades</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='aptidoes' aria-selected='false'>Aptidões</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='perfil-a' aria-selected='false'>Perfil A.</button>
+            <button class='jj-tab' type='button' role='tab' data-tab-target='expansao' aria-selected='false'>Expansão</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='inventario' aria-selected='false'>Inventário</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='registro' aria-selected='false'>Registro</button>
         </nav>
@@ -1306,84 +1307,102 @@
                                 <div class='jj-profile-spells-toolbar'>
                                     <button class='jj-action-button' type='button' data-action='addJujutsuRow' data-table-path='tables.spells' data-row-type='spell'>Adicionar feitiço</button>
                                 </div>
-                                <div class='jj-profile-spell-grid'>
-                                    {{#each jujutsu.spellLevels as |group|}}
-                                        <div class='jj-card jj-derived-card jj-spell-group-card'>
-                                            <h3>{{group.title}}</h3>
-                                            <div class='jj-derived-body jj-spell-group-body'>
-                                                {{#if group.entries.length}}
-                                                    <div class='jj-spell-entry-list'>
-                                                        {{#each group.entries as |spell|}}
-                                                            <div class='jj-table-item jj-spell-entry'>
-                                                                <div
-                                                                    class='jj-table-item-main jj-table-item-main--draggable'
-                                                                    draggable='true'
-                                                                    data-jujutsu-table-drag
-                                                                    data-table-key='spells'
-                                                                    data-row-index='{{spell.rowIndex}}'
-                                                                    data-entry-id='{{spell.id}}'
-                                                                    title='Arraste para a barra de hotkeys'
-                                                                >
-                                                                    <img class='jj-table-item-thumb' src='{{spell.image}}' alt='{{spell.name}}' />
-                                                                    <div class='jj-table-item-text'>
-                                                                        <strong>{{spell.name}}</strong>
-                                                                        <span>Atual {{spell.current}} / {{spell.max}} • Custo {{spell.cost}}</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div class='jj-table-item-actions'>
-                                                                    <button class='jj-table-icon-button' type='button' data-use-table-feature data-collection='spells' data-row-index='{{spell.rowIndex}}' data-tooltip='Usar {{spell.name}}' aria-label='Usar {{spell.name}}'>
-                                                                        <i class='fas fa-dice-d20'></i>
-                                                                    </button>
-                                                                    <button class='jj-table-icon-button' type='button' data-action='editJujutsuRow' data-table-path='tables.spells' data-row-index='{{spell.rowIndex}}' data-tooltip='Editar {{spell.name}}' aria-label='Editar {{spell.name}}'>
-                                                                        <i class='fas fa-pen'></i>
-                                                                    </button>
-                                                                    <button class='jj-table-icon-button jj-table-icon-button--danger' type='button' data-action='removeJujutsuRow' data-table-path='tables.spells' data-row-index='{{spell.rowIndex}}' data-tooltip='Excluir {{spell.name}}' aria-label='Excluir {{spell.name}}'>
-                                                                        <i class='fas fa-trash'></i>
-                                                                    </button>
+                                <table class='jj-table'>
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Acerto</th>
+                                            <th>Atual</th>
+                                            <th>Max.</th>
+                                            <th>Custo</th>
+                                            <th>Nível</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{#if jujutsu.props.tables.spells.length}}
+                                            {{#each jujutsu.props.tables.spells as |spell idx|}}
+                                                <tr>
+                                                    <td class='jj-table-item-cell'>
+                                                        <div class='jj-table-item'>
+                                                            <div
+                                                                class='jj-table-item-main jj-table-item-main--draggable'
+                                                                draggable='true'
+                                                                data-jujutsu-table-drag
+                                                                data-table-key='spells'
+                                                                data-row-index='{{idx}}'
+                                                                data-entry-id='{{spell.id}}'
+                                                                title='Arraste para a barra de hotkeys'
+                                                            >
+                                                                <img class='jj-table-item-thumb' src='{{spell.image}}' alt='{{spell.name}}' />
+                                                                <div class='jj-table-item-text'>
+                                                                    <strong>{{spell.name}}</strong>
+                                                                    <span>Acerto: {{spell.acerto}} • Nível: {{spell.level}}</span>
                                                                 </div>
                                                             </div>
-                                                        {{/each}}
-                                                    </div>
-                                                {{else}}
-                                                    <p class='jj-spell-empty'>Nenhum feitiço cadastrado.</p>
-                                                {{/if}}
-                                            </div>
-                                        </div>
-                                    {{/each}}
-                                </div>
+                                                            <div class='jj-table-item-actions'>
+                                                                <button class='jj-table-icon-button' type='button' data-use-table-feature data-collection='spells' data-row-index='{{idx}}' data-tooltip='Usar {{spell.name}}' aria-label='Usar {{spell.name}}'>
+                                                                    <i class='fas fa-dice-d20'></i>
+                                                                </button>
+                                                                <button class='jj-table-icon-button' type='button' data-action='editJujutsuRow' data-table-path='tables.spells' data-row-index='{{idx}}' data-tooltip='Editar {{spell.name}}' aria-label='Editar {{spell.name}}'>
+                                                                    <i class='fas fa-pen'></i>
+                                                                </button>
+                                                                <button class='jj-table-icon-button jj-table-icon-button--danger' type='button' data-action='removeJujutsuRow' data-table-path='tables.spells' data-row-index='{{idx}}' data-tooltip='Excluir {{spell.name}}' aria-label='Excluir {{spell.name}}'>
+                                                                    <i class='fas fa-trash'></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>{{spell.acerto}}</td>
+                                                    <td>{{spell.current}}</td>
+                                                    <td>{{spell.max}}</td>
+                                                    <td>{{spell.cost}}</td>
+                                                    <td>{{spell.level}}</td>
+                                                </tr>
+                                            {{/each}}
+                                        {{else}}
+                                            <tr>
+                                                <td colspan='6' class='jj-inventory-empty'>Nenhum feitiço cadastrado.</td>
+                                            </tr>
+                                        {{/if}}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
-                    <div class='jj-profile-side'>
-                        <div class='jj-card jj-derived-card'>
-                            <h3>Expansão de Domínio</h3>
-                            <div class='jj-derived-body jj-profile-fields'>
-                                <label class='jj-profile-field'>
-                                    <span>Nome da Expansão</span>
-                                    <input name='system.props.perfilAmaldicoado.expansaoNome' type='text' value='{{jujutsu.props.perfilAmaldicoado.expansaoNome}}' />
-                                </label>
-                                <label class='jj-profile-field'>
-                                    <span>Tipo de Expansão</span>
-                                    <input name='system.props.perfilAmaldicoado.expansaoTipo' type='text' value='{{jujutsu.props.perfilAmaldicoado.expansaoTipo}}' />
-                                </label>
-                                <label class='jj-profile-field jj-profile-field--textarea'>
-                                    <span>Descrição da Expansão</span>
-                                    <textarea name='system.props.perfilAmaldicoado.expansaoDescricao' rows='10'>{{jujutsu.props.perfilAmaldicoado.expansaoDescricao}}</textarea>
-                                </label>
-                            </div>
+                </div>
+            </section>
+
+            <section class='jj-panel jj-profile-panel' data-tab-block='expansao'>
+                <h2>Expansão</h2>
+                <div class='jj-profile-bottom-grid'>
+                    <div class='jj-card jj-derived-card'>
+                        <h3>Expansão de Domínio</h3>
+                        <div class='jj-derived-body jj-profile-fields'>
+                            <label class='jj-profile-field'>
+                                <span>Nome da Expansão</span>
+                                <input name='system.props.perfilAmaldicoado.expansaoNome' type='text' value='{{jujutsu.props.perfilAmaldicoado.expansaoNome}}' />
+                            </label>
+                            <label class='jj-profile-field'>
+                                <span>Tipo de Expansão</span>
+                                <input name='system.props.perfilAmaldicoado.expansaoTipo' type='text' value='{{jujutsu.props.perfilAmaldicoado.expansaoTipo}}' />
+                            </label>
+                            <label class='jj-profile-field jj-profile-field--textarea'>
+                                <span>Descrição da Expansão</span>
+                                <textarea name='system.props.perfilAmaldicoado.expansaoDescricao' rows='10'>{{jujutsu.props.perfilAmaldicoado.expansaoDescricao}}</textarea>
+                            </label>
                         </div>
-                        <div class='jj-card jj-derived-card'>
-                            <h3>Técnica Máxima</h3>
-                            <div class='jj-derived-body jj-profile-fields'>
-                                <label class='jj-profile-field'>
-                                    <span>Nome da Técnica</span>
-                                    <input name='system.props.perfilAmaldicoado.tecnicaMaximaNome' type='text' value='{{jujutsu.props.perfilAmaldicoado.tecnicaMaximaNome}}' />
-                                </label>
-                                <label class='jj-profile-field jj-profile-field--textarea'>
-                                    <span>Descrição da Técnica Máxima</span>
-                                    <textarea name='system.props.perfilAmaldicoado.tecnicaMaximaDescricao' rows='10'>{{jujutsu.props.perfilAmaldicoado.tecnicaMaximaDescricao}}</textarea>
-                                </label>
-                            </div>
+                    </div>
+                    <div class='jj-card jj-derived-card'>
+                        <h3>Técnica Máxima</h3>
+                        <div class='jj-derived-body jj-profile-fields'>
+                            <label class='jj-profile-field'>
+                                <span>Nome da Técnica</span>
+                                <input name='system.props.perfilAmaldicoado.tecnicaMaximaNome' type='text' value='{{jujutsu.props.perfilAmaldicoado.tecnicaMaximaNome}}' />
+                            </label>
+                            <label class='jj-profile-field jj-profile-field--textarea'>
+                                <span>Descrição da Técnica Máxima</span>
+                                <textarea name='system.props.perfilAmaldicoado.tecnicaMaximaDescricao' rows='10'>{{jujutsu.props.perfilAmaldicoado.tecnicaMaximaDescricao}}</textarea>
+                            </label>
                         </div>
                     </div>
                 </div>

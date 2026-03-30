@@ -932,10 +932,7 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
     const attributeDisplay = (key) => ATTRIBUTE_OPTIONS.find((option) => option.key === key)?.label ?? String(key ?? '').toUpperCase();
     const perfilAmaldicoadoAttrKey = props.perfilAmaldicoado?.atributoPrincipal ?? 'des';
     const perfilAmaldicoadoAttrMod = getAttrMod(perfilAmaldicoadoAttrKey);
-    const perfilAmaldicoadoKnownSpells = props.tables.spells.filter((spell) => {
-        const spellLevel = Math.trunc(n(spell?.level));
-        return spellLevel >= 1 && spellLevel <= 5;
-    }).length;
+    const perfilAmaldicoadoKnownSpells = props.tables.spells.length;
     const perfilAmaldicoadoCdTecnicaOthers = n(props.perfilAmaldicoado?.cdTecnica?.others);
     const perfilAmaldicoadoCdAmaldicoadaOthers = n(props.perfilAmaldicoado?.cdAmaldicoada?.others);
     const perfilAmaldicoado = {

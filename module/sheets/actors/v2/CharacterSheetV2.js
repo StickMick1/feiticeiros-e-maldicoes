@@ -1667,7 +1667,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         this.dragDrop = this.createDragDropHandlers();
     }
     _setJujutsuTab(tab) {
-        const allowedTabs = new Set(['resumo', 'pericias', 'habilidades', 'aptidoes', 'perfil-a', 'inventario', 'registro']);
+        const allowedTabs = new Set(['resumo', 'pericias', 'habilidades', 'aptidoes', 'perfil-a', 'expansao', 'inventario', 'registro']);
         this.activeJujutsuTab = allowedTabs.has(tab) ? tab : 'resumo';
         this._syncJujutsuTabs();
     }
@@ -1686,6 +1686,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             layout.classList.toggle('is-habilidades', this.activeJujutsuTab === 'habilidades');
             layout.classList.toggle('is-aptidoes', this.activeJujutsuTab === 'aptidoes');
             layout.classList.toggle('is-perfil-a', this.activeJujutsuTab === 'perfil-a');
+            layout.classList.toggle('is-expansao', this.activeJujutsuTab === 'expansao');
             layout.classList.toggle('is-inventario', this.activeJujutsuTab === 'inventario');
             layout.classList.toggle('is-registro', this.activeJujutsuTab === 'registro');
         }
@@ -2240,10 +2241,6 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             attributeDisplay: skillAttributeLabels[skill.attribute] ?? String(skill.attribute ?? '').toUpperCase()
         }));
         const skillColumnSize = Math.ceil(skillDisplay.length / 2);
-        const preparedSpells = (jujutsu.props.tables?.spells ?? []).map((spell, rowIndex) => ({
-            ...spell,
-            rowIndex
-        }));
         jujutsu.skillColumns = [skillDisplay.slice(0, skillColumnSize), skillDisplay.slice(skillColumnSize)];
         jujutsu.aptitudeLevelCards = [
             { key: 'aura', label: 'Aptidão em Aura', value: jujutsu.props.aptitudeLevels?.aura ?? 0 },
@@ -2252,11 +2249,6 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             { key: 'dominio', label: 'Aptidão em Domínio', value: jujutsu.props.aptitudeLevels?.dominio ?? 0 },
             { key: 'energiaReversa', label: 'Aptidão em Energia Reversa', value: jujutsu.props.aptitudeLevels?.energiaReversa ?? 0 }
         ];
-        jujutsu.spellLevels = [0, 1, 2, 3, 4, 5].map((level) => ({
-            level,
-            title: `Feitiços Nível ${level}`,
-            entries: preparedSpells.filter((spell) => CharacterSheetV2._toSafeNumber(spell?.level, 0) === level)
-        }));
         return {
             ...context,
             jujutsu
