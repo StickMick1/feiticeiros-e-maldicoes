@@ -44,6 +44,7 @@
             <button class='jj-tab is-active' type='button' role='tab' data-tab-target='resumo' aria-selected='true'>Resumo</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='pericias' aria-selected='false'>Pericias</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='habilidades' aria-selected='false'>Habilidades</button>
+            <button class='jj-tab' type='button' role='tab' data-tab-target='invocacoes' aria-selected='false'>Invocações</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='aptidoes' aria-selected='false'>Aptidões</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='perfil-a' aria-selected='false'>Perfil A.</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='expansao' aria-selected='false'>Expansão</button>
@@ -1135,6 +1136,179 @@
                         </tbody>
                     </table>
                 </div>
+            </section>
+
+            <section class='jj-panel jj-invocations-panel' data-tab-block='invocacoes'>
+                <div class='jj-invocations-toolbar'>
+                    <h2>Invocações</h2>
+                    <button class='jj-action-button' type='button' data-action='createInvocation'>Criar nova invocação</button>
+                </div>
+
+                {{#if jujutsu.invocations.length}}
+                    <div class='jj-invocations-stack'>
+                        {{#each jujutsu.invocations as |invocation|}}
+                            <article class='jj-card jj-derived-card jj-invocation-entry'>
+                                <div class='jj-invocation-entry-header'>
+                                    <div class='jj-table-item'>
+                                        <div class='jj-table-item-main'>
+                                            <img class='jj-table-item-thumb' src='{{invocation.imageSrc}}' alt='{{invocation.displayName}}' />
+                                            <div class='jj-table-item-text'>
+                                                <strong>{{invocation.displayName}}</strong>
+                                                <span>
+                                                    Grau {{#if invocation.grau}}{{invocation.grau}}{{else}}-{{/if}}
+                                                    • PV {{invocation.hpCurrent}} / {{invocation.hpMax}}
+                                                    • Defesa {{invocation.defense}}
+                                                    • Desloc. {{invocation.movementDisplay}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class='jj-table-item-actions'>
+                                            <button class='jj-table-icon-button jj-table-icon-button--danger' type='button' data-action='removeInvocation' data-row-index='{{invocation.rowIndex}}' data-tooltip='Excluir {{invocation.displayName}}' aria-label='Excluir {{invocation.displayName}}'>
+                                                <i class='fas fa-trash'></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class='jj-derived-body jj-invocation-body'>
+                                    <div class='jj-invocation-top-grid'>
+                                        <div class='jj-invocation-visual-column'>
+                                            <div class='jj-invocation-visual-frame'>
+                                                <img
+                                                    class='jj-invocation-visual'
+                                                    src='{{invocation.imageSrc}}'
+                                                    data-action='editImage'
+                                                    data-field='{{invocation.imageField}}'
+                                                    title='{{invocation.displayName}}'
+                                                    alt='{{invocation.displayName}}'
+                                                />
+                                            </div>
+
+                                            <div class='jj-invocation-status-grid'>
+                                                <label class='jj-card jj-invocation-status-card'>
+                                                    <span>Atuais Pontos de Vida</span>
+                                                    <input name='system.props.tables.invocations.{{invocation.rowIndex}}.hpCurrent' type='number' data-dtype='Number' value='{{invocation.hpCurrent}}' />
+                                                </label>
+                                                <label class='jj-card jj-invocation-status-card'>
+                                                    <span>Máximos Pontos de Vida</span>
+                                                    <input name='system.props.tables.invocations.{{invocation.rowIndex}}.hpMax' type='number' data-dtype='Number' value='{{invocation.hpMax}}' />
+                                                </label>
+                                                <label class='jj-card jj-invocation-status-card'>
+                                                    <span>Defesa</span>
+                                                    <input name='system.props.tables.invocations.{{invocation.rowIndex}}.defense' type='number' data-dtype='Number' value='{{invocation.defense}}' />
+                                                </label>
+                                                <label class='jj-card jj-invocation-status-card'>
+                                                    <span>Desloc.</span>
+                                                    <input name='system.props.tables.invocations.{{invocation.rowIndex}}.movement' type='text' value='{{invocation.movement}}' />
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class='jj-invocation-main-fields'>
+                                            <div class='jj-invocation-primary-fields'>
+                                                <label class='jj-derived-row jj-derived-row--wide'>
+                                                    <span>Nome</span>
+                                                    <input name='system.props.tables.invocations.{{invocation.rowIndex}}.name' type='text' value='{{invocation.name}}' />
+                                                </label>
+                                                <label class='jj-derived-row jj-invocation-grade-row'>
+                                                    <span>Grau da Invocação</span>
+                                                    <input name='system.props.tables.invocations.{{invocation.rowIndex}}.grau' type='text' value='{{invocation.grau}}' />
+                                                </label>
+                                            </div>
+
+                                            <div class='jj-invocation-section'>
+                                                <div class='jj-invocation-section-title'>Atributos</div>
+                                                <table class='jj-table jj-invocation-attribute-table'>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Atributo</th>
+                                                            <th>Valor</th>
+                                                            <th>Modificador</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {{#each invocation.attributeRows as |attribute|}}
+                                                            <tr>
+                                                                <td>{{attribute.label}}</td>
+                                                                <td>
+                                                                    <input
+                                                                        name='system.props.tables.invocations.{{../rowIndex}}.attributes.{{attribute.key}}'
+                                                                        type='number'
+                                                                        data-dtype='Number'
+                                                                        value='{{attribute.value}}'
+                                                                    />
+                                                                </td>
+                                                                <td>
+                                                                    <input type='text' value='{{attribute.signedMod}}' readonly />
+                                                                </td>
+                                                            </tr>
+                                                        {{/each}}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class='jj-invocation-section'>
+                                        <div class='jj-invocation-section-title'>Ações e Características</div>
+                                        <textarea class='jj-invocation-actions' name='system.props.tables.invocations.{{invocation.rowIndex}}.acoesCaracteristicas' rows='6'>{{invocation.acoesCaracteristicas}}</textarea>
+                                    </div>
+
+                                    <div class='jj-invocation-section'>
+                                        <div class='jj-invocation-section-title'>Perícias Treinadas</div>
+                                        <table class='jj-table jj-invocation-skill-table'>
+                                            <thead>
+                                                <tr>
+                                                    <th>Nome</th>
+                                                    <th>Atributo</th>
+                                                    <th>Outros</th>
+                                                    <th>Bônus</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {{#if invocation.trainedSkills.length}}
+                                                    {{#each invocation.trainedSkills as |skill|}}
+                                                        <tr>
+                                                            <td class='jj-table-item-cell'>
+                                                                <div class='jj-table-item'>
+                                                                    <div class='jj-table-item-main'>
+                                                                        <div class='jj-table-item-text'>
+                                                                            <strong>{{skill.name}}</strong>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class='jj-table-item-actions'>
+                                                                        <button class='jj-table-icon-button' type='button' data-action='editJujutsuRow' data-table-path='{{../trainedSkillsTablePath}}' data-row-index='{{skill.rowIndex}}' data-tooltip='Editar {{skill.name}}' aria-label='Editar {{skill.name}}'>
+                                                                            <i class='fas fa-pen'></i>
+                                                                        </button>
+                                                                        <button class='jj-table-icon-button jj-table-icon-button--danger' type='button' data-action='removeJujutsuRow' data-table-path='{{../trainedSkillsTablePath}}' data-row-index='{{skill.rowIndex}}' data-tooltip='Excluir {{skill.name}}' aria-label='Excluir {{skill.name}}'>
+                                                                            <i class='fas fa-trash'></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td>{{skill.attributeLabel}}</td>
+                                                            <td>{{skill.others}}</td>
+                                                            <td>{{skill.bonus}}</td>
+                                                        </tr>
+                                                    {{/each}}
+                                                {{else}}
+                                                    <tr>
+                                                        <td colspan='4' class='jj-inventory-empty'>Nenhuma perícia treinada cadastrada.</td>
+                                                    </tr>
+                                                {{/if}}
+                                            </tbody>
+                                        </table>
+                                        <button class='jj-action-button jj-invocation-skill-button' type='button' data-action='addJujutsuRow' data-table-path='{{invocation.trainedSkillsTablePath}}' data-row-type='invocationSkill'>Adicionar perícia treinada</button>
+                                    </div>
+                                </div>
+                            </article>
+                        {{/each}}
+                    </div>
+                {{else}}
+                    <div class='jj-card'>
+                        <p class='jj-inventory-empty'>Nenhuma invocação cadastrada.</p>
+                    </div>
+                {{/if}}
             </section>
 
             <section class='jj-panel' data-tab-block='aptidoes'>

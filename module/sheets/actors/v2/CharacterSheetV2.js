@@ -54,6 +54,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         actions: {
             openHiddenAttributes: CharacterSheetV2.openHiddenAttributes,
             openAttributeBars: CharacterSheetV2.openAttributeBars,
+            createInvocation: CharacterSheetV2.createInvocation,
+            removeInvocation: CharacterSheetV2.removeInvocation,
             addJujutsuRow: CharacterSheetV2.addJujutsuRow,
             editJujutsuRow: CharacterSheetV2.editJujutsuRow,
             removeJujutsuRow: CharacterSheetV2.removeJujutsuRow,
@@ -78,7 +80,28 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         void this.actor.templateSystem.openAttributeBarsVision();
     }
     static _getJujutsuRowConfig(rowTypeOrPath) {
-        switch (rowTypeOrPath) {
+        const normalizedKey = String(rowTypeOrPath ?? '').trim();
+        const invocationSkillPathPattern = /^(?:invocations\.[^.]+|tables\.invocations\.\d+)\.trainedSkills$/i;
+        if (invocationSkillPathPattern.test(normalizedKey) || normalizedKey === 'invocationSkill') {
+            return {
+                rowType: 'invocationSkill',
+                tablePath: invocationSkillPathPattern.test(normalizedKey) ? normalizedKey : '',
+                entryTypeLabel: 'Perícia Treinada',
+                entryTypeLabelLower: 'a perícia treinada',
+                dialogTitle: 'Adicionar Perícia Treinada',
+                templatePath: `systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-invocation-skill-entry-config.hbs`,
+                attributeField: 'attribute',
+                attributeOptions: [
+                    { value: 'for', label: 'FOR' },
+                    { value: 'des', label: 'DEX' },
+                    { value: 'con', label: 'CONS' },
+                    { value: 'int', label: 'INT' },
+                    { value: 'sab', label: 'SAB' },
+                    { value: 'pre', label: 'PRE' }
+                ]
+            };
+        }
+        switch (normalizedKey) {
             case 'attack':
             case 'tables.attacks':
                 return {
@@ -171,6 +194,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         });
     }
     static async _renderJujutsuDialogContent(config, entry) {
+        const attributeField = config.attributeField ?? 'rollAttribute';
         return foundry.applications.handlebars.renderTemplate(config.templatePath, {
             dialogTitle: config.dialogTitle,
             entryTypeLabel: config.entryTypeLabel,
@@ -182,7 +206,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             })),
             attributeOptions: (config.attributeOptions ?? []).map((option) => ({
                 ...option,
-                selected: option.value === (entry?.rollAttribute ?? '')
+                selected: option.value === (entry?.[attributeField] ?? '')
             })),
             rollOptions: (config.rollOptions ?? []).map((option) => ({
                 ...option,
@@ -289,6 +313,16 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 rollAttribute: hasRoll && ['for', 'des', 'con', 'int', 'sab', 'pre'].includes(rollAttribute) ? rollAttribute : ''
             };
         }
+        if (config.rowType === 'invocationSkill') {
+            const attribute = getValue('attribute').toLowerCase();
+            return {
+                ...createJujutsuTableRow('invocationSkill'),
+                id: entryId,
+                name: getValue('name') || 'Perícia Treinada',
+                attribute: ['for', 'des', 'con', 'int', 'sab', 'pre'].includes(attribute) ? attribute : 'for',
+                others: Math.trunc(getNumber('others') || 0)
+            };
+        }
         return {
             ...createJujutsuTableRow(config.rowType),
             id: entryId,
@@ -353,6 +387,9 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const config = CharacterSheetV2._getJujutsuRowConfig(rowType || tablePath);
         if (!config)
             return;
+        if (tablePath) {
+            config.tablePath = tablePath;
+        }
         if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
             await this.submit();
         }
@@ -364,6 +401,25 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             entry: CharacterSheetV2._createJujutsuDialogEntry(config),
             title: config.dialogTitle,
             onSave: async (form) => {
+                const invocationPathMatch = CharacterSheetV2._getInvocationTablePathMatch(config.tablePath);
+                if (invocationPathMatch) {
+                    const invocationIndex = Number(invocationPathMatch[1]);
+                    const rows = CharacterSheetV2._getPreparedInvocationRows(actor);
+                    if (invocationIndex < 0 || invocationIndex >= rows.length) {
+                        return;
+                    }
+                    const trainedSkills = Array.isArray(rows[invocationIndex]?.trainedSkills) ? foundry.utils.deepClone(rows[invocationIndex].trainedSkills) : [];
+                    trainedSkills.push(CharacterSheetV2._collectJujutsuDialogEntry(config, form));
+                    rows[invocationIndex] = {
+                        ...rows[invocationIndex],
+                        trainedSkills
+                    };
+                    await actor.update({
+                        'system.props.tables.invocations': rows
+                    });
+                    await sheet.render({ force: true });
+                    return;
+                }
                 const rows = CharacterSheetV2._getJujutsuTableRows(actor.system.props, config.tablePath);
                 rows.push(CharacterSheetV2._collectJujutsuDialogEntry(config, form));
                 await actor.update({
@@ -384,7 +440,10 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
             await this.submit();
         }
-        const rows = CharacterSheetV2._getJujutsuTableRows(actor.system.props, tablePath);
+        const invocationPathMatch = CharacterSheetV2._getInvocationTablePathMatch(tablePath);
+        const rows = invocationPathMatch
+            ? (CharacterSheetV2._getPreparedInvocationRows(actor)[Number(invocationPathMatch[1])]?.trainedSkills ?? [])
+            : CharacterSheetV2._getJujutsuTableRows(actor.system.props, tablePath);
         if (rowIndex < 0 || rowIndex >= rows.length)
             return;
         const currentEntry = CharacterSheetV2._createJujutsuDialogEntry(config, rows[rowIndex]);
@@ -397,6 +456,28 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             entry: currentEntry,
             title: `Editar ${currentLabel}`,
             onSave: async (form) => {
+                const invocationPathMatch = CharacterSheetV2._getInvocationTablePathMatch(tablePath);
+                if (invocationPathMatch) {
+                    const invocationIndex = Number(invocationPathMatch[1]);
+                    const nextInvocations = CharacterSheetV2._getPreparedInvocationRows(actor);
+                    if (invocationIndex < 0 || invocationIndex >= nextInvocations.length) {
+                        return;
+                    }
+                    const nextRows = Array.isArray(nextInvocations[invocationIndex]?.trainedSkills) ? foundry.utils.deepClone(nextInvocations[invocationIndex].trainedSkills) : [];
+                    if (rowIndex < 0 || rowIndex >= nextRows.length) {
+                        return;
+                    }
+                    nextRows[rowIndex] = CharacterSheetV2._collectJujutsuDialogEntry(config, form, nextRows[rowIndex]);
+                    nextInvocations[invocationIndex] = {
+                        ...nextInvocations[invocationIndex],
+                        trainedSkills: nextRows
+                    };
+                    await actor.update({
+                        'system.props.tables.invocations': nextInvocations
+                    });
+                    await sheet.render({ force: true });
+                    return;
+                }
                 const nextRows = CharacterSheetV2._getJujutsuTableRows(actor.system.props, tablePath);
                 if (rowIndex < 0 || rowIndex >= nextRows.length)
                     return;
@@ -422,12 +503,36 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
             await this.submit();
         }
-        const rows = CharacterSheetV2._getJujutsuTableRows(actor.system.props, tablePath);
+        const invocationPathMatch = CharacterSheetV2._getInvocationTablePathMatch(tablePath);
+        const rows = invocationPathMatch
+            ? (CharacterSheetV2._getPreparedInvocationRows(actor)[Number(invocationPathMatch[1])]?.trainedSkills ?? [])
+            : CharacterSheetV2._getJujutsuTableRows(actor.system.props, tablePath);
         if (rowIndex < 0 || rowIndex >= rows.length)
             return;
         const currentLabel = String(rows[rowIndex]?.name ?? config.entryTypeLabel).trim() || config.entryTypeLabel;
         if (!CharacterSheetV2._confirmJujutsuRowRemoval(currentLabel))
             return;
+        if (invocationPathMatch) {
+            const invocationIndex = Number(invocationPathMatch[1]);
+            const nextInvocations = CharacterSheetV2._getPreparedInvocationRows(actor);
+            if (invocationIndex < 0 || invocationIndex >= nextInvocations.length) {
+                return;
+            }
+            const nextRows = Array.isArray(nextInvocations[invocationIndex]?.trainedSkills) ? foundry.utils.deepClone(nextInvocations[invocationIndex].trainedSkills) : [];
+            if (rowIndex < 0 || rowIndex >= nextRows.length) {
+                return;
+            }
+            nextRows.splice(rowIndex, 1);
+            nextInvocations[invocationIndex] = {
+                ...nextInvocations[invocationIndex],
+                trainedSkills: nextRows
+            };
+            await actor.update({
+                'system.props.tables.invocations': nextInvocations
+            });
+            await this.render({ force: true });
+            return;
+        }
         rows.splice(rowIndex, 1);
         await actor.update({
             [`system.props.${tablePath}`]: rows
@@ -459,6 +564,54 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             await actor.sheet.submit();
         }
     }
+    static _getInvocationTablePathMatch(tablePath) {
+        return String(tablePath ?? '').trim().match(/^tables\.invocations\.(\d+)\.trainedSkills$/i);
+    }
+    static _getPreparedInvocationRows(actor) {
+        return foundry.utils.deepClone(prepareJujutsuSheetData(actor?.system?.props ?? {}).props?.tables?.invocations ?? []);
+    }
+    static async createInvocation(_event, target) {
+        const actor = this.actor ?? this.document;
+        if (!(actor instanceof Actor) || !actor.isOwner) {
+            return;
+        }
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const rows = CharacterSheetV2._getPreparedInvocationRows(actor);
+        rows.push({
+            ...createJujutsuTableRow('invocation'),
+            name: `Invocação ${rows.length + 1}`
+        });
+        await actor.update({
+            'system.props.tables.invocations': rows
+        });
+        await this.render({ force: true });
+    }
+    static async removeInvocation(_event, target) {
+        const actor = this.actor ?? this.document;
+        const actionTarget = target?.closest?.('[data-row-index]') ?? target;
+        const rowIndex = Number(actionTarget?.dataset?.rowIndex);
+        if (!(actor instanceof Actor) || !actor.isOwner || !Number.isFinite(rowIndex)) {
+            return;
+        }
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const rows = CharacterSheetV2._getPreparedInvocationRows(actor);
+        if (rowIndex < 0 || rowIndex >= rows.length) {
+            return;
+        }
+        const currentLabel = String(rows[rowIndex]?.name ?? `Invocação ${rowIndex + 1}`).trim() || `Invocação ${rowIndex + 1}`;
+        if (!CharacterSheetV2._confirmJujutsuRowRemoval(currentLabel)) {
+            return;
+        }
+        rows.splice(rowIndex, 1);
+        await actor.update({
+            'system.props.tables.invocations': rows
+        });
+        await this.render({ force: true });
+    }
     static _getJujutsuTableLabel(tableKey) {
         switch (String(tableKey ?? '').trim().toLowerCase()) {
             case 'attacks':
@@ -471,6 +624,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 return 'Aptidão';
             case 'spells':
                 return 'Feitiço';
+            case 'invocations':
+                return 'Invocação';
             case 'inventory':
                 return 'Item';
             default:
@@ -486,6 +641,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             case 'aptitudes':
             case 'spells':
                 return 'icons/svg/book.svg';
+            case 'invocations':
+                return 'icons/svg/mystery-man.svg';
             case 'inventory':
                 return 'icons/svg/item-bag.svg';
             default:
@@ -1667,7 +1824,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         this.dragDrop = this.createDragDropHandlers();
     }
     _setJujutsuTab(tab) {
-        const allowedTabs = new Set(['resumo', 'pericias', 'habilidades', 'aptidoes', 'perfil-a', 'expansao', 'inventario', 'registro']);
+        const allowedTabs = new Set(['resumo', 'pericias', 'habilidades', 'invocacoes', 'aptidoes', 'perfil-a', 'expansao', 'inventario', 'registro']);
         this.activeJujutsuTab = allowedTabs.has(tab) ? tab : 'resumo';
         this._syncJujutsuTabs();
     }
@@ -1684,6 +1841,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             layout.classList.toggle('is-resumo', this.activeJujutsuTab === 'resumo');
             layout.classList.toggle('is-pericias', this.activeJujutsuTab === 'pericias');
             layout.classList.toggle('is-habilidades', this.activeJujutsuTab === 'habilidades');
+            layout.classList.toggle('is-invocacoes', this.activeJujutsuTab === 'invocacoes');
             layout.classList.toggle('is-aptidoes', this.activeJujutsuTab === 'aptidoes');
             layout.classList.toggle('is-perfil-a', this.activeJujutsuTab === 'perfil-a');
             layout.classList.toggle('is-expansao', this.activeJujutsuTab === 'expansao');
@@ -2321,6 +2479,20 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                     event.preventDefault();
                     event.stopPropagation();
                     void CharacterSheetV2.removeJujutsuRow.call(this, event, button);
+                });
+            });
+            root.querySelectorAll('[data-action="createInvocation"]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void CharacterSheetV2.createInvocation.call(this, event, button);
+                });
+            });
+            root.querySelectorAll('[data-action="removeInvocation"]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void CharacterSheetV2.removeInvocation.call(this, event, button);
                 });
             });
             root.querySelectorAll('[data-roll-table-attack]').forEach((button) => {

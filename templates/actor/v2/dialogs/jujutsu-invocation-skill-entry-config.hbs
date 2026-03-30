@@ -1,0 +1,25 @@
+<section class='jj-rd-config jj-item-config'>
+    <header class='jj-rd-config-header'>
+        <h2>{{dialogTitle}}</h2>
+        <p>Configure {{entryTypeLabelLower}} para a invocação.</p>
+    </header>
+
+    <div class='jj-item-config-grid'>
+        <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+            <span>Nome</span>
+            <input name='name' type='text' value='{{entry.name}}' />
+        </label>
+        <label class='jj-characteristics-custom-field'>
+            <span>Atributo</span>
+            <select name='attribute'>
+                {{#each attributeOptions as |option|}}
+                    <option value='{{option.value}}' {{#if option.selected}}selected{{/if}}>{{option.label}}</option>
+                {{/each}}
+            </select>
+        </label>
+        <label class='jj-characteristics-custom-field'>
+            <span>Outros</span>
+            <input name='others' type='number' value='{{entry.others}}' />
+        </label>
+    </div>
+</section>

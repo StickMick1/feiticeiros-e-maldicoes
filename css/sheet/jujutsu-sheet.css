@@ -316,6 +316,7 @@
 .jj-layout.is-resumo [data-tab-block~='resumo'],
 .jj-layout.is-pericias [data-tab-block~='pericias'],
 .jj-layout.is-habilidades [data-tab-block~='habilidades'],
+.jj-layout.is-invocacoes [data-tab-block~='invocacoes'],
 .jj-layout.is-aptidoes [data-tab-block~='aptidoes'],
 .jj-layout.is-perfil-a [data-tab-block~='perfil-a'],
 .jj-layout.is-expansao [data-tab-block~='expansao'],
@@ -326,6 +327,7 @@
 
 .jj-layout.is-pericias,
 .jj-layout.is-habilidades,
+.jj-layout.is-invocacoes,
 .jj-layout.is-aptidoes,
 .jj-layout.is-perfil-a,
 .jj-layout.is-expansao,
@@ -336,6 +338,7 @@
 
 .jj-layout.is-pericias .jj-sidebar,
 .jj-layout.is-habilidades .jj-sidebar,
+.jj-layout.is-invocacoes .jj-sidebar,
 .jj-layout.is-aptidoes .jj-sidebar,
 .jj-layout.is-perfil-a .jj-sidebar,
 .jj-layout.is-expansao .jj-sidebar,
@@ -352,6 +355,7 @@
     grid-template-columns: 1fr;
 }
 
+.jj-layout.is-invocacoes .jj-main-columns,
 .jj-layout.is-aptidoes .jj-main-columns,
 .jj-layout.is-perfil-a .jj-main-columns,
 .jj-layout.is-expansao .jj-main-columns,
@@ -360,6 +364,7 @@
     grid-template-columns: 1fr;
 }
 
+.jj-layout.is-invocacoes .jj-main-columns,
 .jj-layout.is-aptidoes .jj-main-columns,
 .jj-layout.is-perfil-a .jj-main-columns,
 .jj-layout.is-expansao .jj-main-columns,
@@ -377,6 +382,7 @@
     display: none;
 }
 
+.jj-layout.is-invocacoes .jj-main-secondary,
 .jj-layout.is-aptidoes .jj-main-secondary,
 .jj-layout.is-perfil-a .jj-main-secondary,
 .jj-layout.is-expansao .jj-main-secondary,
@@ -600,6 +606,154 @@
     padding: 10px 12px;
 }
 
+.jj-invocations-panel {
+    gap: 14px;
+}
+
+.jj-invocations-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.jj-invocations-toolbar > h2 {
+    margin: 0;
+}
+
+.jj-invocations-stack {
+    display: grid;
+    gap: 14px;
+}
+
+.jj-invocation-entry {
+    gap: 0;
+}
+
+.jj-invocation-entry-header {
+    border-bottom: 1px solid rgba(183, 163, 123, 0.14);
+    padding: 12px 14px 0;
+}
+
+.jj-invocation-body {
+    gap: 12px;
+}
+
+.jj-invocation-top-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+}
+
+.jj-invocation-visual-column,
+.jj-invocation-main-fields,
+.jj-invocation-primary-fields {
+    display: grid;
+    gap: 12px;
+}
+
+.jj-invocation-primary-fields {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
+}
+
+.jj-invocation-grade-row {
+    grid-template-columns: minmax(0, 1fr) 120px;
+}
+
+.jj-invocation-visual-frame {
+    background:
+        linear-gradient(180deg, rgba(22, 25, 34, 0.9) 0%, rgba(11, 13, 18, 0.94) 100%),
+        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+    border: 1px solid rgba(183, 163, 123, 0.18);
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    min-height: 196px;
+    overflow: hidden;
+}
+
+.jj-invocation-visual {
+    cursor: pointer;
+    display: block;
+    height: 100%;
+    min-height: 196px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.jj-invocation-status-grid {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.jj-invocation-status-card {
+    align-content: start;
+    gap: 8px;
+    min-width: 0;
+    padding: 10px;
+}
+
+.jj-invocation-status-card > span {
+    color: var(--jj-muted);
+    display: block;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.jj-invocation-status-card > input {
+    min-height: 30px;
+    text-align: center;
+}
+
+.jj-invocation-section {
+    display: grid;
+    gap: 8px;
+}
+
+.jj-invocation-section-title {
+    background:
+        linear-gradient(180deg, rgba(73, 13, 34, 0.96) 0%, rgba(48, 10, 24, 0.96) 100%),
+        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+    border: 1px solid rgba(183, 163, 123, 0.22);
+    border-radius: 10px;
+    color: var(--jj-text);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 7px 10px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.jj-invocation-attribute-table td:last-child,
+.jj-invocation-skill-table td:last-child {
+    font-weight: 700;
+    text-align: center;
+}
+
+.jj-invocation-attribute-table input {
+    min-height: 28px;
+    padding: 4px 6px !important;
+    text-align: center;
+}
+
+.jj-invocation-actions {
+    min-height: 120px;
+    padding: 10px 12px;
+    resize: vertical;
+}
+
+.jj-invocation-skill-button {
+    justify-self: end;
+}
+
 @media (max-width: 900px) {
     .jj-aptitude-level-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -617,6 +771,14 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .jj-invocation-top-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .jj-invocation-primary-fields {
+        grid-template-columns: 1fr;
+    }
+
     .jj-registro-top-grid {
         grid-template-columns: 1fr;
     }
@@ -626,6 +788,10 @@
     .jj-aptitude-level-grid,
     .jj-profile-spell-grid {
         grid-template-columns: 1fr;
+    }
+
+    .jj-invocation-status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .jj-profile-cd-grid {

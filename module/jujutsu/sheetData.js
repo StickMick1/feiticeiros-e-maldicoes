@@ -20,6 +20,22 @@ const ATTRIBUTES = [
     { key: 'pre', label: 'PRE' }
 ];
 
+const INVOCATION_SLOTS = [
+    { key: 'invocacao1', label: 'Invocação 1' },
+    { key: 'invocacao2', label: 'Invocação 2' },
+    { key: 'invocacao3', label: 'Invocação 3' },
+    { key: 'invocacao4', label: 'Invocação 4' }
+];
+
+const INVOCATION_ATTRIBUTES = [
+    { key: 'for', label: 'Força' },
+    { key: 'des', label: 'Destreza' },
+    { key: 'con', label: 'Constituição' },
+    { key: 'int', label: 'Inteligência' },
+    { key: 'sab', label: 'Sabedoria' },
+    { key: 'pre', label: 'Presença' }
+];
+
 const ATTACK_BONUSES = [
     { key: 'melee', label: 'Corpo a corpo', attribute: 'for', alwaysTrained: false },
     { key: 'ranged', label: '\u00c0 Dist\u00e2ncia', attribute: 'des', alwaysTrained: false },
@@ -525,6 +541,79 @@ const defaultSkillModel = () => ({ name: '', attribute: '', others: 0, t: false,
 const defaultCharacteristicsModel = () => ({ selected: [], custom: [] });
 const defaultResistanceConfigModel = () => ({ selected: [], custom: [] });
 const defaultTrainingConfigModel = () => ({ custom: [] });
+const defaultInvocationModel = () => ({
+    name: '',
+    grau: '',
+    image: '',
+    hpCurrent: 0,
+    hpMax: 0,
+    defense: 0,
+    movement: '',
+    attributes: {
+        for: 0,
+        des: 0,
+        con: 0,
+        int: 0,
+        sab: 0,
+        pre: 0
+    },
+    acoesCaracteristicas: '',
+    trainedSkills: []
+});
+
+const normalizeInvocationSkillEntry = (entry, index = 0) => {
+    const name = cleanText(entry?.name) || `Perícia ${index + 1}`;
+    const rawAttribute = cleanText(entry?.attribute).toLowerCase();
+    const attribute = ATTRIBUTE_KEYS.has(rawAttribute) ? rawAttribute : 'for';
+    return {
+        id: normalizeJujutsuTableEntryId(entry?.id ?? name, 'invocation-skill-entry', index),
+        name,
+        attribute,
+        others: Math.trunc(n(entry?.others))
+    };
+};
+
+const hasInvocationContent = (entry = {}) => {
+    if (cleanText(entry?.name) || cleanText(entry?.grau) || cleanText(entry?.image) || cleanText(entry?.movement) || cleanText(entry?.acoesCaracteristicas)) {
+        return true;
+    }
+    if (Math.trunc(n(entry?.hpCurrent)) || Math.trunc(n(entry?.hpMax)) || Math.trunc(n(entry?.defense))) {
+        return true;
+    }
+    if (INVOCATION_ATTRIBUTES.some((attribute) => Math.trunc(n(entry?.attributes?.[attribute.key])))) {
+        return true;
+    }
+    return toArrayValues(entry?.trainedSkills).length > 0;
+};
+
+const normalizeInvocationEntry = (entry = {}) => {
+    const attributes = {};
+    for (const attribute of INVOCATION_ATTRIBUTES) {
+        attributes[attribute.key] = Math.trunc(n(entry?.attributes?.[attribute.key]));
+    }
+    return {
+        name: cleanText(entry?.name),
+        grau: coerceTextValue(entry?.grau),
+        image: coerceTextValue(entry?.image),
+        hpCurrent: Math.max(0, Math.trunc(n(entry?.hpCurrent))),
+        hpMax: Math.max(0, Math.trunc(n(entry?.hpMax))),
+        defense: Math.trunc(n(entry?.defense)),
+        movement: coerceTextValue(entry?.movement),
+        attributes,
+        acoesCaracteristicas: coerceTextValue(entry?.acoesCaracteristicas),
+        trainedSkills: toArrayValues(entry?.trainedSkills).map((skill, index) => normalizeInvocationSkillEntry(skill, index))
+    };
+};
+
+const normalizeInvocationTableEntry = (entry = {}, index = 0, fallbackName = `Invocação ${index + 1}`) => {
+    const invocation = normalizeInvocationEntry(entry);
+    const name = cleanText(invocation.name) || fallbackName;
+    return {
+        id: normalizeJujutsuTableEntryId(entry?.id ?? name, 'invocation-entry', index),
+        ...invocation,
+        name
+    };
+};
 
 export const createJujutsuTableRow = (type) => {
     if (type === 'talent') {
@@ -540,6 +629,18 @@ export const createJujutsuTableRow = (type) => {
         return normalizeFeatureTableEntry({
             level: 0
         }, 0, 'spell-entry', 'Feitiço');
+    }
+    if (type === 'invocation') {
+        return normalizeInvocationTableEntry({
+            name: 'Invocação'
+        }, 0, 'Invocação');
+    }
+    if (type === 'invocationSkill') {
+        return normalizeInvocationSkillEntry({
+            name: '',
+            attribute: 'for',
+            others: 0
+        }, 0);
     }
     if (type === 'inventory') {
         return normalizeInventoryTableEntry({
@@ -587,6 +688,10 @@ export const createJujutsuDefaultProps = () => {
     const hitDice = {};
     for (const die of HIT_DICE) {
         hitDice[die] = { gastos: 0, disponiveis: 0 };
+    }
+    const invocations = {};
+    for (const slot of INVOCATION_SLOTS) {
+        invocations[slot.key] = defaultInvocationModel();
     }
 
     return {
@@ -645,6 +750,7 @@ export const createJujutsuDefaultProps = () => {
             failures: [false, false, false]
         },
         hitDice,
+        invocations,
         skills,
         rds,
         resistanceConfig: defaultResistanceConfigModel(),
@@ -703,6 +809,7 @@ export const createJujutsuDefaultProps = () => {
             talents: [],
             aptitudes: [],
             spells: [],
+            invocations: [],
             inventory: []
         }
     };
@@ -793,6 +900,27 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         cdAmaldicoada: {
             others: n(props.perfilAmaldicoado?.cdAmaldicoada?.others)
         }
+    };
+    const normalizedInvocations = {};
+    for (const slot of INVOCATION_SLOTS) {
+        normalizedInvocations[slot.key] = normalizeInvocationEntry(props.invocations?.[slot.key]);
+    }
+    props.invocations = normalizedInvocations;
+    const legacyInvocations = INVOCATION_SLOTS.reduce((rows, slot) => {
+        const invocation = props.invocations?.[slot.key];
+        if (!hasInvocationContent(invocation)) {
+            return rows;
+        }
+        rows.push(normalizeInvocationTableEntry({
+            ...invocation,
+            name: invocation.name || slot.label
+        }, rows.length, slot.label));
+        return rows;
+    }, []);
+    const normalizedInvocationTable = toArrayValues(props.tables?.invocations).map((entry, index) => normalizeInvocationTableEntry(entry, index));
+    props.tables = {
+        ...props.tables,
+        invocations: normalizedInvocationTable.length ? normalizedInvocationTable : legacyInvocations
     };
 
     const attributeMap = {};
@@ -919,6 +1047,7 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         talents: toArrayValues(props.tables?.talents).map((entry, index) => normalizeFeatureTableEntry(entry, index, 'talent-entry', 'Talento')),
         aptitudes: toArrayValues(props.tables?.aptitudes).map((entry, index) => normalizeFeatureTableEntry(entry, index, 'aptitude-entry', 'Aptidão')),
         spells: toArrayValues(props.tables?.spells).map((entry, index) => normalizeFeatureTableEntry(entry, index, 'spell-entry', 'Feitiço')),
+        invocations: toArrayValues(props.tables?.invocations).map((entry, index) => normalizeInvocationTableEntry(entry, index)),
         inventory: toArrayValues(props.tables?.inventory).map((entry, index) => normalizeInventoryTableEntry(entry, index))
     };
     const inventorySpaceLimitValue = Number(props.inventory?.spaceLimit);
@@ -952,6 +1081,44 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
             total: perfilAmaldicoadoAttrMod + levelHalf + perfilAmaldicoadoCdAmaldicoadaOthers
         }
     };
+    const invocations = props.tables.invocations.map((invocation, rowIndex) => {
+        const attributeRows = INVOCATION_ATTRIBUTES.map((attribute) => {
+            const value = Math.trunc(n(invocation.attributes?.[attribute.key]));
+            const mod = calculateJujutsuAttributeMod(value);
+            return {
+                key: attribute.key,
+                label: attribute.label,
+                value,
+                mod,
+                signedMod: mod > 0 ? `+${mod}` : `${mod}`
+            };
+        });
+        const trainedSkillsTablePath = `tables.invocations.${rowIndex}.trainedSkills`;
+        const trainedSkills = invocation.trainedSkills.map((skill, rowIndex) => {
+            const attribute = ATTRIBUTE_KEYS.has(skill.attribute) ? skill.attribute : 'for';
+            const attributeLabel = attributeDisplay(attribute);
+            const bonus = calculateJujutsuAttributeMod(invocation.attributes?.[attribute] ?? 0) + n(skill.others);
+            return {
+                ...skill,
+                attribute,
+                attributeLabel,
+                bonus,
+                rowIndex
+            };
+        });
+        return {
+            rowIndex,
+            displayName: invocation.name || `Invocação ${rowIndex + 1}`,
+            imageField: `system.props.tables.invocations.${rowIndex}.image`,
+            image: invocation.image,
+            imageSrc: invocation.image || 'icons/svg/mystery-man.svg',
+            movementDisplay: invocation.movement || '-',
+            trainedSkillsTablePath,
+            ...invocation,
+            attributeRows,
+            trainedSkills
+        };
+    });
     // Attack cards and chat rolls both rely on this derived attack model.
     const attackBonuses = ATTACK_BONUSES.map((attackBonus) => {
         const entry = props.attackBonuses?.[attackBonus.key] ?? {};
@@ -1099,6 +1266,7 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         rdDefinitions: rdValues,
         activeRdValues,
         hasActiveRds: activeRdValues.length > 0,
+        invocations,
         attributeOptions: ATTRIBUTE_OPTIONS,
         computed: {
             levelHalf,
