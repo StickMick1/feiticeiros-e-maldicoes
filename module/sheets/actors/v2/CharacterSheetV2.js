@@ -384,13 +384,16 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const actionTarget = target?.closest?.('[data-table-path]') ?? target;
         const tablePath = actionTarget?.dataset?.tablePath ?? '';
         const rowType = actionTarget?.dataset?.rowType ?? '';
+        const localInvocationDetails = actionTarget?.closest?.('.jj-invocation-details');
+        const localInvocationPathMatch = CharacterSheetV2._getInvocationTablePathMatch(tablePath);
+        const useLocalInvocationSkills = !!(localInvocationDetails && localInvocationPathMatch);
         const config = CharacterSheetV2._getJujutsuRowConfig(rowType || tablePath);
         if (!config)
             return;
         if (tablePath) {
             config.tablePath = tablePath;
         }
-        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+        if (!useLocalInvocationSkills && game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
             await this.submit();
         }
         const sheet = this;
@@ -401,6 +404,14 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             entry: CharacterSheetV2._createJujutsuDialogEntry(config),
             title: config.dialogTitle,
             onSave: async (form) => {
+                if (useLocalInvocationSkills) {
+                    const trainedSkills = CharacterSheetV2._getInvocationDetailLocalSkills(localInvocationDetails);
+                    trainedSkills.push(CharacterSheetV2._collectJujutsuDialogEntry(config, form));
+                    localInvocationDetails.dataset.localTrainedSkills = JSON.stringify(trainedSkills);
+                    CharacterSheetV2._renderInvocationDetailSkills(localInvocationDetails, actor, sheet);
+                    CharacterSheetV2._syncInvocationDetailDirtyState(localInvocationDetails);
+                    return;
+                }
                 const invocationPathMatch = CharacterSheetV2._getInvocationTablePathMatch(config.tablePath);
                 if (invocationPathMatch) {
                     const invocationIndex = Number(invocationPathMatch[1]);
@@ -434,14 +445,19 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const actionTarget = target?.closest?.('[data-table-path]') ?? target;
         const tablePath = actionTarget?.dataset?.tablePath ?? '';
         const rowIndex = Number(actionTarget?.dataset?.rowIndex);
+        const localInvocationDetails = actionTarget?.closest?.('.jj-invocation-details');
+        const localInvocationPathMatch = CharacterSheetV2._getInvocationTablePathMatch(tablePath);
+        const useLocalInvocationSkills = !!(localInvocationDetails && localInvocationPathMatch);
         const config = CharacterSheetV2._getJujutsuRowConfig(tablePath);
         if (!config || !Number.isFinite(rowIndex))
             return;
-        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+        if (!useLocalInvocationSkills && game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
             await this.submit();
         }
         const invocationPathMatch = CharacterSheetV2._getInvocationTablePathMatch(tablePath);
-        const rows = invocationPathMatch
+        const rows = useLocalInvocationSkills
+            ? CharacterSheetV2._getInvocationDetailLocalSkills(localInvocationDetails)
+            : invocationPathMatch
             ? (CharacterSheetV2._getPreparedInvocationRows(actor)[Number(invocationPathMatch[1])]?.trainedSkills ?? [])
             : CharacterSheetV2._getJujutsuTableRows(actor.system.props, tablePath);
         if (rowIndex < 0 || rowIndex >= rows.length)
@@ -456,6 +472,17 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             entry: currentEntry,
             title: `Editar ${currentLabel}`,
             onSave: async (form) => {
+                if (useLocalInvocationSkills) {
+                    const nextRows = CharacterSheetV2._getInvocationDetailLocalSkills(localInvocationDetails);
+                    if (rowIndex < 0 || rowIndex >= nextRows.length) {
+                        return;
+                    }
+                    nextRows[rowIndex] = CharacterSheetV2._collectJujutsuDialogEntry(config, form, nextRows[rowIndex]);
+                    localInvocationDetails.dataset.localTrainedSkills = JSON.stringify(nextRows);
+                    CharacterSheetV2._renderInvocationDetailSkills(localInvocationDetails, actor, sheet);
+                    CharacterSheetV2._syncInvocationDetailDirtyState(localInvocationDetails);
+                    return;
+                }
                 const invocationPathMatch = CharacterSheetV2._getInvocationTablePathMatch(tablePath);
                 if (invocationPathMatch) {
                     const invocationIndex = Number(invocationPathMatch[1]);
@@ -497,14 +524,19 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const actionTarget = target?.closest?.('[data-table-path]') ?? target;
         const tablePath = actionTarget?.dataset?.tablePath ?? '';
         const rowIndex = Number(actionTarget?.dataset?.rowIndex);
+        const localInvocationDetails = actionTarget?.closest?.('.jj-invocation-details');
+        const localInvocationPathMatch = CharacterSheetV2._getInvocationTablePathMatch(tablePath);
+        const useLocalInvocationSkills = !!(localInvocationDetails && localInvocationPathMatch);
         const config = CharacterSheetV2._getJujutsuRowConfig(tablePath);
         if (!config || !Number.isFinite(rowIndex))
             return;
-        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+        if (!useLocalInvocationSkills && game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
             await this.submit();
         }
         const invocationPathMatch = CharacterSheetV2._getInvocationTablePathMatch(tablePath);
-        const rows = invocationPathMatch
+        const rows = useLocalInvocationSkills
+            ? CharacterSheetV2._getInvocationDetailLocalSkills(localInvocationDetails)
+            : invocationPathMatch
             ? (CharacterSheetV2._getPreparedInvocationRows(actor)[Number(invocationPathMatch[1])]?.trainedSkills ?? [])
             : CharacterSheetV2._getJujutsuTableRows(actor.system.props, tablePath);
         if (rowIndex < 0 || rowIndex >= rows.length)
@@ -512,6 +544,14 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const currentLabel = String(rows[rowIndex]?.name ?? config.entryTypeLabel).trim() || config.entryTypeLabel;
         if (!CharacterSheetV2._confirmJujutsuRowRemoval(currentLabel))
             return;
+        if (useLocalInvocationSkills) {
+            const nextRows = CharacterSheetV2._getInvocationDetailLocalSkills(localInvocationDetails);
+            nextRows.splice(rowIndex, 1);
+            localInvocationDetails.dataset.localTrainedSkills = JSON.stringify(nextRows);
+            CharacterSheetV2._renderInvocationDetailSkills(localInvocationDetails, actor, this);
+            CharacterSheetV2._syncInvocationDetailDirtyState(localInvocationDetails);
+            return;
+        }
         if (invocationPathMatch) {
             const invocationIndex = Number(invocationPathMatch[1]);
             const nextInvocations = CharacterSheetV2._getPreparedInvocationRows(actor);
@@ -562,6 +602,255 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         }
         if (typeof actor.sheet?.submit === 'function') {
             await actor.sheet.submit();
+        }
+    }
+    static _getInvocationDetailLocalSkills(details) {
+        try {
+            const parsed = JSON.parse(details?.dataset?.localTrainedSkills ?? '[]');
+            return Array.isArray(parsed) ? parsed : [];
+        }
+        catch (_error) {
+            return [];
+        }
+    }
+    static _getInvocationSkillAttributeLabelMap(actor) {
+        const attributeOptions = prepareJujutsuSheetData(actor?.system?.props ?? {}).attributeOptions ?? [];
+        return new Map(attributeOptions.map((option) => [String(option.key ?? ''), String(option.label ?? option.key ?? '')]));
+    }
+    static _getInvocationAttributeValueFromDetails(details, invocationIndex, attributeKey) {
+        const fieldPath = `system.props.tables.invocations.${invocationIndex}.attributes.${attributeKey}`;
+        const field = details?.querySelector?.(`[data-field-path="${fieldPath}"]`);
+        const value = field instanceof HTMLInputElement ? Number(field.value) : 0;
+        return Number.isFinite(value) ? value : 0;
+    }
+    static _renderInvocationDetailSkills(details, actor, sheet) {
+        const tbody = details?.querySelector?.('[data-invocation-trained-skills-body]');
+        if (!(tbody instanceof HTMLTableSectionElement)) {
+            return;
+        }
+        const rowIndex = Number(details?.dataset?.invocationRowIndex);
+        const tablePath = `tables.invocations.${rowIndex}.trainedSkills`;
+        const attributeLabels = CharacterSheetV2._getInvocationSkillAttributeLabelMap(actor);
+        const skills = CharacterSheetV2._getInvocationDetailLocalSkills(details);
+        tbody.replaceChildren();
+        if (!skills.length) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 4;
+            cell.className = 'jj-inventory-empty';
+            cell.textContent = 'Nenhuma perícia treinada cadastrada.';
+            row.append(cell);
+            tbody.append(row);
+            return;
+        }
+        skills.forEach((skill, skillIndex) => {
+            const row = document.createElement('tr');
+            const nameCell = document.createElement('td');
+            nameCell.className = 'jj-table-item-cell';
+            const item = document.createElement('div');
+            item.className = 'jj-table-item';
+            const itemMain = document.createElement('div');
+            itemMain.className = 'jj-table-item-main';
+            const textWrap = document.createElement('div');
+            textWrap.className = 'jj-table-item-text';
+            const strong = document.createElement('strong');
+            strong.textContent = String(skill?.name ?? '').trim() || `Perícia ${skillIndex + 1}`;
+            textWrap.append(strong);
+            itemMain.append(textWrap);
+            const actions = document.createElement('div');
+            actions.className = 'jj-table-item-actions';
+            const editButton = document.createElement('button');
+            editButton.className = 'jj-table-icon-button';
+            editButton.type = 'button';
+            editButton.dataset.action = 'editJujutsuRow';
+            editButton.dataset.tablePath = tablePath;
+            editButton.dataset.rowIndex = String(skillIndex);
+            editButton.dataset.tooltip = `Editar ${strong.textContent}`;
+            editButton.setAttribute('aria-label', `Editar ${strong.textContent}`);
+            editButton.innerHTML = "<i class='fas fa-pen'></i>";
+            editButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                void CharacterSheetV2.editJujutsuRow.call(sheet, event, editButton);
+            });
+            const removeButton = document.createElement('button');
+            removeButton.className = 'jj-table-icon-button jj-table-icon-button--danger';
+            removeButton.type = 'button';
+            removeButton.dataset.action = 'removeJujutsuRow';
+            removeButton.dataset.tablePath = tablePath;
+            removeButton.dataset.rowIndex = String(skillIndex);
+            removeButton.dataset.tooltip = `Excluir ${strong.textContent}`;
+            removeButton.setAttribute('aria-label', `Excluir ${strong.textContent}`);
+            removeButton.innerHTML = "<i class='fas fa-trash'></i>";
+            removeButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                void CharacterSheetV2.removeJujutsuRow.call(sheet, event, removeButton);
+            });
+            actions.append(editButton, removeButton);
+            item.append(itemMain, actions);
+            nameCell.append(item);
+            row.append(nameCell);
+            const attributeCell = document.createElement('td');
+            const attributeKey = String(skill?.attribute ?? '').trim();
+            attributeCell.textContent = attributeLabels.get(attributeKey) ?? attributeKey;
+            row.append(attributeCell);
+            const othersCell = document.createElement('td');
+            const others = Number(skill?.others ?? 0);
+            othersCell.textContent = Number.isFinite(others) ? String(others) : '0';
+            row.append(othersCell);
+            const bonusCell = document.createElement('td');
+            const attributeValue = CharacterSheetV2._getInvocationAttributeValueFromDetails(details, rowIndex, attributeKey);
+            const bonus = calculateJujutsuAttributeMod(attributeValue) + (Number.isFinite(others) ? others : 0);
+            bonusCell.textContent = String(bonus);
+            row.append(bonusCell);
+            tbody.append(row);
+        });
+    }
+    static _getInvocationDetailFields(container) {
+        return Array.from(container?.querySelectorAll?.('[data-invocation-field][data-field-path]') ?? []);
+    }
+    static _readInvocationDetailFieldValue(field) {
+        const dtype = String(field?.dataset?.dtype ?? '').trim().toLowerCase();
+        const rawValue = field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement
+            ? field.value
+            : '';
+        if (dtype === 'number') {
+            const numericValue = Number(rawValue);
+            return Number.isFinite(numericValue) ? numericValue : 0;
+        }
+        return String(rawValue ?? '');
+    }
+    static _createInvocationDetailSnapshot(container) {
+        const snapshot = {};
+        for (const field of CharacterSheetV2._getInvocationDetailFields(container)) {
+            const path = String(field.dataset?.fieldPath ?? '').trim();
+            if (!path) {
+                continue;
+            }
+            snapshot[path] = CharacterSheetV2._readInvocationDetailFieldValue(field);
+        }
+        const trainedSkillsPath = String(container?.dataset?.trainedSkillsPath ?? '').trim();
+        if (trainedSkillsPath) {
+            snapshot[trainedSkillsPath] = foundry.utils.deepClone(CharacterSheetV2._getInvocationDetailLocalSkills(container));
+        }
+        return snapshot;
+    }
+    static _getInvocationDetailInitialState(details) {
+        try {
+            const parsed = JSON.parse(details?.dataset?.initialState ?? '{}');
+            return parsed && typeof parsed === 'object' ? parsed : {};
+        }
+        catch (_error) {
+            return {};
+        }
+    }
+    static _setInvocationDetailDirtyState(details, isDirty) {
+        if (!details) {
+            return;
+        }
+        details.dataset.dirty = isDirty ? 'true' : 'false';
+        const saveButton = details.querySelector('[data-action="saveInvocationDetails"]');
+        if (saveButton instanceof HTMLButtonElement) {
+            saveButton.disabled = !isDirty;
+        }
+    }
+    static _syncInvocationDetailDirtyState(details) {
+        if (!details) {
+            return false;
+        }
+        const initialState = CharacterSheetV2._getInvocationDetailInitialState(details);
+        const currentState = CharacterSheetV2._createInvocationDetailSnapshot(details);
+        const isDirty = JSON.stringify(initialState) !== JSON.stringify(currentState);
+        CharacterSheetV2._setInvocationDetailDirtyState(details, isDirty);
+        return isDirty;
+    }
+    static _resetInvocationDetailFields(details) {
+        const initialState = CharacterSheetV2._getInvocationDetailInitialState(details);
+        for (const field of CharacterSheetV2._getInvocationDetailFields(details)) {
+            const path = String(field.dataset?.fieldPath ?? '').trim();
+            if (!path) {
+                continue;
+            }
+            const value = initialState[path];
+            if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
+                if (String(field.dataset?.dtype ?? '').trim().toLowerCase() === 'number') {
+                    const numericValue = Number(value);
+                    field.value = Number.isFinite(numericValue) ? String(numericValue) : '0';
+                }
+                else {
+                    field.value = value == null ? '' : String(value);
+                }
+            }
+        }
+        const trainedSkillsPath = String(details?.dataset?.trainedSkillsPath ?? '').trim();
+        if (trainedSkillsPath) {
+            details.dataset.localTrainedSkills = JSON.stringify(foundry.utils.deepClone(initialState[trainedSkillsPath] ?? []));
+            CharacterSheetV2._renderInvocationDetailSkills(details, this.actor ?? this.document, this);
+        }
+        CharacterSheetV2._setInvocationDetailDirtyState(details, false);
+    }
+    static _bindInvocationDetailInteractions(root, actor, sheet) {
+        root?.querySelectorAll?.('.jj-invocation-details').forEach((details) => {
+            const rowIndex = Number(details?.dataset?.invocationRowIndex);
+            const preparedInvocations = prepareJujutsuSheetData(actor?.system?.props ?? {}).props?.tables?.invocations ?? [];
+            const trainedSkills = rowIndex >= 0 && rowIndex < preparedInvocations.length
+                ? foundry.utils.deepClone(preparedInvocations[rowIndex]?.trainedSkills ?? [])
+                : [];
+            details.dataset.localTrainedSkills = JSON.stringify(trainedSkills);
+            CharacterSheetV2._renderInvocationDetailSkills(details, actor, sheet);
+            details.dataset.initialState = JSON.stringify(CharacterSheetV2._createInvocationDetailSnapshot(details));
+            CharacterSheetV2._setInvocationDetailDirtyState(details, false);
+            const summary = details.querySelector('.jj-invocation-details-toggle');
+            if (summary) {
+                summary.addEventListener('click', (event) => {
+                    if (!details.open || !CharacterSheetV2._syncInvocationDetailDirtyState(details)) {
+                        return;
+                    }
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const invocationName = String(details.dataset?.invocationName ?? 'esta invocação').trim() || 'esta invocação';
+                    const shouldDiscard = window.confirm(`Deseja realmente fechar os detalhes de ${invocationName} sem salvar as alterações?`);
+                    if (!shouldDiscard) {
+                        return;
+                    }
+                    CharacterSheetV2._resetInvocationDetailFields.call(sheet, details);
+                    details.open = false;
+                });
+            }
+            CharacterSheetV2._getInvocationDetailFields(details).forEach((field) => {
+                const syncFieldState = (event) => {
+                    event.stopPropagation();
+                    CharacterSheetV2._syncInvocationDetailDirtyState(details);
+                };
+                field.addEventListener('input', syncFieldState);
+                field.addEventListener('change', syncFieldState);
+            });
+        });
+    }
+    static async saveInvocationDetails(_event, target) {
+        const actor = this.actor ?? this.document;
+        const actionTarget = target?.closest?.('[data-row-index]') ?? target;
+        const rowIndex = Number(actionTarget?.dataset?.rowIndex);
+        const details = actionTarget?.closest?.('.jj-invocation-details');
+        if (!(actor instanceof Actor) || !actor.isOwner || !Number.isFinite(rowIndex) || !(details instanceof HTMLDetailsElement)) {
+            return;
+        }
+        const pendingUpdate = CharacterSheetV2._createInvocationDetailSnapshot(details);
+        if (!Object.keys(pendingUpdate).length) {
+            details.open = false;
+            return;
+        }
+        try {
+            await CharacterSheetV2._submitJujutsuActorIfNeeded(actor);
+            await actor.update(pendingUpdate);
+            CharacterSheetV2._setInvocationDetailDirtyState(details, false);
+            details.open = false;
+        }
+        catch (error) {
+            CharacterSheetV2._syncInvocationDetailDirtyState(details);
+            const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
+            ui.notifications.error(`Nao foi possivel salvar os detalhes da invocacao: ${message}`);
         }
     }
     static _getInvocationTablePathMatch(tablePath) {
@@ -2495,6 +2784,14 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                     void CharacterSheetV2.removeInvocation.call(this, event, button);
                 });
             });
+            root.querySelectorAll('[data-action="saveInvocationDetails"]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void CharacterSheetV2.saveInvocationDetails.call(this, event, button);
+                });
+            });
+            CharacterSheetV2._bindInvocationDetailInteractions(root, this.actor ?? this.document, this);
             root.querySelectorAll('[data-roll-table-attack]').forEach((button) => {
                 button.addEventListener('click', (event) => {
                     event.preventDefault();
