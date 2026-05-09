@@ -10,6 +10,7 @@ const ATTRIBUTE_OPTIONS = [
 ];
 
 const ATTRIBUTE_KEYS = new Set(ATTRIBUTE_OPTIONS.map((attribute) => attribute.key));
+const ROLL_DICE = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20'];
 
 const ATTRIBUTES = [
     { key: 'for', label: 'FOR' },
@@ -479,6 +480,29 @@ const normalizeAttackTableEntry = (entry, index = 0) => {
 
 const normalizeFeatureTableEntry = (entry, index = 0, prefix = 'feature-entry', fallbackLabel = 'Item') => {
     const name = cleanText(entry?.name) || `${fallbackLabel} ${index + 1}`;
+    const rollDie = cleanText(entry?.rollDie).toLowerCase();
+    const hasRoll = b(entry?.hasRoll);
+    const rollCount = Math.max(1, Math.trunc(n(entry?.rollCount) || 1));
+    const rollBonus = Math.trunc(n(entry?.rollBonus));
+    const rollAttribute = ATTRIBUTE_KEYS.has(cleanText(entry?.rollAttribute).toLowerCase()) ? cleanText(entry?.rollAttribute).toLowerCase() : '';
+    const rollFormula = cleanText(entry?.rollFormula);
+    const damageFormula = cleanText(entry?.damageFormula);
+    const rollAttributeLabel = ATTRIBUTE_OPTIONS.find((option) => option.key === rollAttribute)?.label ?? '';
+    const rollLabelParts = [];
+    if (hasRoll) {
+        if (rollFormula) {
+            rollLabelParts.push(rollFormula);
+        }
+        else if (ROLL_DICE.includes(rollDie)) {
+            rollLabelParts.push(`${rollCount}${rollDie}`);
+            if (rollBonus > 0)
+                rollLabelParts.push(`+${rollBonus}`);
+            else if (rollBonus < 0)
+                rollLabelParts.push(`${rollBonus}`);
+            if (rollAttributeLabel)
+                rollLabelParts.push(`+${rollAttributeLabel}`);
+        }
+    }
     return {
         id: normalizeJujutsuTableEntryId(entry?.id ?? name, prefix, index),
         name,
@@ -488,6 +512,15 @@ const normalizeFeatureTableEntry = (entry, index = 0, prefix = 'feature-entry', 
         max: n(entry?.max),
         cost: n(entry?.cost),
         level: Math.max(0, Math.min(5, Math.trunc(n(entry?.level)))),
+        hasRoll,
+        rollDie: hasRoll ? (ROLL_DICE.includes(rollDie) ? rollDie : 'd20') : '',
+        rollCount,
+        rollBonus,
+        rollAttribute,
+        rollAttributeLabel,
+        rollFormula,
+        damageFormula,
+        rollLabel: rollLabelParts.join(' '),
         description: cleanText(entry?.description),
         observations: cleanText(entry?.observations)
     };
@@ -502,7 +535,15 @@ const normalizeInventoryTableEntry = (entry, index = 0) => {
     const rollAttribute = ATTRIBUTE_KEYS.has(cleanText(entry?.rollAttribute).toLowerCase()) ? cleanText(entry?.rollAttribute).toLowerCase() : '';
     const rollAttributeLabel = ATTRIBUTE_OPTIONS.find((option) => option.key === rollAttribute)?.label ?? '';
     const rollLabelParts = [];
-    if (hasRoll && ['d4', 'd8', 'd10', 'd12', 'd20'].includes(rollDie)) {
+    const itemType = cleanText(entry?.itemType).toLowerCase();
+    const normalizedItemType = ['common', 'weapon', 'equipment'].includes(itemType) ? itemType : 'common';
+    const equipped = b(entry?.equipped);
+    const defenseBonus = Math.trunc(n(entry?.defenseBonus));
+    const attackBonus = Math.trunc(n(entry?.attackBonus));
+    const damage = cleanText(entry?.damage);
+    const weaponType = cleanText(entry?.weaponType);
+    const range = cleanText(entry?.range);
+    if (hasRoll && ROLL_DICE.includes(rollDie)) {
         rollLabelParts.push(`${rollCount}${rollDie}`);
         if (rollBonus > 0)
             rollLabelParts.push(`+${rollBonus}`);
@@ -518,13 +559,30 @@ const normalizeInventoryTableEntry = (entry, index = 0) => {
         quantity: Math.max(0, Math.trunc(n(entry?.quantity))),
         weight: n(entry?.weight),
         price: n(entry?.price),
+        itemType: normalizedItemType,
+        equipped,
+        defenseBonus,
+        attackBonus,
+        damage,
+        weaponType,
+        range,
         hasRoll,
-        rollDie: hasRoll && ['d4', 'd8', 'd10', 'd12', 'd20'].includes(rollDie) ? rollDie : '',
+        rollDie: hasRoll && ROLL_DICE.includes(rollDie) ? rollDie : '',
         rollCount,
         rollBonus,
         rollAttribute,
         rollAttributeLabel,
         rollLabel: rollLabelParts.join(' ')
+    };
+};
+
+const normalizeMaximumTechniqueEntry = (entry, index = 0) => {
+    const name = cleanText(entry?.name ?? entry?.nome);
+    const description = cleanText(entry?.description ?? entry?.descricao);
+    return {
+        id: normalizeJujutsuTableEntryId(entry?.id ?? name, 'maximum-technique', index),
+        name,
+        description
     };
 };
 
@@ -649,11 +707,24 @@ export const createJujutsuTableRow = (type) => {
             weight: 0,
             price: 0,
             image: 'icons/svg/item-bag.svg',
+            itemType: 'common',
+            equipped: false,
+            defenseBonus: 0,
+            attackBonus: 0,
+            damage: '',
+            weaponType: '',
+            range: '',
             hasRoll: false,
             rollDie: '',
             rollCount: 1,
             rollBonus: 0,
             rollAttribute: ''
+        }, 0);
+    }
+    if (type === 'maximumTechnique') {
+        return normalizeMaximumTechniqueEntry({
+            name: '',
+            description: ''
         }, 0);
     }
     return normalizeAttackTableEntry({}, 0);
@@ -791,6 +862,11 @@ export const createJujutsuDefaultProps = () => {
             expansaoDescricao: '',
             tecnicaMaximaNome: '',
             tecnicaMaximaDescricao: '',
+            tecnicasMaximas: [
+                { id: 'maximum-technique-1', name: '', description: '' },
+                { id: 'maximum-technique-2', name: '', description: '' },
+                { id: 'maximum-technique-3', name: '', description: '' }
+            ],
             atributoPrincipal: 'des',
             cdTecnica: {
                 others: 0
@@ -885,14 +961,33 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
     };
 
     const perfilAmaldicoadoAttributeKey = cleanText(props.perfilAmaldicoado?.atributoPrincipal).toLowerCase();
+    const legacyTecnicaMaximaNome = coerceTextValue(props.perfilAmaldicoado?.tecnicaMaximaNome);
+    const legacyTecnicaMaximaDescricao = coerceTextValue(props.perfilAmaldicoado?.tecnicaMaximaDescricao);
+    const maximumTechniqueRows = toArrayValues(props.perfilAmaldicoado?.tecnicasMaximas)
+        .map((entry, index) => normalizeMaximumTechniqueEntry(entry, index));
+    if (!maximumTechniqueRows.some((entry) => entry.name || entry.description) && (legacyTecnicaMaximaNome || legacyTecnicaMaximaDescricao)) {
+        maximumTechniqueRows[0] = normalizeMaximumTechniqueEntry({
+            id: 'maximum-technique-1',
+            name: legacyTecnicaMaximaNome,
+            description: legacyTecnicaMaximaDescricao
+        }, 0);
+    }
+    while (maximumTechniqueRows.length < 3) {
+        maximumTechniqueRows.push(normalizeMaximumTechniqueEntry({
+            id: `maximum-technique-${maximumTechniqueRows.length + 1}`,
+            name: '',
+            description: ''
+        }, maximumTechniqueRows.length));
+    }
     props.perfilAmaldicoado = {
         tecnicaNome: coerceTextValue(props.perfilAmaldicoado?.tecnicaNome),
         tecnicaDescricao: coerceTextValue(props.perfilAmaldicoado?.tecnicaDescricao),
         expansaoNome: coerceTextValue(props.perfilAmaldicoado?.expansaoNome),
         expansaoTipo: coerceTextValue(props.perfilAmaldicoado?.expansaoTipo),
         expansaoDescricao: coerceTextValue(props.perfilAmaldicoado?.expansaoDescricao),
-        tecnicaMaximaNome: coerceTextValue(props.perfilAmaldicoado?.tecnicaMaximaNome),
-        tecnicaMaximaDescricao: coerceTextValue(props.perfilAmaldicoado?.tecnicaMaximaDescricao),
+        tecnicaMaximaNome: legacyTecnicaMaximaNome,
+        tecnicaMaximaDescricao: legacyTecnicaMaximaDescricao,
+        tecnicasMaximas: maximumTechniqueRows,
         atributoPrincipal: ATTRIBUTE_KEYS.has(perfilAmaldicoadoAttributeKey) ? perfilAmaldicoadoAttributeKey : 'des',
         cdTecnica: {
             others: n(props.perfilAmaldicoado?.cdTecnica?.others)
@@ -941,12 +1036,9 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
     props.treinamento = trainingBonus;
 
     const getAttrMod = (key) => attributeMap[key]?.mod ?? 0;
-    const attentionTotal = n(props.attention?.base) + n(props.attention?.perception) + n(props.attention?.others);
+    let attentionTotal = n(props.attention?.base) + n(props.attention?.perception) + n(props.attention?.others);
     const initiativeDex = getAttrMod('des');
     const initiativeTotal = initiativeDex + n(props.initiative?.others);
-
-    const defenseDex = n(props.defense?.dex);
-    const defenseTotal = n(props.defense?.base) + n(props.defense?.equip) + defenseDex + levelHalf + n(props.defense?.others);
 
     const cdAttrKey = props.specializationCd?.attribute ?? 'des';
     const cdAttrMod = getAttrMod(cdAttrKey);
@@ -1057,6 +1149,30 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
     };
     const inventoryUsedSpaces = props.tables.inventory.length;
     const inventorySpaceRemaining = props.inventory.spaceLimit - inventoryUsedSpaces;
+    const equippedDefenseBonus = props.tables.inventory.reduce((total, item) => {
+        return total + (item.equipped && item.itemType === 'equipment' ? n(item.defenseBonus) : 0);
+    }, 0);
+    const equippedWeaponAttacks = props.tables.inventory
+        .filter((item) => item.equipped && item.itemType === 'weapon')
+        .map((item, index) => normalizeAttackTableEntry({
+        id: `inventory-weapon-${item.id ?? index}`,
+        name: item.name,
+        image: item.image,
+        acerto: item.attackBonus,
+        weapon: item.name,
+        bonus: item.attackBonus,
+        damage: item.damage,
+        type: item.weaponType,
+        range: item.range,
+        properties: 'Gerado pelo inventário',
+        description: item.rollLabel ? `Rolagem do item: ${item.rollLabel}` : '',
+        observations: 'Ataque derivado de item equipado no inventário.'
+    }, index));
+
+    const defenseAttributeKey = cleanText(props.defense?.attribute).toLowerCase();
+    const defenseDex = ATTRIBUTE_KEYS.has(defenseAttributeKey) ? getAttrMod(defenseAttributeKey) : n(props.defense?.dex);
+    const defenseEquip = n(props.defense?.equip) + equippedDefenseBonus;
+    const defenseTotal = n(props.defense?.base) + defenseEquip + defenseDex + levelHalf + n(props.defense?.others);
 
     const attributeDisplay = (key) => ATTRIBUTE_OPTIONS.find((option) => option.key === key)?.label ?? String(key ?? '').toUpperCase();
     const perfilAmaldicoadoAttrKey = props.perfilAmaldicoado?.atributoPrincipal ?? 'des';
@@ -1122,7 +1238,8 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
     // Attack cards and chat rolls both rely on this derived attack model.
     const attackBonuses = ATTACK_BONUSES.map((attackBonus) => {
         const entry = props.attackBonuses?.[attackBonus.key] ?? {};
-        const attribute = attackBonus.attribute;
+        const savedAttribute = cleanText(entry.attribute).toLowerCase();
+        const attribute = ATTRIBUTE_KEYS.has(savedAttribute) ? savedAttribute : attackBonus.attribute;
         const trained = attackBonus.alwaysTrained || (entry.t !== undefined ? b(entry.t) : n(entry.bonus) > 0);
         const others = n(entry.others);
         const attributeMod = getAttrMod(attribute);
@@ -1226,6 +1343,9 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
             total
         };
     });
+    const perceptionSkillTotal = skills.find((skill) => skill.key === 'percepcao')?.total ?? 0;
+    props.attention.perception = perceptionSkillTotal;
+    attentionTotal = n(props.attention?.base) + perceptionSkillTotal + n(props.attention?.others);
 
     const deathSuccesses = [0, 1, 2].map((index) => b(props.deathTests?.successes?.[index]));
     const deathFailures = [0, 1, 2].map((index) => b(props.deathTests?.failures?.[index]));
@@ -1267,6 +1387,8 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         activeRdValues,
         hasActiveRds: activeRdValues.length > 0,
         invocations,
+        inventoryWeaponAttacks: equippedWeaponAttacks,
+        hasInventoryWeaponAttacks: equippedWeaponAttacks.length > 0,
         attributeOptions: ATTRIBUTE_OPTIONS,
         computed: {
             levelHalf,
@@ -1276,6 +1398,8 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
             initiativeDex,
             initiativeTotal,
             defenseDex,
+            defenseEquip,
+            equippedDefenseBonus,
             defenseTotal,
             cdAttrMod,
             specializationCdTotal,

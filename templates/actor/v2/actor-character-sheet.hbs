@@ -46,6 +46,7 @@
             <button class='jj-tab' type='button' role='tab' data-tab-target='habilidades' aria-selected='false'>Habilidades</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='invocacoes' aria-selected='false'>Invocações</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='aptidoes' aria-selected='false'>Aptidões</button>
+            <button class='jj-tab' type='button' role='tab' data-tab-target='treinamentos' aria-selected='false'>Treinamentos</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='perfil-a' aria-selected='false'>Perfil A.</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='expansao' aria-selected='false'>Expansão</button>
             <button class='jj-tab' type='button' role='tab' data-tab-target='inventario' aria-selected='false'>Inventário</button>
@@ -238,7 +239,12 @@
                 <div class='jj-abilities'>
                     {{#each jujutsu.attributes as |attribute|}}
                                 <div class='jj-ability-card' data-ability-card>
-                                    <h3>{{attribute.label}}</h3>
+                                    <h3>
+                                        <button class='jj-attack-roll-button' type='button' data-roll-attribute data-attribute-key='{{attribute.key}}' data-tooltip='Rolar {{attribute.label}}' aria-label='Rolar {{attribute.label}}'>
+                                            <i class='fas fa-dice-d20'></i>
+                                        </button>
+                                        <span>{{attribute.label}}</span>
+                                    </h3>
                                     <input class='jj-ability-score' aria-label='Valor' name='system.props.attributes.{{attribute.key}}.value' type='number' data-dtype='Number' value='{{attribute.value}}' data-ability-value />
                                     <input class='jj-ability-mod' aria-label='Modificador' type='text' value='{{attribute.signedMod}}' readonly tabindex='-1' data-ability-mod-display />
                                     <input name='system.props.attributes.{{attribute.key}}.mod' type='hidden' data-dtype='Number' value='{{attribute.mod}}' data-ability-mod-hidden />
@@ -293,7 +299,11 @@
                                                     </div>
                                                     <label class='jj-derived-row'>
                                                         <span>Atributo</span>
-                                                        <input type='text' value='{{attack.attributeDisplay}}' readonly />
+                                                        <select name='system.props.attackBonuses.{{attack.key}}.attribute' data-attack-attribute-input>
+                                                            {{#each ../jujutsu.attributeOptions as |opt|}}
+                                                                <option value='{{opt.key}}' {{#if (eq opt.key attack.attribute)}}selected{{/if}}>{{opt.label}}</option>
+                                                            {{/each}}
+                                                        </select>
                                                     </label>
                                                     <label class='jj-derived-row'>
                                                         <span>Mod. Atr.</span>
@@ -521,7 +531,7 @@
                                 <tr>
                                     <th>Ataque</th>
                                     <th>Arma</th>
-                                    <th>Bonus</th>
+                                    <th>Bônus</th>
                                     <th>Dano</th>
                                     <th>Crit.</th>
                                     <th>Tipo</th>
@@ -558,6 +568,33 @@
                                                     </button>
                                                     <button class='jj-table-icon-button jj-table-icon-button--danger' type='button' data-action='removeJujutsuRow' data-table-path='tables.attacks' data-row-index='{{idx}}' data-tooltip='Excluir {{attack.name}}' aria-label='Excluir {{attack.name}}'>
                                                         <i class='fas fa-trash'></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{attack.weapon}}</td>
+                                        <td>{{attack.bonus}}</td>
+                                        <td>{{attack.damage}}</td>
+                                        <td>{{attack.crit}}</td>
+                                        <td>{{attack.type}}</td>
+                                        <td>{{attack.range}}</td>
+                                        <td>{{attack.properties}}</td>
+                                    </tr>
+                                {{/each}}
+                                {{#each jujutsu.inventoryWeaponAttacks as |attack idx|}}
+                                    <tr>
+                                        <td class='jj-table-item-cell'>
+                                            <div class='jj-table-item'>
+                                                <div class='jj-table-item-main'>
+                                                    <img class='jj-table-item-thumb' src='{{attack.image}}' alt='{{attack.name}}' />
+                                                    <div class='jj-table-item-text'>
+                                                        <strong>{{attack.name}}</strong>
+                                                        <span>Acerto: {{attack.acerto}} â€¢ Inventário</span>
+                                                    </div>
+                                                </div>
+                                                <div class='jj-table-item-actions'>
+                                                    <button class='jj-table-icon-button' type='button' data-roll-inventory-weapon-attack data-row-index='{{idx}}' data-tooltip='Rolar {{attack.name}}' aria-label='Rolar {{attack.name}}'>
+                                                        <i class='fas fa-dice-d20'></i>
                                                     </button>
                                                 </div>
                                             </div>
@@ -749,6 +786,15 @@
                                                             {{#if item.hasRoll}}
                                                                 <span class='jj-inventory-roll-chip'>{{item.rollLabel}}</span>
                                                             {{/if}}
+                                                            {{#if item.equipped}}
+                                                                <span class='jj-inventory-roll-chip'>Equipado</span>
+                                                            {{/if}}
+                                                            {{#if (eq item.itemType 'weapon')}}
+                                                                <span class='jj-inventory-roll-chip'>Arma</span>
+                                                            {{/if}}
+                                                            {{#if (eq item.itemType 'equipment')}}
+                                                                <span class='jj-inventory-roll-chip'>Defesa +{{item.defenseBonus}}</span>
+                                                            {{/if}}
                                                         </div>
                                                     </div>
                                                 </td>
@@ -814,39 +860,44 @@
                                     <div class='jj-derived-body'>
                                         <div class='jj-derived-total'>
                                             <span>Total</span>
-                                            <input type='number' value='{{jujutsu.computed.attentionTotal}}' readonly />
+                                            <input type='number' value='{{jujutsu.computed.attentionTotal}}' readonly data-attention-total />
                                         </div>
                                         <div class='jj-derived-fields'>
                                             <label class='jj-derived-row'>
                                                 <span>Base</span>
-                                                <input name='system.props.attention.base' type='number' data-dtype='Number' value='{{jujutsu.props.attention.base}}' />
+                                                <input name='system.props.attention.base' type='number' data-dtype='Number' value='{{jujutsu.props.attention.base}}' data-attention-input />
                                             </label>
                                             <label class='jj-derived-row'>
                                                 <span>Percep.</span>
-                                                <input name='system.props.attention.perception' type='number' data-dtype='Number' value='{{jujutsu.props.attention.perception}}' />
+                                                <input name='system.props.attention.perception' type='number' data-dtype='Number' value='{{jujutsu.props.attention.perception}}' data-attention-input data-attention-perception readonly />
                                             </label>
                                             <label class='jj-derived-row'>
                                                 <span>Outros</span>
-                                                <input name='system.props.attention.others' type='number' data-dtype='Number' value='{{jujutsu.props.attention.others}}' />
+                                                <input name='system.props.attention.others' type='number' data-dtype='Number' value='{{jujutsu.props.attention.others}}' data-attention-input />
                                             </label>
                                         </div>
                                     </div>
                                 </div>
                                 <div class='jj-card jj-derived-card'>
-                                    <h3>Iniciativa</h3>
+                                    <h3 class='jj-attack-card-heading'>
+                                        <button class='jj-attack-roll-button' type='button' data-roll-initiative data-tooltip='Rolar Iniciativa' aria-label='Rolar Iniciativa'>
+                                            <i class='fas fa-dice-d20'></i>
+                                        </button>
+                                        <span>Iniciativa</span>
+                                    </h3>
                                     <div class='jj-derived-body'>
                                         <div class='jj-derived-total'>
                                             <span>Total</span>
-                                            <input type='number' value='{{jujutsu.computed.initiativeTotal}}' readonly />
+                                            <input type='number' value='{{jujutsu.computed.initiativeTotal}}' readonly data-initiative-total />
                                         </div>
                                         <div class='jj-derived-fields'>
                                             <label class='jj-derived-row'>
                                                 <span>Destreza</span>
-                                                <input type='number' value='{{jujutsu.computed.initiativeDex}}' readonly />
+                                                <input name='system.props.initiative.dex' type='number' data-dtype='Number' value='{{jujutsu.computed.initiativeDex}}' readonly data-initiative-dex />
                                             </label>
                                             <label class='jj-derived-row'>
                                                 <span>Outros</span>
-                                                <input name='system.props.initiative.others' type='number' data-dtype='Number' value='{{jujutsu.props.initiative.others}}' />
+                                                <input name='system.props.initiative.others' type='number' data-dtype='Number' value='{{jujutsu.props.initiative.others}}' data-initiative-input />
                                             </label>
                                         </div>
                                     </div>
@@ -858,28 +909,32 @@
                                     <div class='jj-derived-body'>
                                         <div class='jj-derived-total'>
                                             <span>Total</span>
-                                            <input type='number' value='{{jujutsu.computed.defenseTotal}}' readonly />
+                                            <input type='number' value='{{jujutsu.computed.defenseTotal}}' readonly data-defense-total />
                                         </div>
                                         <div class='jj-derived-fields'>
                                             <label class='jj-derived-row'>
                                                 <span>Base</span>
-                                                <input name='system.props.defense.base' type='number' data-dtype='Number' value='{{jujutsu.props.defense.base}}' />
+                                                <input name='system.props.defense.base' type='number' data-dtype='Number' value='{{jujutsu.props.defense.base}}' data-defense-input />
                                             </label>
                                             <label class='jj-derived-row'>
                                                 <span>Equip.</span>
-                                                <input name='system.props.defense.equip' type='number' data-dtype='Number' value='{{jujutsu.props.defense.equip}}' />
+                                                <input name='system.props.defense.equip' type='number' data-dtype='Number' value='{{jujutsu.props.defense.equip}}' data-defense-input />
+                                            </label>
+                                            <label class='jj-derived-row'>
+                                                <span>Itens</span>
+                                                <input type='number' value='{{jujutsu.computed.equippedDefenseBonus}}' readonly data-defense-equipped-items />
                                             </label>
                                             <label class='jj-derived-row'>
                                                 <span>Destreza</span>
-                                                <input name='system.props.defense.dex' type='number' data-dtype='Number' value='{{jujutsu.props.defense.dex}}' />
+                                                <input name='system.props.defense.dex' type='number' data-dtype='Number' value='{{jujutsu.props.defense.dex}}' data-defense-input />
                                             </label>
                                             <label class='jj-derived-row'>
                                                 <span>Nível/2</span>
-                                                <input type='number' value='{{jujutsu.computed.levelHalf}}' readonly />
+                                                <input type='number' value='{{jujutsu.computed.levelHalf}}' readonly data-defense-level-half />
                                             </label>
                                             <label class='jj-derived-row'>
                                                 <span>Outros</span>
-                                                <input name='system.props.defense.others' type='number' data-dtype='Number' value='{{jujutsu.props.defense.others}}' />
+                                                <input name='system.props.defense.others' type='number' data-dtype='Number' value='{{jujutsu.props.defense.others}}' data-defense-input />
                                             </label>
                                         </div>
                                     </div>
@@ -1083,6 +1138,15 @@
                                                     {{#if item.hasRoll}}
                                                         <span class='jj-inventory-roll-chip'>{{item.rollLabel}}</span>
                                                     {{/if}}
+                                                    {{#if item.equipped}}
+                                                        <span class='jj-inventory-roll-chip'>Equipado</span>
+                                                    {{/if}}
+                                                    {{#if (eq item.itemType 'weapon')}}
+                                                        <span class='jj-inventory-roll-chip'>Arma</span>
+                                                    {{/if}}
+                                                    {{#if (eq item.itemType 'equipment')}}
+                                                        <span class='jj-inventory-roll-chip'>Defesa +{{item.defenseBonus}}</span>
+                                                    {{/if}}
                                                 </div>
                                             </div>
                                         </td>
@@ -1250,7 +1314,7 @@
                                                                             />
                                                                         </td>
                                                                         <td>
-                                                                            <input type='text' value='{{attribute.signedMod}}' readonly />
+                                                                            <input type='text' value='{{attribute.signedMod}}' readonly data-invocation-attribute-mod />
                                                                         </td>
                                                                     </tr>
                                                                 {{/each}}
@@ -1341,6 +1405,8 @@
                             <th>Atual</th>
                             <th>Max.</th>
                             <th>Custo</th>
+                            <th>Rolagem</th>
+                            <th>Bônus</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1380,11 +1446,30 @@
                                     <td>{{aptitude.current}}</td>
                                     <td>{{aptitude.max}}</td>
                                     <td>{{aptitude.cost}}</td>
+                                    <td class='jj-checkbox-cell'>
+                                        <input type='hidden' name='system.props.tables.aptitudes.{{idx}}.hasRoll' value='false' />
+                                        <label class='jj-checkbox jj-checkbox--compact {{#if aptitude.hasRoll}}is-checked{{/if}}'>
+                                            <input class='jj-checkbox-input' name='system.props.tables.aptitudes.{{idx}}.hasRoll' type='checkbox' value='true' data-aptitude-roll-toggle {{checked aptitude.hasRoll}} />
+                                            <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <input
+                                            class='jj-aptitude-roll-bonus-input'
+                                            name='system.props.tables.aptitudes.{{idx}}.rollBonus'
+                                            type='number'
+                                            data-dtype='Number'
+                                            step='1'
+                                            value='{{aptitude.rollBonus}}'
+                                            data-aptitude-roll-bonus
+                                            {{#unless aptitude.hasRoll}}disabled{{/unless}}
+                                        />
+                                    </td>
                                 </tr>
                             {{/each}}
                         {{else}}
                             <tr>
-                                <td colspan='4' class='jj-inventory-empty'>Nenhuma aptidão cadastrada.</td>
+                                <td colspan='6' class='jj-inventory-empty'>Nenhuma aptidão cadastrada.</td>
                             </tr>
                         {{/if}}
                     </tbody>
@@ -1396,7 +1481,10 @@
                 <h2>Níveis de Aptidão</h2>
                 <div class='jj-aptitude-level-grid'>
                     {{#each jujutsu.aptitudeLevelCards as |card|}}
-                        <label class='jj-card jj-aptitude-level-card'>
+                        <label class='jj-card jj-aptitude-level-card' data-aptitude-level-card data-aptitude-label='{{card.label}}'>
+                            <button class='jj-table-icon-button' type='button' data-roll-aptitude-level data-aptitude-key='{{card.key}}' data-tooltip='Rolar {{card.label}}' aria-label='Rolar {{card.label}}'>
+                                <i class='fas fa-dice-d20'></i>
+                            </button>
                             <input
                                 class='jj-aptitude-level-input'
                                 name='system.props.aptitudeLevels.{{card.key}}'
@@ -1409,6 +1497,50 @@
                             <span>{{card.label}}</span>
                         </label>
                     {{/each}}
+                </div>
+            </section>
+
+            <section class='jj-panel' data-tab-block='treinamentos'>
+                <h2>Treinamentos</h2>
+                <div class='jj-aptitude-level-grid'>
+                    {{#each jujutsu.aptitudeLevelCards as |card|}}
+                        <label class='jj-card jj-aptitude-level-card' data-aptitude-level-card data-aptitude-label='{{card.label}}'>
+                            <button class='jj-table-icon-button' type='button' data-roll-aptitude-level data-aptitude-key='{{card.key}}' data-tooltip='Rolar {{card.label}}' aria-label='Rolar {{card.label}}'>
+                                <i class='fas fa-dice-d20'></i>
+                            </button>
+                            <input
+                                class='jj-aptitude-level-input'
+                                name='system.props.aptitudeLevels.{{card.key}}'
+                                type='number'
+                                min='0'
+                                step='1'
+                                data-dtype='Number'
+                                value='{{card.value}}'
+                            />
+                            <span>{{card.label}}</span>
+                        </label>
+                    {{/each}}
+                </div>
+                <div class='jj-card jj-card--rd'>
+                    <div class='jj-rd-block jj-trainings-block {{#unless jujutsu.hasActiveTrainings}}is-empty{{/unless}}'>
+                        <div class='jj-rd-heading'>
+                            {{#if editable}}
+                                <button class='jj-rd-config-button' type='button' data-action='configureJujutsuTrainings' data-tooltip='Configurar Treinamentos' aria-label='Configurar Treinamentos'>
+                                    <i class='fas fa-cog'></i>
+                                </button>
+                            {{/if}}
+                            <h3>Homebrew</h3>
+                        </div>
+                        {{#if jujutsu.hasActiveTrainings}}
+                            <ul class='jj-rd-pills jj-trainings-pills'>
+                                {{#each jujutsu.activeTrainingDefinitions as |training|}}
+                                    <li class='jj-rd-pill jj-training-pill' data-tooltip='{{training.tooltip}}' aria-label='{{training.tooltip}}'>{{training.label}}</li>
+                                {{/each}}
+                            </ul>
+                        {{else}}
+                            <p class='jj-rd-empty'>Nenhum treinamento configurado.</p>
+                        {{/if}}
+                    </div>
                 </div>
             </section>
 
@@ -1592,11 +1724,30 @@
                         <div class='jj-derived-body jj-profile-fields'>
                             <label class='jj-profile-field'>
                                 <span>Nome da Técnica</span>
-                                <input name='system.props.perfilAmaldicoado.tecnicaMaximaNome' type='text' value='{{jujutsu.props.perfilAmaldicoado.tecnicaMaximaNome}}' />
+                                <input name='system.props.perfilAmaldicoado.tecnicasMaximas.0.name' type='text' value='{{jujutsu.props.perfilAmaldicoado.tecnicasMaximas.0.name}}' />
                             </label>
                             <label class='jj-profile-field jj-profile-field--textarea'>
                                 <span>Descrição da Técnica Máxima</span>
-                                <textarea name='system.props.perfilAmaldicoado.tecnicaMaximaDescricao' rows='10'>{{jujutsu.props.perfilAmaldicoado.tecnicaMaximaDescricao}}</textarea>
+                                <textarea name='system.props.perfilAmaldicoado.tecnicasMaximas.0.description' rows='4'>{{jujutsu.props.perfilAmaldicoado.tecnicasMaximas.0.description}}</textarea>
+                            </label>
+                            <input name='system.props.perfilAmaldicoado.tecnicasMaximas.0.id' type='hidden' value='{{jujutsu.props.perfilAmaldicoado.tecnicasMaximas.0.id}}' />
+                            <input name='system.props.perfilAmaldicoado.tecnicasMaximas.1.id' type='hidden' value='{{jujutsu.props.perfilAmaldicoado.tecnicasMaximas.1.id}}' />
+                            <label class='jj-profile-field'>
+                                <span>Técnica Extra 1</span>
+                                <input name='system.props.perfilAmaldicoado.tecnicasMaximas.1.name' type='text' value='{{jujutsu.props.perfilAmaldicoado.tecnicasMaximas.1.name}}' />
+                            </label>
+                            <label class='jj-profile-field jj-profile-field--textarea'>
+                                <span>Descrição Extra 1</span>
+                                <textarea name='system.props.perfilAmaldicoado.tecnicasMaximas.1.description' rows='4'>{{jujutsu.props.perfilAmaldicoado.tecnicasMaximas.1.description}}</textarea>
+                            </label>
+                            <input name='system.props.perfilAmaldicoado.tecnicasMaximas.2.id' type='hidden' value='{{jujutsu.props.perfilAmaldicoado.tecnicasMaximas.2.id}}' />
+                            <label class='jj-profile-field'>
+                                <span>Técnica Extra 2</span>
+                                <input name='system.props.perfilAmaldicoado.tecnicasMaximas.2.name' type='text' value='{{jujutsu.props.perfilAmaldicoado.tecnicasMaximas.2.name}}' />
+                            </label>
+                            <label class='jj-profile-field jj-profile-field--textarea'>
+                                <span>Descrição Extra 2</span>
+                                <textarea name='system.props.perfilAmaldicoado.tecnicasMaximas.2.description' rows='4'>{{jujutsu.props.perfilAmaldicoado.tecnicasMaximas.2.description}}</textarea>
                             </label>
                         </div>
                     </div>

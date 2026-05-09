@@ -108,6 +108,25 @@ export default function initChat() {
     });
     // When rendering a chat message, applying roll mode
     Hooks.on('renderChatMessageHTML', (message, elt) => {
+        const criticalState = foundry.utils.getProperty(message, `flags.${game.system.id}.jujutsuCritical.state`);
+        if (criticalState === 'success' || criticalState === 'failure') {
+            const diceTotals = $(elt).find('.dice-total');
+            diceTotals.removeClass('jj-chat-critical-success jj-chat-critical-failure');
+            diceTotals.addClass(criticalState === 'success' ? 'jj-chat-critical-success' : 'jj-chat-critical-failure');
+            const criticalLabelClass = criticalState === 'success' ? 'jj-chat-critical-label-success' : 'jj-chat-critical-label-failure';
+            const criticalLabelText = criticalState === 'success' ? 'Sucesso Crítico' : 'Erro Crítico';
+            diceTotals.each((_index, totalElt) => {
+                const total = $(totalElt);
+                const existing = total.parent().find('.jj-chat-critical-label');
+                if (existing.length) {
+                    existing.removeClass('jj-chat-critical-label-success jj-chat-critical-label-failure')
+                        .addClass(criticalLabelClass)
+                        .text(criticalLabelText);
+                    return;
+                }
+                total.after(`<div class="jj-chat-critical-label ${criticalLabelClass}">${criticalLabelText}</div>`);
+            });
+        }
         const rolls = $(elt).find('.custom-system-roll');
         for (const rollElt of rolls) {
             const roll = $(rollElt);

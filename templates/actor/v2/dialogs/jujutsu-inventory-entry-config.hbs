@@ -33,6 +33,46 @@
             <input type='number' name='price' min='0' step='0.1' value='{{entry.price}}' />
         </label>
 
+        <label class='jj-characteristics-custom-field'>
+            <span>Tipo</span>
+            <select name='itemType'>
+                {{#each itemTypeOptions as |option|}}
+                    <option value='{{option.value}}' {{#if option.selected}}selected{{/if}}>{{option.label}}</option>
+                {{/each}}
+            </select>
+        </label>
+
+        <label class='jj-inventory-config-checkbox'>
+            <input type='checkbox' name='equipped' {{checked entry.equipped}} />
+            <span>Equipado/ativo?</span>
+        </label>
+
+        <div class='jj-inventory-roll-grid' data-inventory-weapon-fields hidden>
+            <label class='jj-characteristics-custom-field'>
+                <span>Bônus de ataque</span>
+                <input type='number' name='attackBonus' step='1' value='{{entry.attackBonus}}' />
+            </label>
+            <label class='jj-characteristics-custom-field'>
+                <span>Dano</span>
+                <input type='text' name='damage' value='{{entry.damage}}' placeholder='Ex.: 1d8 + 2' />
+            </label>
+            <label class='jj-characteristics-custom-field'>
+                <span>Tipo da arma</span>
+                <input type='text' name='weaponType' value='{{entry.weaponType}}' />
+            </label>
+            <label class='jj-characteristics-custom-field'>
+                <span>Alcance</span>
+                <input type='text' name='range' value='{{entry.range}}' />
+            </label>
+        </div>
+
+        <div class='jj-inventory-roll-grid' data-inventory-equipment-fields hidden>
+            <label class='jj-characteristics-custom-field'>
+                <span>Bônus Defesa/AC</span>
+                <input type='number' name='defenseBonus' step='1' value='{{entry.defenseBonus}}' />
+            </label>
+        </div>
+
         <label class='jj-inventory-config-checkbox'>
             <input type='checkbox' name='hasRoll' {{checked entry.hasRoll}} />
             <span>Terá rolagem?</span>

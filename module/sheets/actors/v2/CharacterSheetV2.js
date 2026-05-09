@@ -167,10 +167,16 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                     templatePath: `systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-inventory-entry-config.hbs`,
                     rollOptions: [
                         { value: 'd4', label: 'd4' },
+                        { value: 'd6', label: 'd6' },
                         { value: 'd8', label: 'd8' },
                         { value: 'd10', label: 'd10' },
                         { value: 'd12', label: 'd12' },
                         { value: 'd20', label: 'd20' }
+                    ],
+                    itemTypeOptions: [
+                        { value: 'common', label: 'Comum' },
+                        { value: 'weapon', label: 'Arma' },
+                        { value: 'equipment', label: 'Equipamento' }
                     ],
                     attributeOptions: [
                         { value: '', label: 'Nenhum' },
@@ -195,6 +201,23 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
     }
     static async _renderJujutsuDialogContent(config, entry) {
         const attributeField = config.attributeField ?? 'rollAttribute';
+        const rollOptions = config.rollOptions ?? [
+            { value: 'd4', label: 'd4' },
+            { value: 'd6', label: 'd6' },
+            { value: 'd8', label: 'd8' },
+            { value: 'd10', label: 'd10' },
+            { value: 'd12', label: 'd12' },
+            { value: 'd20', label: 'd20' }
+        ];
+        const attributeOptions = config.attributeOptions ?? [
+            { value: '', label: 'Nenhum' },
+            { value: 'for', label: 'FOR' },
+            { value: 'des', label: 'DEX' },
+            { value: 'con', label: 'CONS' },
+            { value: 'int', label: 'INT' },
+            { value: 'sab', label: 'SAB' },
+            { value: 'pre', label: 'PRE' }
+        ];
         return foundry.applications.handlebars.renderTemplate(config.templatePath, {
             dialogTitle: config.dialogTitle,
             entryTypeLabel: config.entryTypeLabel,
@@ -204,11 +227,15 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 ...option,
                 selected: Number(option.value) === Number(entry?.level ?? 0)
             })),
-            attributeOptions: (config.attributeOptions ?? []).map((option) => ({
+            itemTypeOptions: (config.itemTypeOptions ?? []).map((option) => ({
+                ...option,
+                selected: option.value === (entry?.itemType ?? 'common')
+            })),
+            attributeOptions: attributeOptions.map((option) => ({
                 ...option,
                 selected: option.value === (entry?.[attributeField] ?? '')
             })),
-            rollOptions: (config.rollOptions ?? []).map((option) => ({
+            rollOptions: rollOptions.map((option) => ({
                 ...option,
                 selected: option.value === entry?.rollDie
             }))
@@ -247,7 +274,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                     void picker.browse(imageInput.value);
                 }
                 catch (error) {
-                    ui.notifications?.warn?.(error?.message ?? 'Nao foi possivel abrir o seletor de imagem.');
+                    ui.notifications?.warn?.(error?.message ?? 'Não foi possível abrir o seletor de imagem.');
                 }
             });
         });
@@ -259,6 +286,28 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             return;
         const checkbox = root.querySelector?.(`[name='hasRoll']`);
         const rollField = root.querySelector?.('[data-inventory-roll-field]');
+        const itemTypeSelect = root.querySelector?.(`[name='itemType']`);
+        const weaponFields = root.querySelector?.('[data-inventory-weapon-fields]');
+        const equipmentFields = root.querySelector?.('[data-inventory-equipment-fields]');
+        if (itemTypeSelect) {
+            const syncType = () => {
+                const itemType = itemTypeSelect.value;
+                if (weaponFields) {
+                    weaponFields.hidden = itemType !== 'weapon';
+                    weaponFields.querySelectorAll('input, select').forEach((control) => {
+                        control.disabled = itemType !== 'weapon';
+                    });
+                }
+                if (equipmentFields) {
+                    equipmentFields.hidden = itemType !== 'equipment';
+                    equipmentFields.querySelectorAll('input, select').forEach((control) => {
+                        control.disabled = itemType !== 'equipment';
+                    });
+                }
+            };
+            itemTypeSelect.addEventListener('change', syncType);
+            syncType();
+        }
         if (!checkbox || !rollField) {
             return;
         }
@@ -298,6 +347,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             const hasRoll = !!form?.querySelector?.(`[name='hasRoll']`)?.checked;
             const rollDie = getValue('rollDie').toLowerCase();
             const rollAttribute = getValue('rollAttribute').toLowerCase();
+            const itemType = getValue('itemType').toLowerCase();
             return {
                 ...createJujutsuTableRow('inventory'),
                 id: entryId,
@@ -306,8 +356,15 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 quantity: Math.max(0, Math.trunc(getNumber('quantity') || 0)),
                 weight: Math.max(0, getNumber('weight') || 0),
                 price: Math.max(0, getNumber('price') || 0),
+                itemType: ['common', 'weapon', 'equipment'].includes(itemType) ? itemType : 'common',
+                equipped: !!form?.querySelector?.(`[name='equipped']`)?.checked,
+                defenseBonus: Math.trunc(getNumber('defenseBonus') || 0),
+                attackBonus: Math.trunc(getNumber('attackBonus') || 0),
+                damage: getValue('damage'),
+                weaponType: getValue('weaponType'),
+                range: getValue('range'),
                 hasRoll,
-                rollDie: hasRoll && ['d4', 'd8', 'd10', 'd12', 'd20'].includes(rollDie) ? rollDie : '',
+                rollDie: hasRoll && ['d4', 'd6', 'd8', 'd10', 'd12', 'd20'].includes(rollDie) ? rollDie : '',
                 rollCount: hasRoll ? Math.max(1, Math.trunc(getNumber('rollCount') || 1)) : 1,
                 rollBonus: hasRoll ? Math.trunc(getNumber('rollBonus') || 0) : 0,
                 rollAttribute: hasRoll && ['for', 'des', 'con', 'int', 'sab', 'pre'].includes(rollAttribute) ? rollAttribute : ''
@@ -323,6 +380,9 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 others: Math.trunc(getNumber('others') || 0)
             };
         }
+        const hasRoll = !!form?.querySelector?.(`[name='hasRoll']`)?.checked;
+        const rollDie = getValue('rollDie').toLowerCase();
+        const rollAttribute = getValue('rollAttribute').toLowerCase();
         return {
             ...createJujutsuTableRow(config.rowType),
             id: entryId,
@@ -333,6 +393,13 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             max: getNumber('max'),
             cost: getNumber('cost'),
             level: Math.max(0, Math.min(5, Math.trunc(getNumber('level')))),
+            hasRoll,
+            rollDie: hasRoll && ['d4', 'd6', 'd8', 'd10', 'd12', 'd20'].includes(rollDie) ? rollDie : '',
+            rollCount: hasRoll ? Math.max(1, Math.trunc(getNumber('rollCount') || 1)) : 1,
+            rollBonus: hasRoll ? Math.trunc(getNumber('rollBonus') || 0) : 0,
+            rollAttribute: hasRoll && ['for', 'des', 'con', 'int', 'sab', 'pre'].includes(rollAttribute) ? rollAttribute : '',
+            rollFormula: hasRoll ? getValue('rollFormula') : '',
+            damageFormula: hasRoll ? getValue('damageFormula') : '',
             description: getValue('description'),
             observations: getValue('observations')
         };
@@ -821,6 +888,16 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             CharacterSheetV2._getInvocationDetailFields(details).forEach((field) => {
                 const syncFieldState = (event) => {
                     event.stopPropagation();
+                    const path = String(field.dataset?.fieldPath ?? '');
+                    if (path.includes('.attributes.')) {
+                        const value = Number(field.value);
+                        const mod = calculateJujutsuAttributeMod(Number.isFinite(value) ? value : 0);
+                        const modInput = field.closest('tr')?.querySelector('[data-invocation-attribute-mod]');
+                        if (modInput) {
+                            modInput.value = mod > 0 ? `+${mod}` : String(mod);
+                        }
+                        CharacterSheetV2._renderInvocationDetailSkills(details, actor, sheet);
+                    }
                     CharacterSheetV2._syncInvocationDetailDirtyState(details);
                 };
                 field.addEventListener('input', syncFieldState);
@@ -850,7 +927,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         catch (error) {
             CharacterSheetV2._syncInvocationDetailDirtyState(details);
             const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
-            ui.notifications.error(`Nao foi possivel salvar os detalhes da invocacao: ${message}`);
+            ui.notifications.error(`Não foi possível salvar os detalhes da invocação: ${message}`);
         }
     }
     static _getInvocationTablePathMatch(tablePath) {
@@ -1034,14 +1111,41 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             </div>
         `;
     }
+    static _buildJujutsuConfiguredRollFormula(entry, actor) {
+        const explicitFormula = String(entry?.rollFormula ?? '').trim();
+        if (explicitFormula) {
+            return explicitFormula;
+        }
+        const rollDie = String(entry?.rollDie ?? '').trim().toLowerCase();
+        if (!['d4', 'd6', 'd8', 'd10', 'd12', 'd20'].includes(rollDie)) {
+            return '';
+        }
+        const rollCount = Math.max(1, Math.trunc(CharacterSheetV2._toSafeNumber(entry?.rollCount, 1)));
+        const rollBonus = Math.trunc(CharacterSheetV2._toSafeNumber(entry?.rollBonus, 0));
+        const rollAttribute = String(entry?.rollAttribute ?? '').trim().toLowerCase();
+        const attributeValue = CharacterSheetV2._toSafeNumber(actor?.system?.props?.attributes?.[rollAttribute]?.value, 10);
+        const attributeMod = ['for', 'des', 'con', 'int', 'sab', 'pre'].includes(rollAttribute)
+            ? calculateJujutsuAttributeMod(attributeValue)
+            : 0;
+        const formulaParts = [`${rollCount}${rollDie}`];
+        if (rollBonus > 0)
+            formulaParts.push(`+ ${rollBonus}`);
+        else if (rollBonus < 0)
+            formulaParts.push(`- ${Math.abs(rollBonus)}`);
+        if (attributeMod > 0)
+            formulaParts.push(`+ ${attributeMod}`);
+        else if (attributeMod < 0)
+            formulaParts.push(`- ${Math.abs(attributeMod)}`);
+        return formulaParts.join(' ');
+    }
     static async rollJujutsuTableAttack(actorOrUuid, { rowId = null, rowIndex = -1 } = {}) {
         const actor = typeof actorOrUuid === 'string' ? await fromUuid(actorOrUuid) : actorOrUuid;
         if (!(actor instanceof Actor)) {
-            ui.notifications.warn('Nao foi possivel localizar o ator do ataque.');
+            ui.notifications.warn('Não foi possível localizar o ator do ataque.');
             return null;
         }
         if (!actor.isOwner) {
-            ui.notifications.warn('Voce nao tem permissao para usar este ataque.');
+            ui.notifications.warn('Você não tem permissão para usar este ataque.');
             return null;
         }
         await CharacterSheetV2._submitJujutsuActorIfNeeded(actor);
@@ -1050,7 +1154,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             rowIndex
         });
         if (!attack) {
-            ui.notifications.warn('Nao foi possivel localizar o ataque arrastado.');
+            ui.notifications.warn('Não foi possível localizar o ataque arrastado.');
             return null;
         }
         const speaker = foundry.documents.ChatMessage.implementation.getSpeaker({
@@ -1058,9 +1162,18 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         });
         const attackRoll = new Roll(`1d20 + ${CharacterSheetV2._toSafeNumber(attack.acerto, 0)}`);
         await attackRoll.evaluate({ async: true });
+        const criticalState = CharacterSheetV2._getD20CriticalState(attackRoll);
         await attackRoll.toMessage({
             speaker,
-            flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Ataque')}<p><strong>Acerto</strong></p>`
+            flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Ataque')}<p><strong>Acerto</strong></p>`,
+            flags: {
+                [game.system.id]: {
+                    jujutsuCritical: {
+                        state: criticalState,
+                        context: 'attack'
+                    }
+                }
+            }
         });
         const damageFormula = String(attack.damage ?? '').trim();
         if (!damageFormula)
@@ -1072,22 +1185,22 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 speaker,
                 flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Ataque')}<p><strong>Dano</strong></p>`
             });
-            return damageRoll;
+            return attackRoll;
         }
         catch (error) {
             const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
-            ui.notifications.error(`Nao foi possivel rolar o dano de ${attack.name}: ${message}`);
+            ui.notifications.error(`Não foi possível rolar o dano de ${attack.name}: ${message}`);
             return attackRoll;
         }
     }
     static async useJujutsuTableFeature(actorOrUuid, { tableKey = '', rowId = null, rowIndex = -1 } = {}) {
         const actor = typeof actorOrUuid === 'string' ? await fromUuid(actorOrUuid) : actorOrUuid;
         if (!(actor instanceof Actor)) {
-            ui.notifications.warn('Nao foi possivel localizar o ator da habilidade.');
+            ui.notifications.warn('Não foi possível localizar o ator da habilidade.');
             return null;
         }
         if (!actor.isOwner) {
-            ui.notifications.warn('Voce nao tem permissao para usar esta entrada.');
+            ui.notifications.warn('Você não tem permissão para usar esta entrada.');
             return null;
         }
         const normalizedTableKey = String(tableKey ?? '').trim().toLowerCase();
@@ -1101,7 +1214,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             rowIndex
         });
         if (!entry) {
-            ui.notifications.warn('Nao foi possivel localizar a entrada arrastada.');
+            ui.notifications.warn('Não foi possível localizar a entrada arrastada.');
             return null;
         }
         const cost = CharacterSheetV2._toSafeNumber(entry.cost, 0);
@@ -1123,6 +1236,50 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const subtitle = normalizedTableKey === 'spells'
             ? `Feitiço • Nível ${CharacterSheetV2._toSafeNumber(entry.level, 0)}`
             : CharacterSheetV2._getJujutsuTableLabel(normalizedTableKey);
+        if (entry.hasRoll) {
+            const formula = CharacterSheetV2._buildJujutsuConfiguredRollFormula(entry, actor);
+            if (formula) {
+                try {
+                    const roll = await new Roll(formula).evaluate({ async: true });
+                    const criticalState = CharacterSheetV2._getD20CriticalState(roll);
+                    const criticalText = criticalState === 'success'
+                        ? '<div><strong>Sucesso CrÃ­tico</strong></div>'
+                        : criticalState === 'failure'
+                            ? '<div><strong>Erro CrÃ­tico</strong></div>'
+                            : '';
+                    await roll.toMessage({
+                        speaker,
+                        flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(entry, subtitle)}<p>${description}</p>${costLine}`,
+                        flags: {
+                            [game.system.id]: {
+                                jujutsuCritical: {
+                                    state: criticalState,
+                                    context: 'feature'
+                                }
+                            }
+                        }
+                    }, {
+                        rollMode: game.settings.get('core', 'rollMode')
+                    });
+                    const damageFormula = String(entry.damageFormula ?? '').trim();
+                    if (damageFormula) {
+                        const damageRoll = await new Roll(damageFormula).evaluate({ async: true });
+                        await damageRoll.toMessage({
+                            speaker,
+                            flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(entry, subtitle)}<p><strong>Dano/Efeito</strong></p>`
+                        }, {
+                            rollMode: game.settings.get('core', 'rollMode')
+                        });
+                    }
+                    return roll;
+                }
+                catch (error) {
+                    const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
+                    ui.notifications.error(`Não foi possível rolar ${entry.name}: ${message}`);
+                    return null;
+                }
+            }
+        }
         await foundry.documents.ChatMessage.implementation.create({
             speaker,
             content: `${CharacterSheetV2._buildJujutsuItemChatHeader(entry, subtitle)}<p>${description}</p>${costLine}`
@@ -1132,11 +1289,11 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
     static async rollJujutsuInventoryItem(actorOrUuid, { rowId = null, rowIndex = -1 } = {}) {
         const actor = typeof actorOrUuid === 'string' ? await fromUuid(actorOrUuid) : actorOrUuid;
         if (!(actor instanceof Actor)) {
-            ui.notifications.warn('Nao foi possivel localizar o ator do item de inventario.');
+            ui.notifications.warn('Não foi possível localizar o ator do item de inventário.');
             return null;
         }
         if (!actor.isOwner) {
-            ui.notifications.warn('Voce nao tem permissao para usar este item de inventario.');
+            ui.notifications.warn('Você não tem permissão para usar este item de inventário.');
             return null;
         }
         await CharacterSheetV2._submitJujutsuActorIfNeeded(actor);
@@ -1145,11 +1302,11 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             rowIndex
         });
         if (!entry) {
-            ui.notifications.warn('Nao foi possivel localizar o item de inventario arrastado.');
+            ui.notifications.warn('Não foi possível localizar o item de inventário arrastado.');
             return null;
         }
         const rollDie = String(entry?.rollDie ?? '').trim().toLowerCase();
-        if (!entry?.hasRoll || !['d4', 'd8', 'd10', 'd12', 'd20'].includes(rollDie)) {
+        if (!entry?.hasRoll || !['d4', 'd6', 'd8', 'd10', 'd12', 'd20'].includes(rollDie)) {
             ui.notifications.warn(`${entry?.name || 'Este item'} nao possui uma rolagem configurada.`);
             return null;
         }
@@ -1172,14 +1329,14 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const roll = await new Roll(formulaParts.join(' ')).evaluate({ async: true });
         await roll.toMessage({
             speaker: foundry.documents.ChatMessage.implementation.getSpeaker({ actor }),
-            flavor: `${entry?.name || 'Item'} • Rolagem de inventario`
+            flavor: `${entry?.name || 'Item'} • Rolagem de inventário`
         });
         return roll;
     }
     static async createJujutsuTableMacro(dropData, slot) {
         const actor = await fromUuid(String(dropData?.actorUuid ?? ''));
         if (!(actor instanceof Actor) || !actor.isOwner) {
-            ui.notifications.warn('Nao foi possivel criar a macro para esta entrada sem permissao.');
+            ui.notifications.warn('Não foi possível criar a macro para esta entrada sem permissão.');
             return null;
         }
         const tableKey = String(dropData?.tableKey ?? '').trim().toLowerCase();
@@ -1192,7 +1349,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             rowIndex: Number(dropData?.rowIndex ?? -1)
         });
         if (!entry) {
-            ui.notifications.warn('Nao foi possivel localizar a entrada para criar a macro.');
+            ui.notifications.warn('Não foi possível localizar a entrada para criar a macro.');
             return null;
         }
         const apiMethod = tableKey === 'attacks' ? 'rollTableAttack' : 'useTableFeature';
@@ -1225,7 +1382,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
     static async createJujutsuInventoryMacro(dropData, slot) {
         const actor = await fromUuid(String(dropData?.actorUuid ?? ''));
         if (!(actor instanceof Actor) || !actor.isOwner) {
-            ui.notifications.warn('Nao foi possivel criar a macro para um item de inventario sem permissao.');
+            ui.notifications.warn('Não foi possível criar a macro para um item de inventário sem permissão.');
             return null;
         }
         const { entry, rowIndex } = CharacterSheetV2._getJujutsuInventoryEntry(actor, {
@@ -1233,7 +1390,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             rowIndex: Number(dropData?.rowIndex ?? -1)
         });
         if (!entry) {
-            ui.notifications.warn('Nao foi possivel localizar o item de inventario para criar a macro.');
+            ui.notifications.warn('Não foi possível localizar o item de inventário para criar a macro.');
             return null;
         }
         const command = `game.CustomSystemBuilder?.API?.Jujutsu?.rollInventoryItem?.(${JSON.stringify(actor.uuid)}, { rowId: ${JSON.stringify(entry.id ?? null)}, rowIndex: ${rowIndex} });`;
@@ -1264,6 +1421,20 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
     static _toSignedNumber(value) {
         const number = CharacterSheetV2._toSafeNumber(value, 0);
         return number > 0 ? `+${number}` : `${number}`;
+    }
+    static _getD20CriticalState(roll) {
+        const firstDie = roll?.dice?.[0];
+        if (!firstDie || Number(firstDie.faces) !== 20 || Number(firstDie.number) !== 1) {
+            return null;
+        }
+        const firstResult = firstDie.results?.find((result) => result?.active !== false);
+        if (!firstResult)
+            return null;
+        if (Number(firstResult.result) === 20)
+            return 'success';
+        if (Number(firstResult.result) === 1)
+            return 'failure';
+        return null;
     }
     static _getFormNumberValue(form, name, fallback = 0) {
         const input = form?.querySelector?.(`[name='${name}']`);
@@ -1853,7 +2024,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             }
             catch (error) {
                 const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
-                ui.notifications.error(`Nao foi possivel salvar as resistencias: ${message}`);
+                ui.notifications.error(`Não foi possível salvar as resistências: ${message}`);
                 return false;
             }
         };
@@ -1951,7 +2122,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             }
             catch (error) {
                 const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
-                ui.notifications.error(`Nao foi possivel salvar os treinamentos: ${message}`);
+                ui.notifications.error(`Não foi possível salvar os treinamentos: ${message}`);
                 return false;
             }
         };
@@ -2024,10 +2195,32 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 selected: characteristics.selected,
                 custom: characteristics.custom
             };
+            const selectedOrigin = JUJUTSU_CHARACTERISTICS_CATALOG.find((entry) => {
+                return characteristics.selected.includes(entry.id) && String(entry.tipo ?? '').toLowerCase() === 'origem';
+            });
+            if (selectedOrigin?.nome) {
+                nextProps.origem = selectedOrigin.nome;
+            }
+            const previousAppliedOrigin = actor.system.props?.appliedOriginAttributeBonus ?? {};
+            for (const [attributeKey, appliedValue] of Object.entries(previousAppliedOrigin)) {
+                const currentValue = CharacterSheetV2._toSafeNumber(nextProps.attributes?.[attributeKey]?.value, 10);
+                foundry.utils.setProperty(nextProps, `attributes.${attributeKey}.value`, currentValue - CharacterSheetV2._toSafeNumber(appliedValue, 0));
+            }
+            const nextAppliedOrigin = {};
+            if (selectedOrigin?.id === 'restringido') {
+                for (const attributeKey of ['for', 'des', 'con']) {
+                    const currentValue = CharacterSheetV2._toSafeNumber(nextProps.attributes?.[attributeKey]?.value, 10);
+                    foundry.utils.setProperty(nextProps, `attributes.${attributeKey}.value`, currentValue + 1);
+                    nextAppliedOrigin[attributeKey] = 1;
+                }
+            }
+            nextProps.appliedOriginAttributeBonus = nextAppliedOrigin;
             try {
                 try {
                     await actor.update({
-                        'system.props.characteristics': nextProps.characteristics
+                        system: {
+                            props: nextProps
+                        }
                     });
                 }
                 catch (_nestedUpdateError) {
@@ -2056,7 +2249,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             }
             catch (error) {
                 const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
-                ui.notifications.error(`Nao foi possivel salvar as caracteristicas: ${message}`);
+                ui.notifications.error(`Não foi possível salvar as características: ${message}`);
                 return false;
             }
         };
@@ -2113,7 +2306,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         this.dragDrop = this.createDragDropHandlers();
     }
     _setJujutsuTab(tab) {
-        const allowedTabs = new Set(['resumo', 'pericias', 'habilidades', 'invocacoes', 'aptidoes', 'perfil-a', 'expansao', 'inventario', 'registro']);
+        const allowedTabs = new Set(['resumo', 'pericias', 'habilidades', 'invocacoes', 'aptidoes', 'treinamentos', 'perfil-a', 'expansao', 'inventario', 'registro']);
         this.activeJujutsuTab = allowedTabs.has(tab) ? tab : 'resumo';
         this._syncJujutsuTabs();
     }
@@ -2132,6 +2325,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             layout.classList.toggle('is-habilidades', this.activeJujutsuTab === 'habilidades');
             layout.classList.toggle('is-invocacoes', this.activeJujutsuTab === 'invocacoes');
             layout.classList.toggle('is-aptidoes', this.activeJujutsuTab === 'aptidoes');
+            layout.classList.toggle('is-treinamentos', this.activeJujutsuTab === 'treinamentos');
             layout.classList.toggle('is-perfil-a', this.activeJujutsuTab === 'perfil-a');
             layout.classList.toggle('is-expansao', this.activeJujutsuTab === 'expansao');
             layout.classList.toggle('is-inventario', this.activeJujutsuTab === 'inventario');
@@ -2201,7 +2395,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const baseTrainingBonus = calculateJujutsuTrainingBonus(level);
         root.querySelectorAll('[data-attack-card]').forEach((card) => {
             const attackKey = card.dataset.attackKey ?? '';
-            const attributeKey = card.dataset.attackAttribute ?? '';
+            const attributeInput = card.querySelector(`[name='system.props.attackBonuses.${attackKey}.attribute']`);
+            const attributeKey = attributeInput?.value ?? card.dataset.attackAttribute ?? '';
             const alwaysTrained = card.dataset.attackAlwaysTrained === 'true';
             if (!attackKey || !attributeKey)
                 return;
@@ -2252,12 +2447,17 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             input.addEventListener('input', () => this._syncAttackTotals(root));
             input.addEventListener('change', () => this._syncAttackTotals(root));
         });
+        root.querySelectorAll('[data-attack-attribute-input]').forEach((input) => {
+            input.addEventListener('input', () => this._syncAttackTotals(root));
+            input.addEventListener('change', () => this._syncAttackTotals(root));
+        });
         this._syncAttackTotals(root);
     }
     _syncSkillTotals(root = this.element) {
         if (!root)
             return;
         const level = CharacterSheetV2._getFormNumberValue(root, 'system.props.level', CharacterSheetV2._toSafeNumber(this.actor.system.props?.level, 1));
+        let perceptionSkillTotal = null;
         root.querySelectorAll('[data-skill-row]').forEach((row) => {
             const skillKey = row.dataset.skillKey ?? '';
             const attributeInput = row.querySelector(`[name='system.props.skills.${skillKey}.attribute']`);
@@ -2277,8 +2477,17 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             if (totalInput) {
                 totalInput.value = String(total);
             }
+            if (skillKey === 'percepcao') {
+                perceptionSkillTotal = total;
+            }
         });
+        if (perceptionSkillTotal !== null) {
+            root.querySelectorAll('[data-attention-perception]').forEach((input) => {
+                input.value = String(perceptionSkillTotal);
+            });
+        }
         this._syncTrainingBonusDisplays(root);
+        this._syncJujutsuSummaryTotals(root);
     }
     _bindSkillTotals(root = this.element) {
         if (!root)
@@ -2301,7 +2510,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         if (!card)
             return null;
         const label = card.dataset.attackLabel ?? attackKey;
-        const attributeKey = card.dataset.attackAttribute ?? '';
+        const attributeInput = card.querySelector(`[name='system.props.attackBonuses.${attackKey}.attribute']`);
+        const attributeKey = attributeInput?.value ?? card.dataset.attackAttribute ?? '';
         const alwaysTrained = card.dataset.attackAlwaysTrained === 'true';
         if (!attributeKey)
             return null;
@@ -2339,6 +2549,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const roll = await new Roll('1d20 + (@modifier)', {
             modifier: attackData.total
         }).evaluate();
+        const criticalState = CharacterSheetV2._getD20CriticalState(roll);
         const speaker = foundry.documents.ChatMessage.implementation.getSpeaker({
             actor: this.actor
         });
@@ -2354,6 +2565,10 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             flavor: flavorParts.join(''),
             flags: {
                 [game.system.id]: {
+                    jujutsuCritical: {
+                        state: criticalState,
+                        context: 'attack'
+                    },
                     jujutsuAttackRoll: {
                         key: attackData.attackKey,
                         label: attackData.label,
@@ -2493,6 +2708,74 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         });
         this._syncSavingThrowTotals(root);
     }
+    _syncJujutsuSummaryTotals(root = this.element) {
+        if (!root)
+            return;
+        const prepared = prepareJujutsuSheetData(this.actor?.system?.props ?? {});
+        const equippedDefenseBonus = CharacterSheetV2._toSafeNumber(prepared?.computed?.equippedDefenseBonus, 0);
+        const level = CharacterSheetV2._getFormNumberValue(root, 'system.props.level', CharacterSheetV2._toSafeNumber(this.actor.system.props?.level, 1));
+        const levelHalf = Math.floor(level / 2);
+        const dexMod = calculateJujutsuAttributeMod(CharacterSheetV2._getFormNumberValue(root, 'system.props.attributes.des.value', 10));
+        const attentionTotal = CharacterSheetV2._getFormNumberValue(root, 'system.props.attention.base', 0) +
+            CharacterSheetV2._getFormNumberValue(root, 'system.props.attention.perception', 0) +
+            CharacterSheetV2._getFormNumberValue(root, 'system.props.attention.others', 0);
+        const initiativeTotal = dexMod + CharacterSheetV2._getFormNumberValue(root, 'system.props.initiative.others', 0);
+        const defenseEquipTotal = CharacterSheetV2._getFormNumberValue(root, 'system.props.defense.equip', 0) + equippedDefenseBonus;
+        const defenseTotal = CharacterSheetV2._getFormNumberValue(root, 'system.props.defense.base', 0) +
+            defenseEquipTotal +
+            CharacterSheetV2._getFormNumberValue(root, 'system.props.defense.dex', dexMod) +
+            levelHalf +
+            CharacterSheetV2._getFormNumberValue(root, 'system.props.defense.others', 0);
+        root.querySelectorAll('[data-attention-total]').forEach((input) => {
+            input.value = String(attentionTotal);
+        });
+        root.querySelectorAll('[data-initiative-dex]').forEach((input) => {
+            input.value = String(dexMod);
+        });
+        root.querySelectorAll('[data-initiative-total]').forEach((input) => {
+            input.value = String(initiativeTotal);
+        });
+        root.querySelectorAll('[data-defense-level-half]').forEach((input) => {
+            input.value = String(levelHalf);
+        });
+        root.querySelectorAll('[data-defense-total]').forEach((input) => {
+            input.value = String(defenseTotal);
+        });
+        root.querySelectorAll('[data-defense-equipped-items]').forEach((input) => {
+            input.value = String(equippedDefenseBonus);
+        });
+        if (root instanceof HTMLFormElement) {
+            const initiativeDexInput = root.querySelector(`[name='system.props.initiative.dex']`);
+            if (initiativeDexInput) {
+                initiativeDexInput.value = String(dexMod);
+            }
+        }
+    }
+    _bindJujutsuSummaryTotals(root = this.element) {
+        if (!root)
+            return;
+        root.querySelectorAll('[data-attention-input], [data-initiative-input], [data-defense-input], [data-ability-value], [name="system.props.level"]').forEach((input) => {
+            input.addEventListener('input', () => this._syncJujutsuSummaryTotals(root));
+            input.addEventListener('change', () => this._syncJujutsuSummaryTotals(root));
+        });
+        this._syncJujutsuSummaryTotals(root);
+    }
+    _bindAptitudeRollToggles(root = this.element) {
+        if (!root)
+            return;
+        root.querySelectorAll('[data-aptitude-roll-toggle]').forEach((toggle) => {
+            const sync = () => {
+                const row = toggle.closest('tr');
+                const bonusInput = row?.querySelector?.('[data-aptitude-roll-bonus]');
+                if (bonusInput) {
+                    bonusInput.disabled = !toggle.checked;
+                }
+            };
+            toggle.addEventListener('input', sync);
+            toggle.addEventListener('change', sync);
+            sync();
+        });
+    }
     _getCurrentJujutsuSavingThrowData(saveKey, root = this.element) {
         if (!root || !saveKey)
             return null;
@@ -2577,11 +2860,86 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
     async _rollJujutsuTableAttack(rowIndex) {
         await CharacterSheetV2.rollJujutsuTableAttack(this.actor, { rowIndex });
     }
+    async _rollJujutsuInventoryWeaponAttack(rowIndex) {
+        const jujutsu = prepareJujutsuSheetData(this.actor?.system?.props ?? {});
+        const attack = jujutsu.inventoryWeaponAttacks?.[rowIndex];
+        if (!attack)
+            return;
+        const speaker = foundry.documents.ChatMessage.implementation.getSpeaker({ actor: this.actor });
+        const attackRoll = await new Roll(`1d20 + ${CharacterSheetV2._toSafeNumber(attack.acerto, 0)}`).evaluate({ async: true });
+        const criticalState = CharacterSheetV2._getD20CriticalState(attackRoll);
+        const criticalText = criticalState === 'success'
+            ? '<div><strong>Sucesso Crítico</strong></div>'
+            : criticalState === 'failure'
+                ? '<div><strong>Erro Crítico</strong></div>'
+                : '';
+        await attackRoll.toMessage({
+            speaker,
+            flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Arma do inventário')}<p><strong>Acerto</strong></p>`,
+            flags: {
+                [game.system.id]: {
+                    jujutsuCritical: {
+                        state: criticalState,
+                        context: 'attack'
+                    }
+                }
+            }
+        });
+        const damageFormula = String(attack.damage ?? '').trim();
+        if (damageFormula) {
+            const damageRoll = await new Roll(damageFormula).evaluate({ async: true });
+            await damageRoll.toMessage({
+                speaker,
+                flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Arma do inventário')}<p><strong>Dano</strong></p>`
+            });
+        }
+    }
     async _useJujutsuTableFeature(tableKey, rowIndex) {
         await CharacterSheetV2.useJujutsuTableFeature(this.actor, { tableKey, rowIndex });
     }
     async _rollJujutsuInventoryItem(rowIndex) {
         await CharacterSheetV2.rollJujutsuInventoryItem(this.actor, { rowIndex });
+    }
+    async _rollJujutsuInitiative(root = this.element) {
+        if (!this.actor)
+            return;
+        const modifier = CharacterSheetV2._getFormNumberValue(root, 'system.props.initiative.others', 0) +
+            calculateJujutsuAttributeMod(CharacterSheetV2._getFormNumberValue(root, 'system.props.attributes.des.value', 10));
+        const roll = await new Roll('1d20 + (@modifier)', { modifier }).evaluate({ async: true });
+        await roll.toMessage({
+            speaker: foundry.documents.ChatMessage.implementation.getSpeaker({ actor: this.actor }),
+            flavor: `<strong>Iniciativa</strong><div>Total ${CharacterSheetV2._toSignedNumber(modifier)}</div>`
+        }, {
+            rollMode: game.settings.get('core', 'rollMode')
+        });
+    }
+    async _rollJujutsuAttribute(attributeKey, root = this.element) {
+        if (!this.actor || !attributeKey)
+            return;
+        const value = CharacterSheetV2._getFormNumberValue(root, `system.props.attributes.${attributeKey}.value`, 10);
+        const modifier = calculateJujutsuAttributeMod(value);
+        const label = String(attributeKey).toUpperCase();
+        const roll = await new Roll('1d20 + (@modifier)', { modifier }).evaluate({ async: true });
+        await roll.toMessage({
+            speaker: foundry.documents.ChatMessage.implementation.getSpeaker({ actor: this.actor }),
+            flavor: `<strong>Atributo: ${label}</strong><div>Mod. Atr. ${CharacterSheetV2._toSignedNumber(modifier)}</div>`
+        }, {
+            rollMode: game.settings.get('core', 'rollMode')
+        });
+    }
+    async _rollJujutsuAptitudeLevel(aptitudeKey, root = this.element) {
+        if (!this.actor || !aptitudeKey)
+            return;
+        const input = root?.querySelector?.(`[name='system.props.aptitudeLevels.${aptitudeKey}']`);
+        const modifier = CharacterSheetV2._toSafeNumber(input?.value, 0);
+        const label = input?.closest?.('[data-aptitude-level-card]')?.dataset?.aptitudeLabel ?? aptitudeKey;
+        const roll = await new Roll('1d20 + (@modifier)', { modifier }).evaluate({ async: true });
+        await roll.toMessage({
+            speaker: foundry.documents.ChatMessage.implementation.getSpeaker({ actor: this.actor }),
+            flavor: `<strong>Teste de Aptidão: ${label}</strong><div>Bônus ${CharacterSheetV2._toSignedNumber(modifier)}</div>`
+        }, {
+            rollMode: game.settings.get('core', 'rollMode')
+        });
     }
     _onJujutsuTableDragStart(event, element) {
         if (!event.dataTransfer) {
@@ -2799,6 +3157,13 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                     void this._rollJujutsuTableAttack(Number(button.dataset.rowIndex));
                 });
             });
+            root.querySelectorAll('[data-roll-inventory-weapon-attack]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void this._rollJujutsuInventoryWeaponAttack(Number(button.dataset.rowIndex));
+                });
+            });
             root.querySelectorAll('[data-use-table-feature]').forEach((button) => {
                 button.addEventListener('click', (event) => {
                     event.preventDefault();
@@ -2879,12 +3244,35 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                     void this._rollJujutsuSkill(button.dataset.skillKey ?? '', root);
                 });
             });
+            root.querySelectorAll('[data-roll-initiative]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void this._rollJujutsuInitiative(root);
+                });
+            });
+            root.querySelectorAll('[data-roll-attribute]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void this._rollJujutsuAttribute(button.dataset.attributeKey ?? '', root);
+                });
+            });
+            root.querySelectorAll('[data-roll-aptitude-level]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void this._rollJujutsuAptitudeLevel(button.dataset.aptitudeKey ?? '', root);
+                });
+            });
             this._syncJujutsuTabs(root);
             this._bindAbilityModDisplays(root);
             this._bindCheckboxVisuals(root);
             this._bindAttackTotals(root);
             this._bindSkillTotals(root);
             this._bindSavingThrowTotals(root);
+            this._bindJujutsuSummaryTotals(root);
+            this._bindAptitudeRollToggles(root);
         }
     }
     /**
@@ -2972,7 +3360,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         foundry.utils.setProperty(submitData, 'system.props.treinamento', calculateJujutsuTrainingBonus(nextLevel));
         form.querySelectorAll('[data-attack-card]').forEach((card) => {
             const attackKey = card.dataset.attackKey ?? '';
-            const attributeKey = card.dataset.attackAttribute ?? '';
+            const attributeInput = card.querySelector(`[name='system.props.attackBonuses.${attackKey}.attribute']`);
+            const attributeKey = attributeInput?.value ?? card.dataset.attackAttribute ?? '';
             const alwaysTrained = card.dataset.attackAlwaysTrained === 'true';
             if (!attackKey || !attributeKey)
                 return;
@@ -3043,6 +3432,9 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             foundry.utils.setProperty(submitData, `system.props.skills.${skillKey}.t`, trained);
             foundry.utils.setProperty(submitData, `system.props.skills.${skillKey}.m`, master);
             foundry.utils.setProperty(submitData, `system.props.skills.${skillKey}.total`, total);
+            if (skillKey === 'percepcao') {
+                foundry.utils.setProperty(submitData, 'system.props.attention.perception', total);
+            }
         });
         const previousRobustez = CharacterSheetV2._toBoolean(currentProps.extra?.robustez);
         const previousVigorInf = CharacterSheetV2._toBoolean(currentProps.extra?.vigorInf);
@@ -3052,6 +3444,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const nextVigorInf = CharacterSheetV2._getFormCheckboxValue(form, 'system.props.extra.vigorInf', submittedVigorInf);
         foundry.utils.setProperty(submitData, 'system.props.extra.robustez', nextRobustez);
         foundry.utils.setProperty(submitData, 'system.props.extra.vigorInf', nextVigorInf);
+        const currentDexValue = CharacterSheetV2._getFormNumberValue(form, 'system.props.attributes.des.value', 10);
+        foundry.utils.setProperty(submitData, 'system.props.initiative.dex', calculateJujutsuAttributeMod(currentDexValue));
         const submittedVidaMax = CharacterSheetV2._toSafeNumber(
             foundry.utils.getProperty(submitData, 'system.props.resources.vida.maximos'),
             CharacterSheetV2._toSafeNumber(currentProps.resources?.vida?.maximos)

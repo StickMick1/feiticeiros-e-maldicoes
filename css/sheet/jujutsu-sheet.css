@@ -1516,6 +1516,13 @@
     text-transform: uppercase;
 }
 
+.jj-derived-card > h3.jj-attack-card-heading {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
 .jj-derived-card--sidebar > h3 {
     min-height: 38px;
 }
@@ -2694,6 +2701,32 @@
 .jj-attack-roll-button:focus-visible {
     color: #fff6dd !important;
     outline: 0;
+}
+
+.chat-message .dice-total.jj-chat-critical-success {
+    border: 1px solid #2ea043 !important;
+    box-shadow: 0 0 0 1px rgba(46, 160, 67, 0.35) !important;
+}
+
+.chat-message .dice-total.jj-chat-critical-failure {
+    border: 1px solid #d73a49 !important;
+    box-shadow: 0 0 0 1px rgba(215, 58, 73, 0.35) !important;
+}
+
+.chat-message .jj-chat-critical-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-top: 4px;
+    text-align: center;
+}
+
+.chat-message .jj-chat-critical-label-success {
+    color: #2ea043;
+}
+
+.chat-message .jj-chat-critical-label-failure {
+    color: #d73a49;
 }
 
 .jj-rd-block {
