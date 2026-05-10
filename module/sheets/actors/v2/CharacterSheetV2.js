@@ -3470,6 +3470,14 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             previousEnabled: previousVigorInf,
             nextEnabled: nextVigorInf
         }));
+        const nextVidaAtual = CharacterSheetV2._getFormNumberValue(form, 'system.props.resources.vida.atuais', CharacterSheetV2._toSafeNumber(currentProps.resources?.vida?.atuais, 0));
+        const nextEnergiaAtual = CharacterSheetV2._getFormNumberValue(form, 'system.props.resources.energia.atuais', CharacterSheetV2._toSafeNumber(currentProps.resources?.energia?.atuais, 0));
+        const nextVidaMaximos = CharacterSheetV2._toSafeNumber(foundry.utils.getProperty(submitData, 'system.props.resources.vida.maximos'), 0);
+        const nextEnergiaMaximos = CharacterSheetV2._toSafeNumber(foundry.utils.getProperty(submitData, 'system.props.resources.energia.maximos'), 0);
+        foundry.utils.setProperty(submitData, 'system.props.tokenResources.hp.value', Math.max(0, nextVidaAtual));
+        foundry.utils.setProperty(submitData, 'system.props.tokenResources.hp.max', Math.max(0, nextVidaMaximos));
+        foundry.utils.setProperty(submitData, 'system.props.tokenResources.pe.value', Math.max(0, nextEnergiaAtual));
+        foundry.utils.setProperty(submitData, 'system.props.tokenResources.pe.max', Math.max(0, nextEnergiaMaximos));
         if (game.settings.get(game.system.id, 'manualEntitySaving') && event.type === 'change') {
             return this.actor.templateSystem.handleSheetSubmit();
         }

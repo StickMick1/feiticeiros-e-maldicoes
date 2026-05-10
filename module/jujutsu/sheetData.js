@@ -789,6 +789,10 @@ export const createJujutsuDefaultProps = () => {
             energia: { atuais: 0, perdidos: 0, maximos: 0 },
             integridade: { atual: 0, perdidos: 0, maxima: 0 }
         },
+        tokenResources: {
+            hp: { value: 0, max: 0 },
+            pe: { value: 0, max: 0 }
+        },
         extra: {
             kamo: false,
             robustez: false,
@@ -1359,6 +1363,19 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
     const vidaDisplay = resourceDisplay(n(props.resources?.vida?.atuais), n(props.resources?.vida?.maximos));
     const energiaDisplay = resourceDisplay(n(props.resources?.energia?.atuais), n(props.resources?.energia?.maximos));
     const integridadeDisplay = resourceDisplay(n(props.resources?.integridade?.atual), n(props.resources?.integridade?.maxima));
+    props.tokenResources = {
+        ...props.tokenResources,
+        hp: {
+            ...(props.tokenResources?.hp ?? {}),
+            value: n(props.resources?.vida?.atuais),
+            max: n(props.resources?.vida?.maximos)
+        },
+        pe: {
+            ...(props.tokenResources?.pe ?? {}),
+            value: n(props.resources?.energia?.atuais),
+            max: n(props.resources?.energia?.maximos)
+        }
+    };
 
     return {
         props,

@@ -230,6 +230,19 @@ export default class CustomActor extends Actor {
      * @override
      */
     async modifyTokenAttribute(attribute, value, isDelta = false, isBar = true) {
+        if (isBar && (attribute === 'props.tokenResources.hp' || attribute === 'props.tokenResources.pe')) {
+            const isHp = attribute.endsWith('.hp');
+            const resourceKey = isHp ? 'vida' : 'energia';
+            const currentValue = Number(foundry.utils.getProperty(this.system, `props.resources.${resourceKey}.atuais`) ?? 0);
+            const maxValue = Number(foundry.utils.getProperty(this.system, `props.resources.${resourceKey}.maximos`) ?? 0);
+            const nextValue = isDelta ? currentValue + value : value;
+            const clampedValue = Math.clamp(0, Number(nextValue) || 0, Math.max(0, Number(maxValue) || 0));
+            return this.update({
+                [`system.props.resources.${resourceKey}.atuais`]: clampedValue,
+                [`system.props.tokenResources.${isHp ? 'hp' : 'pe'}.value`]: clampedValue,
+                [`system.props.tokenResources.${isHp ? 'hp' : 'pe'}.max`]: Math.max(0, Number(maxValue) || 0)
+            });
+        }
         const current = foundry.utils.getProperty(this.system, attribute);
         if (isBar && attribute.startsWith('attributeBar')) {
             const barDefinition = foundry.utils.getProperty(this.system, attribute);

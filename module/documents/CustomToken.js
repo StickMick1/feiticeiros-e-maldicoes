@@ -11,6 +11,20 @@
  */
 export default class CustomToken extends TokenDocument {
     getBarAttribute(barName, options) {
+        const configuredAttribute = this[barName]?.attribute ?? '';
+        if (configuredAttribute === 'props.tokenResources.hp' || configuredAttribute === 'props.tokenResources.pe') {
+            const isHp = configuredAttribute.endsWith('.hp');
+            const resourceKey = isHp ? 'vida' : 'energia';
+            const value = Number(foundry.utils.getProperty(this.actor?.system, `props.resources.${resourceKey}.atuais`) ?? 0);
+            const max = Number(foundry.utils.getProperty(this.actor?.system, `props.resources.${resourceKey}.maximos`) ?? 0);
+            return {
+                type: 'bar',
+                attribute: configuredAttribute,
+                value,
+                max,
+                editable: true
+            };
+        }
         const barData = super.getBarAttribute(barName, options);
         if (barData) {
             const barAttribute = barData.attribute;
@@ -30,9 +44,29 @@ export default class CustomToken extends TokenDocument {
             'attributeBar'
         ]);
         const propBarDescription = this._getTrackedAttributesFromObject(data?.props ?? {}, ['props']);
+        if (_path.length === 0) {
+            const pushBarPath = (collection, path) => {
+                const key = path.join('.');
+                const alreadyExists = collection.some((entry) => (Array.isArray(entry) ? entry.join('.') : String(entry)) === key);
+                if (!alreadyExists)
+                    collection.push(path);
+            };
+            pushBarPath(propBarDescription.bar, ['props', 'tokenResources', 'hp']);
+            pushBarPath(propBarDescription.bar, ['props', 'tokenResources', 'pe']);
+        }
+        const dedupePaths = (collection) => {
+            const seen = new Set();
+            return collection.filter((entry) => {
+                const key = Array.isArray(entry) ? entry.join('.') : String(entry);
+                if (seen.has(key))
+                    return false;
+                seen.add(key);
+                return true;
+            });
+        };
         return {
-            bar: [...attributeBarDescription.bar, ...propBarDescription.bar],
-            value: [...attributeBarDescription.value, ...propBarDescription.value]
+            bar: dedupePaths([...attributeBarDescription.bar, ...propBarDescription.bar]),
+            value: dedupePaths([...attributeBarDescription.value, ...propBarDescription.value])
         };
     }
 }
