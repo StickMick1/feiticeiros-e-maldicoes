@@ -81,3 +81,40 @@
 .jj-apply-damage-button:hover {
     filter: brightness(1.1);
 }
+
+.jj-chat-hit-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 6px;
+}
+
+.jj-verify-success-button {
+    background: #1b2a44;
+    border: 1px solid #4e6a96;
+    border-radius: 4px;
+    color: #e8eef8;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 4px 8px;
+}
+
+.jj-verify-success-button:hover {
+    filter: brightness(1.1);
+}
+
+.jj-chat-verify-result {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-top: 6px;
+    text-align: center;
+}
+
+.jj-chat-verify-result.is-success {
+    color: #2ea043;
+}
+
+.jj-chat-verify-result.is-failure {
+    color: #d73a49;
+}

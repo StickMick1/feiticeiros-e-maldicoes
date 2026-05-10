@@ -6,6 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { getDiceGroupsFromRoll } from './utils.js';
+import { prepareJujutsuSheetData } from './jujutsu/sheetData.js';
 // Displays roll explanation in a floating div
 async function expandMfsRoll(ev) {
     // Get clicked roll
@@ -140,6 +141,34 @@ export default function initChat() {
             }
             ui.notifications?.info?.(`Dano ${damage} aplicado em ${updatedCount} token(s).`);
         });
+        $(document).on('click', '.jj-verify-success-button', async (ev) => {
+            ev.preventDefault();
+            const button = ev.currentTarget;
+            const rollTotal = Math.trunc(Number(button.dataset.hitTotal ?? 0));
+            const selectedTokens = canvas?.tokens?.controlled ?? [];
+            if (!selectedTokens.length) {
+                ui.notifications?.warn?.('Selecione um token para verificar o acerto.');
+                return;
+            }
+            const token = selectedTokens[0];
+            const actor = token?.actor;
+            if (!actor) {
+                ui.notifications?.warn?.('Token selecionado sem ator vinculado.');
+                return;
+            }
+            const defense = Math.trunc(Number(prepareJujutsuSheetData(actor.system?.props ?? {}).computed?.defenseTotal ?? 0));
+            const success = rollTotal >= defense;
+            const messageContent = $(button).closest('.message-content');
+            const container = messageContent.find('.jj-chat-verify-result');
+            const text = success ? 'Acertou com sucesso' : 'Falhou';
+            const cssClass = success ? 'is-success' : 'is-failure';
+            if (container.length) {
+                container.removeClass('is-success is-failure').addClass(cssClass).text(text);
+            }
+            else {
+                messageContent.append(`<div class="jj-chat-verify-result ${cssClass}">${text}</div>`);
+            }
+        });
     });
     // When rendering a chat message, applying roll mode
     Hooks.on('renderChatMessageHTML', (message, elt) => {
@@ -149,6 +178,15 @@ export default function initChat() {
             const messageContent = $(elt).find('.message-content');
             if (messageContent.length && !messageContent.find('.jj-apply-damage-button').length) {
                 const controls = $(`<div class="jj-chat-damage-controls"><button type="button" class="jj-apply-damage-button" data-damage-amount="${Math.trunc(damageAmount)}">Apply Damage (${Math.trunc(damageAmount)})</button></div>`);
+                messageContent.append(controls);
+            }
+        }
+        const hitTotal = Number(foundry.utils.getProperty(message, `flags.${game.system.id}.jujutsuHitCheck.total`) ?? NaN);
+        const isHitMessage = Number.isFinite(hitTotal);
+        if (isHitMessage) {
+            const messageContent = $(elt).find('.message-content');
+            if (messageContent.length && !messageContent.find('.jj-verify-success-button').length) {
+                const controls = $(`<div class="jj-chat-hit-controls"><button type="button" class="jj-verify-success-button" data-hit-total="${Math.trunc(hitTotal)}">Verify Success</button></div>`);
                 messageContent.append(controls);
             }
         }

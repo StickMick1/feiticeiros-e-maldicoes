@@ -1171,6 +1171,9 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                     jujutsuCritical: {
                         state: criticalState,
                         context: 'attack'
+                    },
+                    jujutsuHitCheck: {
+                        total: Math.trunc(CharacterSheetV2._toSafeNumber(attackRoll.total, 0))
                     }
                 }
             }
@@ -1249,6 +1252,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 try {
                     const roll = await new Roll(formula).evaluate({ async: true });
                     const criticalState = CharacterSheetV2._getD20CriticalState(roll);
+                    const isHitRoll = CharacterSheetV2._isSingleD20Roll(roll);
                     const criticalText = criticalState === 'success'
                         ? '<div><strong>Sucesso CrÃ­tico</strong></div>'
                         : criticalState === 'failure'
@@ -1262,7 +1266,10 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                                 jujutsuCritical: {
                                     state: criticalState,
                                     context: 'feature'
-                                }
+                                },
+                                jujutsuHitCheck: isHitRoll ? {
+                                    total: Math.trunc(CharacterSheetV2._toSafeNumber(roll.total, 0))
+                                } : null
                             }
                         }
                     }, {
@@ -1449,6 +1456,10 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         if (Number(firstResult.result) === 1)
             return 'failure';
         return null;
+    }
+    static _isSingleD20Roll(roll) {
+        const firstDie = roll?.dice?.[0];
+        return !!firstDie && Number(firstDie.faces) === 20 && Number(firstDie.number) === 1;
     }
     static _getFormNumberValue(form, name, fallback = 0) {
         const input = form?.querySelector?.(`[name='${name}']`);
@@ -2583,6 +2594,9 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                         state: criticalState,
                         context: 'attack'
                     },
+                    jujutsuHitCheck: {
+                        total: Math.trunc(CharacterSheetV2._toSafeNumber(roll.total, 0))
+                    },
                     jujutsuAttackRoll: {
                         key: attackData.attackKey,
                         label: attackData.label,
@@ -2895,6 +2909,9 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                     jujutsuCritical: {
                         state: criticalState,
                         context: 'attack'
+                    },
+                    jujutsuHitCheck: {
+                        total: Math.trunc(CharacterSheetV2._toSafeNumber(attackRoll.total, 0))
                     }
                 }
             }
