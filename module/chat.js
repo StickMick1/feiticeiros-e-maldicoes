@@ -105,9 +105,53 @@ export default function initChat() {
         $(document).on('click', '.custom-system-roll', (ev) => {
             void expandMfsRoll(ev);
         });
+        $(document).on('click', '.jj-apply-damage-button', async (ev) => {
+            ev.preventDefault();
+            const button = ev.currentTarget;
+            const amount = Number(button.dataset.damageAmount ?? 0);
+            const damage = Math.max(0, Math.trunc(Number.isFinite(amount) ? amount : 0));
+            if (!damage) {
+                ui.notifications?.warn?.('Rolagem de dano inválida.');
+                return;
+            }
+            const selectedTokens = canvas?.tokens?.controlled ?? [];
+            if (!selectedTokens.length) {
+                ui.notifications?.warn?.('Selecione ao menos um token para aplicar o dano.');
+                return;
+            }
+            let updatedCount = 0;
+            for (const token of selectedTokens) {
+                const actor = token?.actor;
+                if (!actor?.isOwner)
+                    continue;
+                const currentHp = Number(foundry.utils.getProperty(actor.system, 'props.resources.vida.atuais') ?? 0);
+                const maxHp = Number(foundry.utils.getProperty(actor.system, 'props.resources.vida.maximos') ?? 0);
+                const nextHp = Math.clamp(0, currentHp - damage, Math.max(0, maxHp));
+                await actor.update({
+                    'system.props.resources.vida.atuais': nextHp,
+                    'system.props.tokenResources.hp.value': nextHp,
+                    'system.props.tokenResources.hp.max': Math.max(0, maxHp)
+                });
+                updatedCount += 1;
+            }
+            if (!updatedCount) {
+                ui.notifications?.warn?.('Nenhum token selecionado pôde ser atualizado.');
+                return;
+            }
+            ui.notifications?.info?.(`Dano ${damage} aplicado em ${updatedCount} token(s).`);
+        });
     });
     // When rendering a chat message, applying roll mode
     Hooks.on('renderChatMessageHTML', (message, elt) => {
+        const damageAmount = Number(foundry.utils.getProperty(message, `flags.${game.system.id}.jujutsuDamage.amount`) ?? 0);
+        const isDamageMessage = Number.isFinite(damageAmount) && damageAmount > 0;
+        if (isDamageMessage) {
+            const messageContent = $(elt).find('.message-content');
+            if (messageContent.length && !messageContent.find('.jj-apply-damage-button').length) {
+                const controls = $(`<div class="jj-chat-damage-controls"><button type="button" class="jj-apply-damage-button" data-damage-amount="${Math.trunc(damageAmount)}">Apply Damage (${Math.trunc(damageAmount)})</button></div>`);
+                messageContent.append(controls);
+            }
+        }
         const criticalState = foundry.utils.getProperty(message, `flags.${game.system.id}.jujutsuCritical.state`);
         if (criticalState === 'success' || criticalState === 'failure') {
             const diceTotals = $(elt).find('.dice-total');

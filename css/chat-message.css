@@ -60,3 +60,24 @@
 .custom-roll-tooltip {
     color: var(--content-link-text-color);
 }
+
+.jj-chat-damage-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 6px;
+}
+
+.jj-apply-damage-button {
+    background: #4a1021;
+    border: 1px solid #a03a54;
+    border-radius: 4px;
+    color: #f6e9ed;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 4px 8px;
+}
+
+.jj-apply-damage-button:hover {
+    filter: brightness(1.1);
+}

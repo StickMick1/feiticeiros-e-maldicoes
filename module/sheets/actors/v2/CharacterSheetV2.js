@@ -1183,7 +1183,14 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             await damageRoll.evaluate({ async: true });
             await damageRoll.toMessage({
                 speaker,
-                flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Ataque')}<p><strong>Dano</strong></p>`
+                flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Ataque')}<p><strong>Dano</strong></p>`,
+                flags: {
+                    [game.system.id]: {
+                        jujutsuDamage: {
+                            amount: Math.max(0, Math.trunc(CharacterSheetV2._toSafeNumber(damageRoll.total, 0)))
+                        }
+                    }
+                }
             });
             return attackRoll;
         }
@@ -1266,7 +1273,14 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                         const damageRoll = await new Roll(damageFormula).evaluate({ async: true });
                         await damageRoll.toMessage({
                             speaker,
-                            flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(entry, subtitle)}<p><strong>Dano/Efeito</strong></p>`
+                            flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(entry, subtitle)}<p><strong>Dano/Efeito</strong></p>`,
+                            flags: {
+                                [game.system.id]: {
+                                    jujutsuDamage: {
+                                        amount: Math.max(0, Math.trunc(CharacterSheetV2._toSafeNumber(damageRoll.total, 0)))
+                                    }
+                                }
+                            }
                         }, {
                             rollMode: game.settings.get('core', 'rollMode')
                         });
@@ -2890,7 +2904,14 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             const damageRoll = await new Roll(damageFormula).evaluate({ async: true });
             await damageRoll.toMessage({
                 speaker,
-                flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Arma do inventário')}<p><strong>Dano</strong></p>`
+                flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Arma do inventário')}<p><strong>Dano</strong></p>`,
+                flags: {
+                    [game.system.id]: {
+                        jujutsuDamage: {
+                            amount: Math.max(0, Math.trunc(CharacterSheetV2._toSafeNumber(damageRoll.total, 0)))
+                        }
+                    }
+                }
             });
         }
     }
