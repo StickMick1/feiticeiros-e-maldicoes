@@ -1,27 +1,27 @@
-@font-face {
+﻿@font-face {
     font-family: 'JJRobotoSlab';
-    src: url('../../dnd5e/fonts/roboto-slab/RobotoSlab-Regular.ttf') format('truetype');
+    src: url('../../import-items/fonts/roboto-slab/RobotoSlab-Regular.ttf') format('truetype');
     font-style: normal;
     font-weight: 400;
 }
 
 @font-face {
     font-family: 'JJRobotoSlab';
-    src: url('../../dnd5e/fonts/roboto-slab/RobotoSlab-Bold.ttf') format('truetype');
+    src: url('../../import-items/fonts/roboto-slab/RobotoSlab-Bold.ttf') format('truetype');
     font-style: normal;
     font-weight: 700;
 }
 
 @font-face {
     font-family: 'JJRobotoCondensed';
-    src: url('../../dnd5e/fonts/roboto-condensed/RobotoCondensed-Regular.woff2') format('woff2');
+    src: url('../../import-items/fonts/roboto-condensed/RobotoCondensed-Regular.woff2') format('woff2');
     font-style: normal;
     font-weight: 400;
 }
 
 @font-face {
     font-family: 'JJRobotoCondensed';
-    src: url('../../dnd5e/fonts/roboto-condensed/RobotoCondensed-Bold.woff2') format('woff2');
+    src: url('../../import-items/fonts/roboto-condensed/RobotoCondensed-Bold.woff2') format('woff2');
     font-style: normal;
     font-weight: 700;
 }
@@ -197,7 +197,7 @@
 .jj-badge {
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%),
-        url('../../dnd5e/ui/texture-gray2.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture-gray2.webp') center / cover no-repeat;
     align-content: start;
     border: 1px solid rgba(183, 163, 123, 0.18);
     border-radius: 8px;
@@ -240,7 +240,7 @@
 
 .jj-badge--number {
     align-content: center;
-    background: url('../../dnd5e/ui/level-badge.webp') center / contain no-repeat !important;
+    background: url('../../import-items/ui/level-badge.webp') center / contain no-repeat !important;
     border: 0 !important;
     box-shadow: none !important;
     justify-items: center;
@@ -295,7 +295,7 @@
 .jj-page-nav .is-active {
     background:
         linear-gradient(180deg, rgba(183, 163, 123, 0.26) 0%, rgba(96, 78, 48, 0.18) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
     box-shadow: inset 0 0 0 1px rgba(255, 248, 222, 0.08), 0 2px 10px rgba(0, 0, 0, 0.24);
 }
 
@@ -318,6 +318,7 @@
 .jj-layout.is-habilidades [data-tab-block~='habilidades'],
 .jj-layout.is-invocacoes [data-tab-block~='invocacoes'],
 .jj-layout.is-aptidoes [data-tab-block~='aptidoes'],
+.jj-layout.is-treinamentos [data-tab-block~='treinamentos'],
 .jj-layout.is-perfil-a [data-tab-block~='perfil-a'],
 .jj-layout.is-expansao [data-tab-block~='expansao'],
 .jj-layout.is-inventario [data-tab-block~='inventario'],
@@ -329,6 +330,7 @@
 .jj-layout.is-habilidades,
 .jj-layout.is-invocacoes,
 .jj-layout.is-aptidoes,
+.jj-layout.is-treinamentos,
 .jj-layout.is-perfil-a,
 .jj-layout.is-expansao,
 .jj-layout.is-inventario,
@@ -340,6 +342,7 @@
 .jj-layout.is-habilidades .jj-sidebar,
 .jj-layout.is-invocacoes .jj-sidebar,
 .jj-layout.is-aptidoes .jj-sidebar,
+.jj-layout.is-treinamentos .jj-sidebar,
 .jj-layout.is-perfil-a .jj-sidebar,
 .jj-layout.is-expansao .jj-sidebar,
 .jj-layout.is-inventario .jj-sidebar,
@@ -357,6 +360,7 @@
 
 .jj-layout.is-invocacoes .jj-main-columns,
 .jj-layout.is-aptidoes .jj-main-columns,
+.jj-layout.is-treinamentos .jj-main-columns,
 .jj-layout.is-perfil-a .jj-main-columns,
 .jj-layout.is-expansao .jj-main-columns,
 .jj-layout.is-inventario .jj-main-columns,
@@ -366,6 +370,7 @@
 
 .jj-layout.is-invocacoes .jj-main-columns,
 .jj-layout.is-aptidoes .jj-main-columns,
+.jj-layout.is-treinamentos .jj-main-columns,
 .jj-layout.is-perfil-a .jj-main-columns,
 .jj-layout.is-expansao .jj-main-columns,
 .jj-layout.is-inventario .jj-main-columns,
@@ -384,6 +389,7 @@
 
 .jj-layout.is-invocacoes .jj-main-secondary,
 .jj-layout.is-aptidoes .jj-main-secondary,
+.jj-layout.is-treinamentos .jj-main-secondary,
 .jj-layout.is-perfil-a .jj-main-secondary,
 .jj-layout.is-expansao .jj-main-secondary,
 .jj-layout.is-inventario .jj-main-secondary,
@@ -401,7 +407,7 @@
     align-items: center;
     background:
         linear-gradient(180deg, rgba(183, 163, 123, 0.18) 0%, rgba(95, 79, 52, 0.16) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
     border: 1px solid rgba(183, 163, 123, 0.24);
     gap: 8px;
     justify-items: center;
@@ -560,7 +566,7 @@
 .jj-registro-portrait-frame {
     background:
         radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.18) 66%),
-        url('../../dnd5e/ui/texture-gray1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture-gray1.webp') center / cover no-repeat;
     border: 1px solid rgba(183, 163, 123, 0.24);
     border-radius: 14px;
     box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
@@ -664,7 +670,7 @@
 .jj-invocation-visual-frame {
     background:
         linear-gradient(180deg, rgba(22, 25, 34, 0.9) 0%, rgba(11, 13, 18, 0.94) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
     border: 1px solid rgba(183, 163, 123, 0.18);
     border-radius: 12px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
@@ -719,7 +725,7 @@
 .jj-invocation-section-title {
     background:
         linear-gradient(180deg, rgba(73, 13, 34, 0.96) 0%, rgba(48, 10, 24, 0.96) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
     border: 1px solid rgba(183, 163, 123, 0.22);
     border-radius: 10px;
     color: var(--jj-text);
@@ -825,7 +831,7 @@
 
 .jj-invocation-details-toggle::after {
     color: var(--jj-muted);
-    content: '▾';
+    content: 'â–¾';
     font-size: 0.85rem;
     transition: transform 0.16s ease;
 }
@@ -871,7 +877,7 @@
     align-content: start;
     background:
         linear-gradient(180deg, rgba(22, 25, 34, 0.9) 0%, rgba(11, 13, 18, 0.94) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
     border: 1px solid rgba(183, 163, 123, 0.18);
     border-radius: 10px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
@@ -1263,7 +1269,7 @@
     align-items: center;
     background:
         linear-gradient(180deg, rgba(37, 40, 54, 0.92), rgba(17, 19, 27, 0.92)),
-        url('../../dnd5e/ui/texture-gray2.webp') center / cover;
+        url('../../import-items/ui/texture-gray2.webp') center / cover;
     border: 1px solid rgba(197, 180, 136, 0.24);
     border-radius: 999px;
     color: var(--jj-gold);
@@ -1409,7 +1415,7 @@
 .jj-panel {
     background:
         linear-gradient(180deg, rgba(24, 26, 33, 0.92) 0%, rgba(15, 17, 23, 0.92) 100%),
-        url('../../dnd5e/ui/texture-gray2.webp') center / 460px auto repeat;
+        url('../../import-items/ui/texture-gray2.webp') center / 460px auto repeat;
     border: 1px solid rgba(183, 163, 123, 0.22);
     border-radius: 12px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 20px rgba(0, 0, 0, 0.22);
@@ -1431,12 +1437,12 @@
 }
 
 .jj-panel::before {
-    background: url('../../dnd5e/ui/notable-left-corner.svg') no-repeat left top / contain;
+    background: url('../../import-items/ui/notable-left-corner.svg') no-repeat left top / contain;
     left: 10px;
 }
 
 .jj-panel::after {
-    background: url('../../dnd5e/ui/notable-right-corner.svg') no-repeat right top / contain;
+    background: url('../../import-items/ui/notable-right-corner.svg') no-repeat right top / contain;
     right: 10px;
 }
 
@@ -1500,7 +1506,7 @@
 .jj-derived-card > h3 {
     background:
         linear-gradient(180deg, rgba(73, 13, 34, 0.96) 0%, rgba(48, 10, 24, 0.96) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
     border-bottom: 1px solid rgba(183, 163, 123, 0.24);
     color: #f6efde;
     display: grid;
@@ -1538,7 +1544,7 @@
     align-items: center;
     background:
         linear-gradient(180deg, rgba(183, 163, 123, 0.2) 0%, rgba(95, 79, 52, 0.18) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
     border: 1px solid rgba(183, 163, 123, 0.28);
     border-radius: 10px;
     display: grid;
@@ -1977,7 +1983,7 @@
 .jj-portrait-frame {
     background:
         radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.18) 66%),
-        url('../../dnd5e/ui/texture-gray1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture-gray1.webp') center / cover no-repeat;
     border: 1px solid rgba(183, 163, 123, 0.28);
     border-radius: 999px;
     box-shadow: 0 10px 26px rgba(0, 0, 0, 0.36);
@@ -2005,7 +2011,7 @@
 
 .jj-portrait-badge {
     align-items: center;
-    background: url('../../dnd5e/ui/level-badge.webp') center / contain no-repeat;
+    background: url('../../import-items/ui/level-badge.webp') center / contain no-repeat;
     bottom: -6px;
     display: flex;
     height: 74px;
@@ -2034,7 +2040,7 @@
 
 .jj-lozenge {
     align-content: center;
-    background: url('../../dnd5e/ui/lozenge.svg') no-repeat center / 100% 100%;
+    background: url('../../import-items/ui/lozenge.svg') no-repeat center / 100% 100%;
     display: grid;
     min-height: 68px;
     padding: 6px 8px 10px;
@@ -2084,7 +2090,7 @@
 }
 
 .jj-ability-card::before {
-    background: url('../../dnd5e/ui/ability-score-tab-dark.svg') no-repeat center top / 100% 100%;
+    background: url('../../import-items/ui/ability-score-tab-dark.svg') no-repeat center top / 100% 100%;
     content: '';
     inset: 0;
     position: absolute;
@@ -2803,7 +2809,7 @@
 .jj-rd-pill {
     background:
         linear-gradient(180deg, rgba(124, 17, 42, 0.96) 0%, rgba(86, 10, 28, 0.94) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
     border: 1px solid rgba(183, 163, 123, 0.28);
     border-radius: 999px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -2856,7 +2862,7 @@
 .jj-characteristic-pill.is-custom {
     background:
         linear-gradient(180deg, rgba(79, 55, 18, 0.94) 0%, rgba(54, 36, 12, 0.94) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
 }
 
 .jj-rd-empty {
@@ -3213,7 +3219,7 @@
 .jj-action-button {
     background:
         linear-gradient(180deg, rgba(186, 169, 132, 0.2) 0%, rgba(120, 102, 72, 0.24) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
     border: 1px solid rgba(183, 163, 123, 0.42);
     color: #f3ecdc;
     font-family: 'JJRobotoCondensed', Arial, sans-serif;
@@ -3228,14 +3234,14 @@
 .jj-action-button--primary {
     background:
         linear-gradient(180deg, rgba(124, 17, 42, 0.96) 0%, rgba(86, 10, 28, 0.94) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
     border-color: rgba(183, 163, 123, 0.48);
 }
 
 .jj-action-button--danger {
     background:
         linear-gradient(180deg, rgba(120, 27, 44, 0.34) 0%, rgba(82, 18, 31, 0.36) 100%),
-        url('../../dnd5e/ui/texture1.webp') center / cover no-repeat;
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
     border-color: rgba(183, 107, 123, 0.42);
 }
 
@@ -3343,3 +3349,4 @@
         grid-template-columns: minmax(74px, 84px);
     }
 }
+
