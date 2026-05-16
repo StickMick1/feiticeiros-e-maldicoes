@@ -1515,6 +1515,26 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         }
         return Math.max(0, currentMax);
     }
+    static _getKamoHpBonusForLevel(level) {
+        const safeLevel = Math.max(0, Math.trunc(CharacterSheetV2._toSafeNumber(level, 0)));
+        const firstBand = Math.min(safeLevel, 9);
+        const secondBand = Math.max(0, safeLevel - 9);
+        return firstBand + (secondBand * 2);
+    }
+    static _applyKamoHpResourceBonus({ currentMax, previousLevel, nextLevel, previousEnabled, nextEnabled }) {
+        const previousBonus = CharacterSheetV2._getKamoHpBonusForLevel(previousLevel);
+        const nextBonus = CharacterSheetV2._getKamoHpBonusForLevel(nextLevel);
+        if (previousEnabled && nextEnabled) {
+            return Math.max(0, currentMax + (nextBonus - previousBonus));
+        }
+        if (!previousEnabled && nextEnabled) {
+            return Math.max(0, currentMax + nextBonus);
+        }
+        if (previousEnabled && !nextEnabled) {
+            return Math.max(0, currentMax - previousBonus);
+        }
+        return Math.max(0, currentMax);
+    }
     static _syncJujutsuRdConfigRow(row) {
         const toggle = row?.querySelector?.('[data-rd-enabled]');
         const valueInput = row?.querySelector?.('[data-rd-value]');
@@ -3506,12 +3526,20 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         });
         const previousRobustez = CharacterSheetV2._toBoolean(currentProps.extra?.robustez);
         const previousVigorInf = CharacterSheetV2._toBoolean(currentProps.extra?.vigorInf);
+        const previousKamo = CharacterSheetV2._toBoolean(currentProps.extra?.kamo);
+        const previousDesExa = CharacterSheetV2._toBoolean(currentProps.extra?.desExa);
         const submittedRobustez = CharacterSheetV2._toBoolean(foundry.utils.getProperty(submitData, 'system.props.extra.robustez'));
         const submittedVigorInf = CharacterSheetV2._toBoolean(foundry.utils.getProperty(submitData, 'system.props.extra.vigorInf'));
+        const submittedKamo = CharacterSheetV2._toBoolean(foundry.utils.getProperty(submitData, 'system.props.extra.kamo'));
+        const submittedDesExa = CharacterSheetV2._toBoolean(foundry.utils.getProperty(submitData, 'system.props.extra.desExa'));
         const nextRobustez = CharacterSheetV2._getFormCheckboxValue(form, 'system.props.extra.robustez', submittedRobustez);
         const nextVigorInf = CharacterSheetV2._getFormCheckboxValue(form, 'system.props.extra.vigorInf', submittedVigorInf);
+        const nextKamo = CharacterSheetV2._getFormCheckboxValue(form, 'system.props.extra.kamo', submittedKamo);
+        const nextDesExa = CharacterSheetV2._getFormCheckboxValue(form, 'system.props.extra.desExa', submittedDesExa);
         foundry.utils.setProperty(submitData, 'system.props.extra.robustez', nextRobustez);
         foundry.utils.setProperty(submitData, 'system.props.extra.vigorInf', nextVigorInf);
+        foundry.utils.setProperty(submitData, 'system.props.extra.kamo', nextKamo);
+        foundry.utils.setProperty(submitData, 'system.props.extra.desExa', nextDesExa);
         const currentDexValue = CharacterSheetV2._getFormNumberValue(form, 'system.props.attributes.des.value', 10);
         foundry.utils.setProperty(submitData, 'system.props.initiative.dex', calculateJujutsuAttributeMod(currentDexValue));
         const submittedVidaMax = CharacterSheetV2._toSafeNumber(
@@ -3530,6 +3558,20 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             nextLevel,
             previousEnabled: previousRobustez,
             nextEnabled: nextRobustez
+        }));
+        foundry.utils.setProperty(submitData, 'system.props.resources.vida.maximos', CharacterSheetV2._applyKamoHpResourceBonus({
+            currentMax: CharacterSheetV2._toSafeNumber(foundry.utils.getProperty(submitData, 'system.props.resources.vida.maximos'), currentVidaMax),
+            previousLevel,
+            nextLevel,
+            previousEnabled: previousKamo,
+            nextEnabled: nextKamo
+        }));
+        foundry.utils.setProperty(submitData, 'system.props.resources.vida.maximos', CharacterSheetV2._applyLevelScaledResourceBonus({
+            currentMax: CharacterSheetV2._toSafeNumber(foundry.utils.getProperty(submitData, 'system.props.resources.vida.maximos'), currentVidaMax),
+            previousLevel,
+            nextLevel,
+            previousEnabled: previousDesExa,
+            nextEnabled: nextDesExa
         }));
         foundry.utils.setProperty(submitData, 'system.props.resources.energia.maximos', CharacterSheetV2._applyLevelScaledResourceBonus({
             currentMax: currentEnergiaMax,
