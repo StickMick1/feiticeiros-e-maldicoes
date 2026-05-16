@@ -1502,25 +1502,40 @@
 
             <section class='jj-panel' data-tab-block='treinamentos'>
                 <h2>Treinamentos</h2>
-                <div class='jj-aptitude-level-grid'>
-                    {{#each jujutsu.aptitudeLevelCards as |card|}}
-                        <label class='jj-card jj-aptitude-level-card' data-aptitude-level-card data-aptitude-label='{{card.label}}'>
-                            <button class='jj-table-icon-button' type='button' data-roll-aptitude-level data-aptitude-key='{{card.key}}' data-tooltip='Rolar {{card.label}}' aria-label='Rolar {{card.label}}'>
-                                <i class='fas fa-dice-d20'></i>
-                            </button>
-                            <input
-                                class='jj-aptitude-level-input'
-                                name='system.props.aptitudeLevels.{{card.key}}'
-                                type='number'
-                                min='0'
-                                step='1'
-                                data-dtype='Number'
-                                value='{{card.value}}'
-                            />
-                            <span>{{card.label}}</span>
-                        </label>
-                    {{/each}}
-                </div>
+                {{#if jujutsu.trainingCards.length}}
+                    <div class='jj-training-board'>
+                        {{#each jujutsu.trainingCards as |training|}}
+                            <article class='jj-card jj-training-card'>
+                                <header class='jj-training-card-header'>
+                                    <h3>{{training.label}}</h3>
+                                </header>
+                                <div class='jj-training-stage-list'>
+                                    {{#each training.stages as |stage|}}
+                                        <label class='jj-training-stage-row'>
+                                            <span>{{stage.label}}</span>
+                                            <label class='jj-checkbox jj-checkbox--compact {{#if stage.checked}}is-checked{{/if}}'>
+                                                <input
+                                                    class='jj-checkbox-input'
+                                                    name='system.props.trainingStages.{{training.id}}.{{stage.key}}'
+                                                    type='checkbox'
+                                                    {{checked stage.checked}}
+                                                    aria-label='{{training.label}} - {{stage.label}}'
+                                                />
+                                                <span class='jj-checkbox-mark' aria-hidden='true'></span>
+                                            </label>
+                                        </label>
+                                    {{/each}}
+                                </div>
+                                <div class='jj-training-complete {{#if training.isComplete}}is-complete{{/if}}'>
+                                    <strong>Treinamento Completo</strong>
+                                </div>
+                                <p class='jj-training-description'>{{training.description}}</p>
+                            </article>
+                        {{/each}}
+                    </div>
+                {{else}}
+                    <p class='jj-rd-empty'>Nenhum treinamento ativo para exibição. Configure em Homebrew.</p>
+                {{/if}}
                 <div class='jj-card jj-card--rd'>
                     <div class='jj-rd-block jj-trainings-block {{#unless jujutsu.hasActiveTrainings}}is-empty{{/unless}}'>
                         <div class='jj-rd-heading'>

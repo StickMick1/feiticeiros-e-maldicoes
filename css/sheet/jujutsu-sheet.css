@@ -2838,6 +2838,104 @@
     gap: 8px;
 }
 
+.jj-training-board {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.jj-training-card {
+    gap: 0;
+    overflow: hidden;
+    padding: 0;
+}
+
+.jj-training-card-header {
+    align-items: center;
+    background:
+        linear-gradient(180deg, rgba(124, 17, 42, 0.96) 0%, rgba(86, 10, 28, 0.94) 100%),
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
+    border-bottom: 1px solid rgba(183, 163, 123, 0.2);
+    display: flex;
+    justify-content: center;
+    min-height: 42px;
+    padding: 8px 10px;
+}
+
+.jj-training-card-header > h3 {
+    color: #fff4d8;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.84rem;
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+}
+
+.jj-training-stage-list {
+    display: grid;
+    gap: 0;
+}
+
+.jj-training-stage-row {
+    align-items: center;
+    background: rgba(63, 12, 35, 0.95);
+    border-bottom: 1px solid rgba(183, 163, 123, 0.16);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    margin: 0;
+    min-height: 30px;
+    padding: 0 8px;
+}
+
+.jj-training-stage-row > span {
+    color: #f5ecde;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.jj-training-stage-row .jj-checkbox {
+    justify-self: center;
+}
+
+.jj-training-complete {
+    align-items: center;
+    background:
+        linear-gradient(180deg, rgba(124, 17, 42, 0.96) 0%, rgba(86, 10, 28, 0.94) 100%),
+        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
+    border-bottom: 1px solid rgba(183, 163, 123, 0.2);
+    display: flex;
+    justify-content: center;
+    min-height: 38px;
+    padding: 6px 8px;
+}
+
+.jj-training-complete > strong {
+    color: #fff4d8;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.83rem;
+    font-weight: 700;
+    text-transform: none;
+}
+
+.jj-training-complete.is-complete > strong {
+    color: #98f0ae;
+}
+
+.jj-training-description {
+    background: rgba(159, 161, 164, 0.9);
+    color: #fff;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0;
+    min-height: 128px;
+    padding: 8px 10px;
+    text-align: center;
+}
+
 .jj-characteristic-pill {
     letter-spacing: 0.05em;
     max-width: 100%;
@@ -3300,6 +3398,10 @@
     .jj-combat-summary-grid > [data-attack-key='cursed'] {
         grid-column: auto;
     }
+
+    .jj-training-board {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 760px) {
@@ -3334,6 +3436,10 @@
         grid-template-columns: 1fr;
     }
 
+    .jj-training-board {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .jj-characteristics-config-row {
         grid-template-columns: 1fr;
     }
@@ -3347,6 +3453,10 @@
 @media (max-width: 520px) {
     .jj-abilities {
         grid-template-columns: minmax(74px, 84px);
+    }
+
+    .jj-training-board {
+        grid-template-columns: 1fr;
     }
 }
 

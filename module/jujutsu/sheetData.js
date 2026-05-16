@@ -602,7 +602,92 @@ const defaultSavingThrowModel = () => ({ bonus: 0, others: 0, total: 0, t: false
 const defaultSkillModel = () => ({ name: '', attribute: '', others: 0, t: false, m: false, total: 0 });
 const defaultCharacteristicsModel = () => ({ selected: [], custom: [] });
 const defaultResistanceConfigModel = () => ({ selected: [], custom: [] });
-const defaultTrainingConfigModel = () => ({ custom: [] });
+const DEFAULT_TRAINING_ENTRIES = [
+    {
+        id: 'treino-agilidade',
+        label: 'Treino de Agilidade',
+        code: 'TAGI',
+        description: 'Com grande velocidade e agilidade, você se torna rápido e capaz de um nível superior de mobilidade e esquivas.',
+        observations: 'Sua margem necessária para conseguir um TR de Reflexos reduz em 2. Seu deslocamento aumenta em 4,5 metros.'
+    },
+    {
+        id: 'treino-barreiras',
+        label: 'Treino de Barreiras',
+        code: 'TBAR',
+        description: 'Toda parede que você criar com Técnicas de Barreira recebe RD igual ao seu Nível de Aptidão em Barreiras.',
+        observations: ''
+    },
+    {
+        id: 'treino-compreensao',
+        label: 'Treino de Compreensão',
+        code: 'TCMP',
+        description: 'Você chega muito perto de compreender profundamente a energia amaldiçoada e se torna mais familiar com ela.',
+        observations: 'Você aumenta um nível de aptidão à sua escolha em 1.'
+    },
+    {
+        id: 'controle-energia',
+        label: 'Controle de Energia',
+        code: 'CENE',
+        description: 'Em combate, no começo de cada rodada, você gera PE temporário igual à metade do seu bônus de maestria.',
+        observations: ''
+    },
+    {
+        id: 'treino-dominios',
+        label: 'Treino de Domínios',
+        code: 'TDOM',
+        description: 'Você se torna um mestre das expansões, aprendendo a moldar sua vontade e necessidade do momento.',
+        observations: 'Você recebe a aptidão amaldiçoada Modificação Completa.'
+    },
+    {
+        id: 'energia-reversa',
+        label: 'Energia Reversa',
+        code: 'EREV',
+        description: 'Você pode usar a aptidão amaldiçoada Regeneração Aprimorada para curar sua exaustão de técnica.',
+        observations: 'Após usar expansão de domínio, em 1 turno, reduz em 2 os pontos de energia reversa gastos.'
+    },
+    {
+        id: 'treino-luta',
+        label: 'Treino de Luta',
+        code: 'TLUT',
+        description: 'Você recebe acesso ao efeito de crítico de ataques desarmados (pugilato).',
+        observations: 'Uma vez por rodada, escolha realizar uma rolagem de Luta com vantagem para um ataque ou manobra.'
+    },
+    {
+        id: 'manejo-arma',
+        label: 'Manejo de Arma',
+        code: 'MARM',
+        description: 'Enquanto estiver manejando a arma escolhida, ela recebe uma propriedade de ferramenta amaldiçoada adicional.',
+        observations: ''
+    },
+    {
+        id: 'treino-pericia',
+        label: 'Treino de Perícia',
+        code: 'TPER',
+        description: 'Ao realizar um teste de perícia escolhido e obter resultado menor que 5 no d20, você pode rolar novamente.',
+        observations: 'Você deve manter o melhor resultado.'
+    },
+    {
+        id: 'potencial-fisico',
+        label: 'Potencial Físico',
+        code: 'PFIS',
+        description: 'No começo de cada rodada de combate, você recupera vigor igual à metade do seu bônus de maestria.',
+        observations: ''
+    },
+    {
+        id: 'treino-resistencia',
+        label: 'Treino de Resistência',
+        code: 'TRES',
+        description: 'Sua margem necessária para conseguir um sucesso crítico em TR de Fortitude reduz em 2.',
+        observations: 'Uma vez por cena, ignore a primeira falha em testes de morte. Seus PV máximos aumentam em 10.'
+    }
+];
+const defaultTrainingConfigModel = () => ({
+    custom: DEFAULT_TRAINING_ENTRIES.map((entry) => ({
+        ...entry,
+        enabled: false,
+        origem: 'base'
+    }))
+});
 const defaultInvocationModel = () => ({
     name: '',
     grau: '',
@@ -835,6 +920,7 @@ export const createJujutsuDefaultProps = () => {
         rds,
         resistanceConfig: defaultResistanceConfigModel(),
         trainingConfig: defaultTrainingConfigModel(),
+        trainingStages: {},
         resistencias: '',
         treinamentos: '',
         notes: '',
@@ -925,6 +1011,9 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         normalizedSourceProps.trainingConfig = {
             custom: createLegacyTrainingEntries(normalizedSourceProps.treinamentos)
         };
+    }
+    if (!normalizedSourceProps.trainingConfig || !toArrayValues(normalizedSourceProps.trainingConfig?.custom).length) {
+        normalizedSourceProps.trainingConfig = defaultTrainingConfigModel();
     }
     const defaults = createJujutsuDefaultProps();
     const props = foundry.utils.mergeObject(defaults, normalizedSourceProps, {
@@ -1142,6 +1231,25 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         }))
     };
     const activeTrainingDefinitions = trainingDefinitions.filter((entry) => entry.selected);
+    props.trainingStages = typeof props.trainingStages === 'object' && props.trainingStages ? props.trainingStages : {};
+    const trainingCards = activeTrainingDefinitions.map((training) => {
+        const stageState = props.trainingStages?.[training.id] ?? {};
+        const stages = [1, 2, 3, 4].map((step) => {
+            const key = `s${step}`;
+            return {
+                key,
+                label: `${step}º Etapa`,
+                checked: b(stageState?.[key])
+            };
+        });
+        return {
+            id: training.id,
+            label: training.label,
+            description: training.description || training.observations || 'Treinamento custom configurado.',
+            stages,
+            isComplete: stages.every((stage) => stage.checked)
+        };
+    });
     props.tables = {
         attacks: toArrayValues(props.tables?.attacks).map((entry, index) => normalizeAttackTableEntry(entry, index)),
         abilities: toArrayValues(props.tables?.abilities).map((entry, index) => normalizeFeatureTableEntry(entry, index, 'ability-entry', 'Habilidade')),
@@ -1405,6 +1513,7 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         trainingDefinitions,
         activeTrainingDefinitions,
         hasActiveTrainings: activeTrainingDefinitions.length > 0,
+        trainingCards,
         rdValues,
         rdDefinitions: rdValues,
         activeRdValues,
