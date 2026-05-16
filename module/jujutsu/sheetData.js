@@ -461,11 +461,13 @@ const normalizeJujutsuTableEntryId = (value, prefix, index) => {
 const normalizeAttackTableEntry = (entry, index = 0) => {
     const weapon = cleanText(entry?.weapon);
     const name = cleanText(entry?.name) || weapon || `Ataque ${index + 1}`;
+    const critMin = Math.max(1, Math.min(20, Math.trunc(n(entry?.critMin) || 20)));
     return {
         id: normalizeJujutsuTableEntryId(entry?.id ?? name, 'attack-entry', index),
         name,
         image: cleanText(entry?.image) || 'icons/svg/sword.svg',
         acerto: n(entry?.acerto),
+        critMin,
         weapon,
         bonus: n(entry?.bonus),
         damage: cleanText(entry?.damage),
@@ -540,6 +542,7 @@ const normalizeInventoryTableEntry = (entry, index = 0) => {
     const equipped = b(entry?.equipped);
     const defenseBonus = Math.trunc(n(entry?.defenseBonus));
     const attackBonus = Math.trunc(n(entry?.attackBonus));
+    const critMin = Math.max(1, Math.min(20, Math.trunc(n(entry?.critMin) || 20)));
     const damage = cleanText(entry?.damage);
     const weaponType = cleanText(entry?.weaponType);
     const range = cleanText(entry?.range);
@@ -563,6 +566,7 @@ const normalizeInventoryTableEntry = (entry, index = 0) => {
         equipped,
         defenseBonus,
         attackBonus,
+        critMin,
         damage,
         weaponType,
         range,
@@ -711,6 +715,7 @@ export const createJujutsuTableRow = (type) => {
             equipped: false,
             defenseBonus: 0,
             attackBonus: 0,
+            critMin: 20,
             damage: '',
             weaponType: '',
             range: '',
@@ -1163,6 +1168,7 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         name: item.name,
         image: item.image,
         acerto: item.attackBonus,
+        critMin: item.critMin,
         weapon: item.name,
         bonus: item.attackBonus,
         damage: item.damage,

@@ -360,6 +360,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 equipped: !!form?.querySelector?.(`[name='equipped']`)?.checked,
                 defenseBonus: Math.trunc(getNumber('defenseBonus') || 0),
                 attackBonus: Math.trunc(getNumber('attackBonus') || 0),
+                critMin: Math.max(1, Math.min(20, Math.trunc(getNumber('critMin') || 20))),
                 damage: getValue('damage'),
                 weaponType: getValue('weaponType'),
                 range: getValue('range'),
@@ -1162,7 +1163,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         });
         const attackRoll = new Roll(`1d20 + ${CharacterSheetV2._toSafeNumber(attack.acerto, 0)}`);
         await attackRoll.evaluate({ async: true });
-        const criticalState = CharacterSheetV2._getD20CriticalState(attackRoll);
+        const criticalState = CharacterSheetV2._getD20CriticalStateWithThreshold(attackRoll, attack.critMin);
         await attackRoll.toMessage({
             speaker,
             flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Ataque')}<p><strong>Acerto</strong></p>`,
@@ -1348,9 +1349,18 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         else if (attributeMod < 0)
             formulaParts.push(`- ${Math.abs(attributeMod)}`);
         const roll = await new Roll(formulaParts.join(' ')).evaluate({ async: true });
+        const criticalState = CharacterSheetV2._getD20CriticalStateWithThreshold(roll, entry?.critMin);
         await roll.toMessage({
             speaker: foundry.documents.ChatMessage.implementation.getSpeaker({ actor }),
-            flavor: `${entry?.name || 'Item'} • Rolagem de inventário`
+            flavor: `${entry?.name || 'Item'} • Rolagem de inventário`,
+            flags: {
+                [game.system.id]: {
+                    jujutsuCritical: {
+                        state: criticalState,
+                        context: 'item'
+                    }
+                }
+            }
         });
         return roll;
     }
@@ -1455,6 +1465,22 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             return 'success';
         if (Number(firstResult.result) === 1)
             return 'failure';
+        return null;
+    }
+    static _getD20CriticalStateWithThreshold(roll, criticalMin = 20) {
+        const firstDie = roll?.dice?.[0];
+        if (!firstDie || Number(firstDie.faces) !== 20 || Number(firstDie.number) !== 1) {
+            return null;
+        }
+        const firstResult = firstDie.results?.find((result) => result?.active !== false);
+        if (!firstResult)
+            return null;
+        const dieResult = Number(firstResult.result);
+        if (dieResult === 1)
+            return 'failure';
+        const threshold = Math.max(2, Math.min(20, Math.trunc(CharacterSheetV2._toSafeNumber(criticalMin, 20))));
+        if (dieResult >= threshold)
+            return 'success';
         return null;
     }
     static _isSingleD20Roll(roll) {
@@ -2895,7 +2921,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             return;
         const speaker = foundry.documents.ChatMessage.implementation.getSpeaker({ actor: this.actor });
         const attackRoll = await new Roll(`1d20 + ${CharacterSheetV2._toSafeNumber(attack.acerto, 0)}`).evaluate({ async: true });
-        const criticalState = CharacterSheetV2._getD20CriticalState(attackRoll);
+        const criticalState = CharacterSheetV2._getD20CriticalStateWithThreshold(attackRoll, attack.critMin);
         const criticalText = criticalState === 'success'
             ? '<div><strong>Sucesso Crítico</strong></div>'
             : criticalState === 'failure'
@@ -2983,6 +3009,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         if (!event.dataTransfer) {
             return;
         }
+        event.stopPropagation();
         const tableKey = String(element?.dataset?.tableKey ?? '').trim().toLowerCase();
         const rowIndex = Number(element?.dataset?.rowIndex ?? -1);
         const rowId = String(element?.dataset?.entryId ?? '').trim() || null;
@@ -2994,6 +3021,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             return;
         }
         const serialized = JSON.stringify(dragData);
+        event.dataTransfer.setData('text', serialized);
         event.dataTransfer.setData('text/plain', serialized);
         event.dataTransfer.setData('application/json', serialized);
         event.dataTransfer.effectAllowed = 'copy';
@@ -3007,6 +3035,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         if (!event.dataTransfer) {
             return;
         }
+        event.stopPropagation();
         const rowIndex = Number(element?.dataset?.rowIndex ?? -1);
         const rowId = String(element?.dataset?.entryId ?? '').trim() || null;
         const dragData = CharacterSheetV2._createJujutsuInventoryDragData(this.actor, {
@@ -3017,6 +3046,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             return;
         }
         const serialized = JSON.stringify(dragData);
+        event.dataTransfer.setData('text', serialized);
         event.dataTransfer.setData('text/plain', serialized);
         event.dataTransfer.setData('application/json', serialized);
         event.dataTransfer.effectAllowed = 'copy';

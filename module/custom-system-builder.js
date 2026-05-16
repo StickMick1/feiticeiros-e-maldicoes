@@ -414,11 +414,14 @@ async function readyHook() {
     }
     await processMigrations();
     Hooks.on('hotbarDrop', (_bar, data, slot) => {
-        if (data?.type === 'JujutsuTableEntry') {
+        const isJujutsuTableEntry = data?.type === 'JujutsuTableEntry' ||
+            (!!data?.actorUuid && !!data?.tableKey && data?.tableKey !== 'inventory');
+        const isJujutsuInventoryItem = data?.type === 'JujutsuInventoryItem';
+        if (isJujutsuTableEntry) {
             void CharacterSheetV2.createJujutsuTableMacro(data, slot);
             return false;
         }
-        if (data?.type === 'JujutsuInventoryItem') {
+        if (isJujutsuInventoryItem) {
             void CharacterSheetV2.createJujutsuInventoryMacro(data, slot);
             return false;
         }
