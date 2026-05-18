@@ -926,7 +926,7 @@
                                             </label>
                                             <label class='jj-derived-row'>
                                                 <span>Destreza</span>
-                                                <input name='system.props.defense.dex' type='number' data-dtype='Number' value='{{jujutsu.props.defense.dex}}' data-defense-input />
+                                                <input name='system.props.defense.dex' type='number' data-dtype='Number' value='{{jujutsu.computed.defenseDex}}' data-defense-dex readonly />
                                             </label>
                                             <label class='jj-derived-row'>
                                                 <span>Nível/2</span>
@@ -1265,27 +1265,27 @@
                                                     <div class='jj-invocation-compact-fields'>
                                                         <label class='jj-derived-row jj-derived-row--wide jj-invocation-field--wide jj-invocation-name-field'>
                                                             <span>Nome</span>
-                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.name' type='text' value='{{invocation.name}}' />
+                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.name' name='system.props.tables.invocations.{{invocation.rowIndex}}.name' type='text' value='{{invocation.name}}' />
                                                         </label>
                                                         <label class='jj-derived-row jj-invocation-quick-field'>
                                                             <span>PV Atual</span>
-                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.hpCurrent' type='number' data-dtype='Number' value='{{invocation.hpCurrent}}' />
+                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.hpCurrent' name='system.props.tables.invocations.{{invocation.rowIndex}}.hpCurrent' type='number' data-dtype='Number' value='{{invocation.hpCurrent}}' />
                                                         </label>
                                                         <label class='jj-derived-row jj-invocation-quick-field'>
                                                             <span>PV Máx.</span>
-                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.hpMax' type='number' data-dtype='Number' value='{{invocation.hpMax}}' />
+                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.hpMax' name='system.props.tables.invocations.{{invocation.rowIndex}}.hpMax' type='number' data-dtype='Number' value='{{invocation.hpMax}}' />
                                                         </label>
                                                         <label class='jj-derived-row jj-invocation-quick-field'>
                                                             <span>Defesa</span>
-                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.defense' type='number' data-dtype='Number' value='{{invocation.defense}}' />
+                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.defense' name='system.props.tables.invocations.{{invocation.rowIndex}}.defense' type='number' data-dtype='Number' value='{{invocation.defense}}' />
                                                         </label>
                                                         <label class='jj-derived-row jj-invocation-grade-row jj-invocation-quick-field'>
                                                             <span>Grau</span>
-                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.grau' type='text' value='{{invocation.grau}}' />
+                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.grau' name='system.props.tables.invocations.{{invocation.rowIndex}}.grau' type='text' value='{{invocation.grau}}' />
                                                         </label>
                                                         <label class='jj-derived-row jj-invocation-quick-field'>
                                                             <span>Desloc.</span>
-                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.movement' type='text' value='{{invocation.movement}}' />
+                                                            <input data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.movement' name='system.props.tables.invocations.{{invocation.rowIndex}}.movement' type='text' value='{{invocation.movement}}' />
                                                         </label>
                                                     </div>
                                                 </div>
@@ -1308,6 +1308,7 @@
                                                                             <input
                                                                                 data-invocation-field
                                                                                 data-field-path='system.props.tables.invocations.{{../rowIndex}}.attributes.{{attribute.key}}'
+                                                                                name='system.props.tables.invocations.{{../rowIndex}}.attributes.{{attribute.key}}'
                                                                                 type='number'
                                                                                 data-dtype='Number'
                                                                                 value='{{attribute.value}}'
@@ -1323,7 +1324,7 @@
                                                     </div>
                                                     <div class='jj-invocation-section jj-invocation-section--actions'>
                                                         <div class='jj-invocation-section-title'>Ações e Características</div>
-                                                        <textarea class='jj-invocation-actions' data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.acoesCaracteristicas' rows='5'>{{invocation.acoesCaracteristicas}}</textarea>
+                                                        <textarea class='jj-invocation-actions' data-invocation-field data-field-path='system.props.tables.invocations.{{invocation.rowIndex}}.acoesCaracteristicas' name='system.props.tables.invocations.{{invocation.rowIndex}}.acoesCaracteristicas' rows='5'>{{invocation.acoesCaracteristicas}}</textarea>
                                                     </div>
                                                 </div>
                                                 <div class='jj-invocation-section'>

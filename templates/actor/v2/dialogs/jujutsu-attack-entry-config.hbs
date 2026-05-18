@@ -48,6 +48,36 @@
             <span>Alcance</span>
             <input name='range' type='text' value='{{entry.range}}' />
         </label>
+        <label class='jj-inventory-config-checkbox'>
+            <input type='checkbox' name='hasRoll' {{checked entry.hasRoll}} />
+            <span>Terá rolagem?</span>
+        </label>
+        <div class='jj-inventory-roll-grid' data-inventory-roll-field hidden>
+            <label class='jj-characteristics-custom-field'>
+                <span>Quantidade de dados</span>
+                <input type='number' name='rollCount' min='1' step='1' value='{{entry.rollCount}}' />
+            </label>
+            <label class='jj-characteristics-custom-field'>
+                <span>Tipo de dado</span>
+                <select name='rollDie'>
+                    {{#each rollOptions as |option|}}
+                        <option value='{{option.value}}' {{#if option.selected}}selected{{/if}}>{{option.label}}</option>
+                    {{/each}}
+                </select>
+            </label>
+            <label class='jj-characteristics-custom-field'>
+                <span>Bônus</span>
+                <input type='number' name='rollBonus' step='1' value='{{entry.rollBonus}}' />
+            </label>
+            <label class='jj-characteristics-custom-field'>
+                <span>Atributo usado</span>
+                <select name='rollAttribute'>
+                    {{#each attributeOptions as |option|}}
+                        <option value='{{option.value}}' {{#if option.selected}}selected{{/if}}>{{option.label}}</option>
+                    {{/each}}
+                </select>
+            </label>
+        </div>
         <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
             <span>Propriedades</span>
             <input name='properties' type='text' value='{{entry.properties}}' />

@@ -326,6 +326,9 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const getNumber = (name) => CharacterSheetV2._toSafeNumber(getValue(name), 0);
         const entryId = String(source?.id ?? '').trim() || foundry.utils.randomID?.() || `${config.rowType}-${Date.now()}`;
         if (config.rowType === 'attack') {
+            const hasRoll = !!form?.querySelector?.(`[name='hasRoll']`)?.checked;
+            const rollDie = getValue('rollDie').toLowerCase();
+            const rollAttribute = getValue('rollAttribute').toLowerCase();
             return {
                 ...createJujutsuTableRow('attack'),
                 id: entryId,
@@ -335,6 +338,11 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 weapon: getValue('weapon'),
                 bonus: getNumber('bonus'),
                 damage: getValue('damage'),
+                hasRoll,
+                rollDie: hasRoll && ['d4', 'd6', 'd8', 'd10', 'd12', 'd20'].includes(rollDie) ? rollDie : '',
+                rollCount: hasRoll ? Math.max(1, Math.trunc(getNumber('rollCount') || 1)) : 1,
+                rollBonus: hasRoll ? Math.trunc(getNumber('rollBonus') || 0) : 0,
+                rollAttribute: hasRoll && ['for', 'des', 'con', 'int', 'sab', 'pre'].includes(rollAttribute) ? rollAttribute : '',
                 crit: getValue('crit'),
                 type: getValue('type'),
                 range: getValue('range'),
@@ -920,8 +928,12 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             return;
         }
         try {
-            await CharacterSheetV2._submitJujutsuActorIfNeeded(actor);
-            await actor.update(pendingUpdate);
+            if (typeof this.submit === 'function') {
+                await this.submit();
+            }
+            else {
+                await actor.update(pendingUpdate);
+            }
             CharacterSheetV2._setInvocationDetailDirtyState(details, false);
             details.open = false;
         }
@@ -2797,7 +2809,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const defenseEquipTotal = CharacterSheetV2._getFormNumberValue(root, 'system.props.defense.equip', 0) + equippedDefenseBonus;
         const defenseTotal = CharacterSheetV2._getFormNumberValue(root, 'system.props.defense.base', 0) +
             defenseEquipTotal +
-            CharacterSheetV2._getFormNumberValue(root, 'system.props.defense.dex', dexMod) +
+            dexMod +
             levelHalf +
             CharacterSheetV2._getFormNumberValue(root, 'system.props.defense.others', 0);
         root.querySelectorAll('[data-attention-total]').forEach((input) => {
@@ -2822,6 +2834,10 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             const initiativeDexInput = root.querySelector(`[name='system.props.initiative.dex']`);
             if (initiativeDexInput) {
                 initiativeDexInput.value = String(dexMod);
+            }
+            const defenseDexInput = root.querySelector(`[name='system.props.defense.dex']`);
+            if (defenseDexInput) {
+                defenseDexInput.value = String(dexMod);
             }
         }
     }
@@ -3541,7 +3557,9 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         foundry.utils.setProperty(submitData, 'system.props.extra.kamo', nextKamo);
         foundry.utils.setProperty(submitData, 'system.props.extra.desExa', nextDesExa);
         const currentDexValue = CharacterSheetV2._getFormNumberValue(form, 'system.props.attributes.des.value', 10);
-        foundry.utils.setProperty(submitData, 'system.props.initiative.dex', calculateJujutsuAttributeMod(currentDexValue));
+        const currentDexMod = calculateJujutsuAttributeMod(currentDexValue);
+        foundry.utils.setProperty(submitData, 'system.props.initiative.dex', currentDexMod);
+        foundry.utils.setProperty(submitData, 'system.props.defense.dex', currentDexMod);
         const submittedVidaMax = CharacterSheetV2._toSafeNumber(
             foundry.utils.getProperty(submitData, 'system.props.resources.vida.maximos'),
             CharacterSheetV2._toSafeNumber(currentProps.resources?.vida?.maximos)

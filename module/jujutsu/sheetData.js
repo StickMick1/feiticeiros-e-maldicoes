@@ -462,6 +462,22 @@ const normalizeAttackTableEntry = (entry, index = 0) => {
     const weapon = cleanText(entry?.weapon);
     const name = cleanText(entry?.name) || weapon || `Ataque ${index + 1}`;
     const critMin = Math.max(1, Math.min(20, Math.trunc(n(entry?.critMin) || 20)));
+    const rollDie = cleanText(entry?.rollDie).toLowerCase();
+    const hasRoll = b(entry?.hasRoll);
+    const rollCount = Math.max(1, Math.trunc(n(entry?.rollCount) || 1));
+    const rollBonus = Math.trunc(n(entry?.rollBonus));
+    const rollAttribute = ATTRIBUTE_KEYS.has(cleanText(entry?.rollAttribute).toLowerCase()) ? cleanText(entry?.rollAttribute).toLowerCase() : '';
+    const rollAttributeLabel = ATTRIBUTE_OPTIONS.find((option) => option.key === rollAttribute)?.label ?? '';
+    const rollLabelParts = [];
+    if (hasRoll && ROLL_DICE.includes(rollDie)) {
+        rollLabelParts.push(`${rollCount}${rollDie}`);
+        if (rollBonus > 0)
+            rollLabelParts.push(`+${rollBonus}`);
+        else if (rollBonus < 0)
+            rollLabelParts.push(`${rollBonus}`);
+        if (rollAttributeLabel)
+            rollLabelParts.push(`+${rollAttributeLabel}`);
+    }
     return {
         id: normalizeJujutsuTableEntryId(entry?.id ?? name, 'attack-entry', index),
         name,
@@ -471,6 +487,13 @@ const normalizeAttackTableEntry = (entry, index = 0) => {
         weapon,
         bonus: n(entry?.bonus),
         damage: cleanText(entry?.damage),
+        hasRoll,
+        rollDie: hasRoll && ROLL_DICE.includes(rollDie) ? rollDie : '',
+        rollCount,
+        rollBonus,
+        rollAttribute,
+        rollAttributeLabel,
+        rollLabel: rollLabelParts.join(' '),
         crit: cleanText(entry?.crit),
         type: cleanText(entry?.type),
         range: cleanText(entry?.range),
@@ -1287,8 +1310,8 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         observations: 'Ataque derivado de item equipado no inventário.'
     }, index));
 
-    const defenseAttributeKey = cleanText(props.defense?.attribute).toLowerCase();
-    const defenseDex = ATTRIBUTE_KEYS.has(defenseAttributeKey) ? getAttrMod(defenseAttributeKey) : n(props.defense?.dex);
+    const defenseDex = getAttrMod('des');
+    props.defense.dex = defenseDex;
     const defenseEquip = n(props.defense?.equip) + equippedDefenseBonus;
     const defenseTotal = n(props.defense?.base) + defenseEquip + defenseDex + levelHalf + n(props.defense?.others);
 
