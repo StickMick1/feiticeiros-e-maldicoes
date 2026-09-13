@@ -33,6 +33,13 @@
         url('../../img/bg-jujutsu-1.jpg') center top / cover no-repeat fixed;
 }
 
+.custom-system.actor.actor-v2 .window-content:has(.jj-sheet),
+.custom-system.actor.actor-v2 .custom-system-actor-content:has(.jj-sheet) {
+    background:
+        linear-gradient(rgba(8, 8, 11, 0.72), rgba(8, 8, 11, 0.84)),
+        url('../../img/bg-jujutsu-1.jpg') center top / cover no-repeat fixed;
+}
+
 .jj-sheet {
     --jj-panel: rgba(18, 20, 26, 0.86);
     --jj-panel-2: rgba(27, 30, 37, 0.9);
@@ -72,7 +79,7 @@
     background: rgba(10, 11, 15, 0.66);
     border: 1px solid var(--jj-edge);
     border-radius: 4px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    box-shadow: none;
     color: var(--jj-text);
     font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 0.85rem;
@@ -83,7 +90,7 @@
 .jj-sheet textarea:focus {
     outline: 0;
     border-color: var(--jj-gold);
-    box-shadow: 0 0 0 1px rgba(183, 163, 123, 0.4);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--jj-gold) 40%, transparent);
 }
 
 .jj-sheet textarea {
@@ -98,14 +105,14 @@
 .jj-sheet h2,
 .jj-sheet h3 {
     border: 0;
-    color: var(--jj-accent);
+    color: var(--jj-text);
     margin: 0;
 }
 
 .jj-header {
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 12px;
+    border-radius: 6px;
     box-shadow: none;
     display: grid;
     gap: 10px;
@@ -154,13 +161,13 @@
     border: 0 !important;
     box-shadow: none !important;
     color: #f4f2ed !important;
-    font-family: 'JJRobotoSlab', serif;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 2.45rem !important;
     font-weight: 700;
     line-height: 1;
     margin: 0;
     padding: 0 !important;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    text-shadow: none;
 }
 
 .jj-hero-tags,
@@ -195,12 +202,10 @@
 
 .jj-hero-tags label,
 .jj-badge {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%),
-        url('../../import-items/ui/texture-gray2.webp') center / cover no-repeat;
+    background: var(--jj-card);
     align-content: start;
-    border: 1px solid rgba(183, 163, 123, 0.18);
-    border-radius: 8px;
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     display: grid;
     gap: 1px;
     min-height: 42px;
@@ -251,7 +256,7 @@
 }
 
 .jj-badge--number input {
-    font-family: 'JJRobotoSlab', serif;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 1.38rem !important;
     font-weight: 700;
     text-align: center;
@@ -270,11 +275,11 @@
 .jj-page-nav a,
 .jj-page-nav button {
     appearance: none;
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
-    border: 1px solid rgba(183, 163, 123, 0.22);
-    border-radius: 999px;
-    color: var(--jj-gold-soft);
+    background: var(--jj-panel);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
+    box-shadow: none;
+    color: var(--jj-muted);
     cursor: pointer;
     font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 0.74rem;
@@ -288,15 +293,13 @@
 .jj-page-nav a:hover,
 .jj-page-nav button:hover,
 .jj-page-nav .is-active {
-    border-color: rgba(183, 163, 123, 0.48);
-    color: #fff6dd;
+    border-color: var(--jj-edge-strong);
+    color: var(--jj-gold);
 }
 
 .jj-page-nav .is-active {
-    background:
-        linear-gradient(180deg, rgba(183, 163, 123, 0.26) 0%, rgba(96, 78, 48, 0.18) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    box-shadow: inset 0 0 0 1px rgba(255, 248, 222, 0.08), 0 2px 10px rgba(0, 0, 0, 0.24);
+    background: var(--jj-panel-2);
+    box-shadow: inset 0 -2px 0 0 var(--jj-gold);
 }
 
 .jj-tab-panels,
@@ -405,10 +408,8 @@
 
 .jj-aptitude-level-card {
     align-items: center;
-    background:
-        linear-gradient(180deg, rgba(183, 163, 123, 0.18) 0%, rgba(95, 79, 52, 0.16) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    border: 1px solid rgba(183, 163, 123, 0.24);
+    background: var(--jj-card);
+    border: 1px solid var(--jj-edge);
     gap: 8px;
     justify-items: center;
     min-height: 150px;
@@ -421,7 +422,7 @@
     border: 0 !important;
     box-shadow: none !important;
     color: #fff6dd !important;
-    font-family: 'JJRobotoSlab', serif;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 2rem !important;
     font-weight: 700;
     line-height: 1;
@@ -533,8 +534,8 @@
 .jj-spell-entry {
     align-items: center;
     background: rgba(8, 10, 15, 0.28);
-    border: 1px solid rgba(183, 163, 123, 0.14);
-    border-radius: 10px;
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     padding: 8px;
 }
 
@@ -564,19 +565,16 @@
 }
 
 .jj-registro-portrait-frame {
-    background:
-        radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.18) 66%),
-        url('../../import-items/ui/texture-gray1.webp') center / cover no-repeat;
-    border: 1px solid rgba(183, 163, 123, 0.24);
-    border-radius: 14px;
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+    background: var(--jj-panel);
+    border: 1px solid var(--jj-edge);
+    border-radius: 6px;
     overflow: hidden;
     padding: 8px;
 }
 
 .jj-registro-portrait {
     aspect-ratio: 4 / 5;
-    border-radius: 10px;
+    border-radius: 4px;
     cursor: pointer;
     display: block;
     height: auto;
@@ -638,7 +636,7 @@
 }
 
 .jj-invocation-entry-header {
-    border-bottom: 1px solid rgba(183, 163, 123, 0.14);
+    border-bottom: 1px solid var(--jj-edge);
     padding: 12px 14px 0;
 }
 
@@ -668,12 +666,9 @@
 }
 
 .jj-invocation-visual-frame {
-    background:
-        linear-gradient(180deg, rgba(22, 25, 34, 0.9) 0%, rgba(11, 13, 18, 0.94) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    border: 1px solid rgba(183, 163, 123, 0.18);
-    border-radius: 12px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    background: var(--jj-panel);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     min-height: 196px;
     overflow: hidden;
 }
@@ -723,11 +718,9 @@
 }
 
 .jj-invocation-section-title {
-    background:
-        linear-gradient(180deg, rgba(73, 13, 34, 0.96) 0%, rgba(48, 10, 24, 0.96) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    border: 1px solid rgba(183, 163, 123, 0.22);
-    border-radius: 10px;
+    background: var(--jj-panel-2);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     color: var(--jj-text);
     font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 0.8rem;
@@ -808,7 +801,7 @@
 }
 
 .jj-invocation-details {
-    border-top: 1px solid rgba(183, 163, 123, 0.14);
+    border-top: 1px solid var(--jj-edge);
 }
 
 .jj-invocation-details-toggle {
@@ -875,12 +868,9 @@
 
 .jj-invocation-compact-fields .jj-derived-row {
     align-content: start;
-    background:
-        linear-gradient(180deg, rgba(22, 25, 34, 0.9) 0%, rgba(11, 13, 18, 0.94) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    border: 1px solid rgba(183, 163, 123, 0.18);
-    border-radius: 10px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    background: var(--jj-panel);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     display: grid;
     gap: 6px;
     grid-template-columns: 1fr;
@@ -1141,7 +1131,7 @@
 }
 
 .jj-inventory-space-value {
-    color: var(--jj-ink-light);
+    color: var(--jj-text);
     font-family: var(--jj-heading-font);
     font-size: 1.02rem;
     font-weight: 700;
@@ -1185,7 +1175,7 @@
 .jj-inventory-table th,
 .jj-inventory-table td {
     align-items: center;
-    border-bottom: 1px solid rgba(197, 180, 136, 0.18);
+    border-bottom: 1px solid var(--jj-edge);
     display: flex;
     justify-content: center;
     padding: 12px 14px;
@@ -1220,7 +1210,7 @@
 }
 
 .jj-inventory-cell--number {
-    color: var(--jj-ink-light);
+    color: var(--jj-text);
     font-weight: 700;
 }
 
@@ -1246,9 +1236,9 @@
 }
 
 .jj-inventory-item-image {
-    background: rgba(8, 9, 13, 0.72);
-    border: 1px solid rgba(197, 180, 136, 0.24);
-    border-radius: 10px;
+    background: var(--jj-panel);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     height: 42px;
     object-fit: cover;
     width: 42px;
@@ -1260,17 +1250,15 @@
 }
 
 .jj-inventory-item-text strong {
-    color: var(--jj-ink-light);
+    color: var(--jj-text);
     font-size: 0.98rem;
     line-height: 1.1;
 }
 
 .jj-inventory-roll-chip {
     align-items: center;
-    background:
-        linear-gradient(180deg, rgba(37, 40, 54, 0.92), rgba(17, 19, 27, 0.92)),
-        url('../../import-items/ui/texture-gray2.webp') center / cover;
-    border: 1px solid rgba(197, 180, 136, 0.24);
+    background: var(--jj-card);
+    border: 1px solid var(--jj-edge);
     border-radius: 999px;
     color: var(--jj-gold);
     display: inline-flex;
@@ -1327,7 +1315,7 @@
 
 .jj-inventory-config-checkbox {
     align-items: center;
-    color: var(--jj-ink-light);
+    color: var(--jj-text);
     display: inline-flex;
     gap: 10px;
     min-height: 42px;
@@ -1413,12 +1401,9 @@
 }
 
 .jj-panel {
-    background:
-        linear-gradient(180deg, rgba(24, 26, 33, 0.92) 0%, rgba(15, 17, 23, 0.92) 100%),
-        url('../../import-items/ui/texture-gray2.webp') center / 460px auto repeat;
-    border: 1px solid rgba(183, 163, 123, 0.22);
-    border-radius: 12px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 20px rgba(0, 0, 0, 0.22);
+    background: var(--jj-panel);
+    border: 1px solid var(--jj-edge);
+    border-radius: 6px;
     display: grid;
     gap: 12px;
     overflow: hidden;
@@ -1429,26 +1414,27 @@
 .jj-panel::before,
 .jj-panel::after {
     content: '';
-    height: 30px;
-    opacity: 0.9;
+    height: 1px;
+    opacity: 0.5;
     position: absolute;
-    top: 10px;
+    top: 12px;
     width: 24px;
+    pointer-events: none;
 }
 
 .jj-panel::before {
-    background: url('../../import-items/ui/notable-left-corner.svg') no-repeat left top / contain;
-    left: 10px;
+    background: var(--jj-edge-strong);
+    left: 12px;
 }
 
 .jj-panel::after {
-    background: url('../../import-items/ui/notable-right-corner.svg') no-repeat right top / contain;
-    right: 10px;
+    background: var(--jj-edge-strong);
+    right: 12px;
 }
 
 .jj-panel > h2 {
-    color: var(--jj-accent);
-    font-family: 'JJRobotoSlab', serif;
+    color: var(--jj-text);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 1.45rem;
     font-weight: 700;
     line-height: 1;
@@ -1458,7 +1444,7 @@
 }
 
 .jj-panel > h2::after {
-    background: linear-gradient(90deg, rgba(183, 163, 123, 0.42) 0%, transparent 100%);
+    background: linear-gradient(90deg, var(--jj-edge-strong) 0%, transparent 100%);
     bottom: 0;
     content: '';
     height: 1px;
@@ -1468,9 +1454,9 @@
 }
 
 .jj-card {
-    background: linear-gradient(180deg, rgba(42, 45, 54, 0.92) 0%, rgba(29, 33, 42, 0.92) 100%);
-    border: 1px solid rgba(183, 163, 123, 0.16);
-    border-radius: 10px;
+    background: var(--jj-card-soft);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     display: grid;
     gap: 8px;
     padding: 12px;
@@ -1478,8 +1464,8 @@
 
 .jj-card > h3,
 .jj-ability-card > h3 {
-    color: var(--jj-accent);
-    font-family: 'JJRobotoSlab', serif;
+    color: var(--jj-text);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 1.02rem;
     font-weight: 700;
 }
@@ -1504,10 +1490,8 @@
 }
 
 .jj-derived-card > h3 {
-    background:
-        linear-gradient(180deg, rgba(73, 13, 34, 0.96) 0%, rgba(48, 10, 24, 0.96) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    border-bottom: 1px solid rgba(183, 163, 123, 0.24);
+    background: var(--jj-panel-2);
+    border-bottom: 1px solid var(--jj-edge);
     color: #f6efde;
     display: grid;
     font-family: 'JJRobotoCondensed', Arial, sans-serif;
@@ -1542,11 +1526,9 @@
 
 .jj-derived-total {
     align-items: center;
-    background:
-        linear-gradient(180deg, rgba(183, 163, 123, 0.2) 0%, rgba(95, 79, 52, 0.18) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    border: 1px solid rgba(183, 163, 123, 0.28);
-    border-radius: 10px;
+    background: var(--jj-card);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     display: grid;
     gap: 2px;
     justify-items: center;
@@ -1567,7 +1549,7 @@
     border: 0 !important;
     box-shadow: none !important;
     color: #fff6dd !important;
-    font-family: 'JJRobotoSlab', serif;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 1.6rem !important;
     font-weight: 700;
     line-height: 1;
@@ -1687,8 +1669,8 @@
 }
 
 .jj-table-item-thumb {
-    border: 1px solid rgba(183, 163, 123, 0.24);
-    border-radius: 8px;
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     display: block;
     height: 40px;
     object-fit: cover;
@@ -1725,8 +1707,8 @@
 
 .jj-sheet .jj-table-icon-button {
     align-items: center;
-    background: rgba(10, 11, 15, 0.42);
-    border: 1px solid rgba(183, 163, 123, 0.24);
+    background: var(--jj-panel);
+    border: 1px solid var(--jj-edge);
     border-radius: 8px;
     color: #f3ecdc;
     display: inline-flex;
@@ -1754,8 +1736,8 @@
 }
 
 .jj-item-image-preview {
-    border: 1px solid rgba(183, 163, 123, 0.24);
-    border-radius: 10px;
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     display: block;
     height: 72px;
     object-fit: cover;
@@ -1801,10 +1783,9 @@
 }
 
 .jj-checkbox-mark {
-    background: linear-gradient(180deg, rgba(49, 38, 52, 0.92) 0%, rgba(28, 22, 35, 0.96) 100%);
-    border: 1px solid rgba(183, 163, 123, 0.22);
+    background: var(--jj-panel);
+    border: 1px solid var(--jj-edge);
     border-radius: 4px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     display: block;
     flex: 0 0 var(--jj-checkbox-size);
     height: var(--jj-checkbox-size);
@@ -1812,7 +1793,6 @@
     transition:
         background 0.15s ease,
         border-color 0.15s ease,
-        box-shadow 0.15s ease,
         transform 0.12s ease;
     width: var(--jj-checkbox-size);
 }
@@ -1831,11 +1811,8 @@
 }
 
 .jj-checkbox.is-checked .jj-checkbox-mark {
-    background: linear-gradient(180deg, rgba(76, 55, 41, 0.92) 0%, rgba(46, 33, 24, 0.96) 100%);
-    border-color: rgba(213, 198, 163, 0.58);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.06),
-        0 0 0 1px rgba(183, 163, 123, 0.16);
+    background: var(--jj-panel-2);
+    border-color: var(--jj-edge-strong);
 }
 
 .jj-checkbox.is-checked .jj-checkbox-mark::after {
@@ -1844,10 +1821,8 @@
 }
 
 .jj-checkbox-input:focus-visible + .jj-checkbox-mark {
-    border-color: rgba(213, 198, 163, 0.62);
-    box-shadow:
-        0 0 0 1px rgba(183, 163, 123, 0.36),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    border-color: var(--jj-gold);
+    box-shadow: 0 0 0 1px var(--jj-gold);
 }
 
 .jj-checkbox-label {
@@ -1981,18 +1956,15 @@
 }
 
 .jj-portrait-frame {
-    background:
-        radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.18) 66%),
-        url('../../import-items/ui/texture-gray1.webp') center / cover no-repeat;
-    border: 1px solid rgba(183, 163, 123, 0.28);
+    background: var(--jj-panel);
+    border: 1px solid var(--jj-edge);
     border-radius: 999px;
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.36);
     padding: 8px;
     position: relative;
 }
 
 .jj-portrait-frame::after {
-    border: 2px solid rgba(217, 196, 154, 0.74);
+    border: 2px solid var(--jj-edge-strong);
     border-radius: 999px;
     content: '';
     inset: 6px;
@@ -2024,7 +1996,7 @@
 
 .jj-portrait-badge span {
     color: #fff;
-    font-family: 'JJRobotoSlab', serif;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 1.55rem;
     font-weight: 700;
     line-height: 1;
@@ -2049,7 +2021,7 @@
 
 .jj-lozenge-value {
     color: #f2eee6;
-    font-family: 'JJRobotoSlab', serif;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 1.3rem;
     font-weight: 700;
     line-height: 1;
@@ -2115,14 +2087,14 @@
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    font-family: 'JJRobotoSlab', serif;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-weight: 700;
     line-height: 1;
     margin: 0;
     min-width: 0;
     padding: 0 !important;
     text-align: center !important;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    text-shadow: none;
     width: 100%;
 }
 
@@ -2180,9 +2152,9 @@
 
 .jj-resource {
     --jj-extra-divider: #cdb8c0;
-    background: linear-gradient(180deg, rgba(43, 47, 55, 0.86) 0%, rgba(22, 24, 31, 0.9) 100%);
-    border: 1px solid rgba(183, 163, 123, 0.18);
-    border-radius: 10px;
+    background: var(--jj-card-soft);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     display: grid;
     gap: 6px;
     padding: 10px;
@@ -2199,7 +2171,7 @@
 
 .jj-resource-bar {
     background: rgba(0, 0, 0, 0.52);
-    border: 1px solid rgba(183, 163, 123, 0.42);
+    border: 1px solid var(--jj-edge);
     border-radius: 6px;
     height: 24px;
     overflow: hidden;
@@ -2332,9 +2304,9 @@
 }
 
 .jj-character-status {
-    background: linear-gradient(180deg, rgba(43, 47, 55, 0.86) 0%, rgba(22, 24, 31, 0.9) 100%);
-    border: 1px solid rgba(183, 163, 123, 0.18);
-    border-radius: 10px;
+    background: var(--jj-card-soft);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     display: grid;
     gap: 10px;
     padding: 10px;
@@ -2353,7 +2325,7 @@
 }
 
 .jj-character-status > h3::after {
-    background: linear-gradient(90deg, rgba(183, 163, 123, 0.32) 0%, transparent 100%);
+    background: linear-gradient(90deg, var(--jj-edge) 0%, transparent 100%);
     bottom: 0;
     content: '';
     height: 1px;
@@ -2371,7 +2343,7 @@
 .jj-sheet .jj-character-condition {
     align-items: center;
     background: rgba(0, 0, 0, 0.36);
-    border: 1px solid rgba(183, 163, 123, 0.18);
+    border: 1px solid var(--jj-edge);
     border-radius: 8px;
     color: var(--jj-text);
     cursor: pointer;
@@ -2441,7 +2413,7 @@
 
 .jj-table th,
 .jj-table td {
-    border-bottom: 1px solid rgba(183, 163, 123, 0.16);
+    border-bottom: 1px solid var(--jj-edge);
     padding: 6px 7px;
     text-align: left;
 }
@@ -2516,7 +2488,7 @@
 }
 
 .jj-table--skills .jj-skill-name {
-    color: #f0e9da;
+    color: var(--jj-text);
     min-width: 0;
 }
 
@@ -2536,7 +2508,7 @@
 
 .jj-table--skills .jj-skill-custom-name {
     align-items: center;
-    color: #f0e9da;
+    color: var(--jj-text);
     display: flex;
     gap: 2px;
     justify-content: flex-start;
@@ -2552,10 +2524,10 @@
 .jj-table--skills .jj-skill-custom-name-input {
     background: transparent !important;
     border: 0 !important;
-    border-bottom: 1px solid rgba(183, 163, 123, 0.28) !important;
+    border-bottom: 1px solid var(--jj-edge-strong) !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    color: #f0e9da !important;
+    color: var(--jj-text) !important;
     flex: 1 1 72px;
     font-size: 0.82rem !important;
     font-weight: 700;
@@ -2757,7 +2729,7 @@
 }
 
 .jj-rd-heading::after {
-    background: linear-gradient(90deg, rgba(183, 163, 123, 0.32) 0%, transparent 100%);
+    background: linear-gradient(90deg, var(--jj-edge) 0%, transparent 100%);
     bottom: 0;
     content: '';
     height: 1px;
@@ -2767,7 +2739,7 @@
 }
 
 .jj-rd-heading > h3 {
-    font-family: 'JJRobotoSlab', serif;
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 0.88rem;
     font-weight: 700;
     line-height: 1.15;
@@ -2793,7 +2765,7 @@
 }
 
 .jj-rd-config-button:focus-visible {
-    box-shadow: 0 0 0 1px rgba(183, 163, 123, 0.4) !important;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--jj-gold) 40%, transparent) !important;
     outline: 0;
 }
 
@@ -2807,12 +2779,9 @@
 }
 
 .jj-rd-pill {
-    background:
-        linear-gradient(180deg, rgba(124, 17, 42, 0.96) 0%, rgba(86, 10, 28, 0.94) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    border: 1px solid rgba(183, 163, 123, 0.28);
+    background: var(--jj-panel-2);
+    border: 1px solid var(--jj-edge);
     border-radius: 999px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
     color: #f3ecdc;
     font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 0.72rem;
@@ -2852,10 +2821,8 @@
 
 .jj-training-card-header {
     align-items: center;
-    background:
-        linear-gradient(180deg, rgba(124, 17, 42, 0.96) 0%, rgba(86, 10, 28, 0.94) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    border-bottom: 1px solid rgba(183, 163, 123, 0.2);
+    background: var(--jj-panel-2);
+    border-bottom: 1px solid var(--jj-edge);
     display: flex;
     justify-content: center;
     min-height: 42px;
@@ -2878,8 +2845,8 @@
 
 .jj-training-stage-row {
     align-items: center;
-    background: rgba(63, 12, 35, 0.95);
-    border-bottom: 1px solid rgba(183, 163, 123, 0.16);
+    background: var(--jj-card);
+    border-bottom: 1px solid var(--jj-edge);
     display: grid;
     grid-template-columns: minmax(0, 1fr) 44px;
     margin: 0;
@@ -2901,10 +2868,8 @@
 
 .jj-training-complete {
     align-items: center;
-    background:
-        linear-gradient(180deg, rgba(124, 17, 42, 0.96) 0%, rgba(86, 10, 28, 0.94) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    border-bottom: 1px solid rgba(183, 163, 123, 0.2);
+    background: var(--jj-panel-2);
+    border-bottom: 1px solid var(--jj-edge);
     display: flex;
     justify-content: center;
     min-height: 38px;
@@ -2924,8 +2889,8 @@
 }
 
 .jj-training-description {
-    background: rgba(159, 161, 164, 0.9);
-    color: #fff;
+    background: var(--jj-panel-2);
+    color: var(--jj-text);
     font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 0.78rem;
     font-weight: 700;
@@ -2958,9 +2923,7 @@
 }
 
 .jj-characteristic-pill.is-custom {
-    background:
-        linear-gradient(180deg, rgba(79, 55, 18, 0.94) 0%, rgba(54, 36, 12, 0.94) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
+    background: var(--jj-card);
 }
 
 .jj-rd-empty {
@@ -2975,11 +2938,16 @@
     --jj-text: #ddd8cd;
     --jj-muted: #af9f84;
     --jj-edge: #4d4b53;
+    --jj-edge-strong: #9b8a69;
     --jj-gold: #b7a37b;
     --jj-accent: #d9c49a;
-    background: linear-gradient(180deg, rgba(24, 26, 33, 0.96) 0%, rgba(15, 17, 23, 0.96) 100%);
-    border: 1px solid rgba(183, 163, 123, 0.22);
-    border-radius: 12px;
+    --jj-panel: rgba(18, 20, 26, 0.86);
+    --jj-panel-2: rgba(27, 30, 37, 0.9);
+    --jj-card: rgba(39, 43, 52, 0.9);
+    --jj-card-soft: rgba(30, 33, 41, 0.84);
+    background: var(--jj-panel);
+    border: 1px solid var(--jj-edge);
+    border-radius: 6px;
     color: var(--jj-text);
     display: grid;
     gap: 14px;
@@ -2992,8 +2960,8 @@
 }
 
 .jj-rd-config-header > h2 {
-    color: var(--jj-accent);
-    font-family: 'JJRobotoSlab', serif;
+    color: var(--jj-text);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 1.2rem;
     font-weight: 700;
     margin: 0;
@@ -3014,22 +2982,20 @@
 
 .jj-rd-config-row {
     align-items: center;
-    background: linear-gradient(180deg, rgba(42, 45, 54, 0.9) 0%, rgba(29, 33, 42, 0.92) 100%);
-    border: 1px solid rgba(183, 163, 123, 0.14);
-    border-radius: 10px;
+    background: var(--jj-card-soft);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     display: grid;
     gap: 12px;
     grid-template-columns: minmax(0, 1fr) 92px;
     padding: 10px 12px;
     transition:
         border-color 0.15s ease,
-        box-shadow 0.15s ease,
         opacity 0.15s ease;
 }
 
 .jj-rd-config-row.is-enabled {
-    border-color: rgba(183, 163, 123, 0.32);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    border-color: var(--jj-edge-strong);
 }
 
 .jj-rd-config-row:not(.is-enabled) {
@@ -3057,8 +3023,8 @@
 }
 
 .jj-rd-config-code {
-    background: linear-gradient(180deg, rgba(124, 17, 42, 0.28) 0%, rgba(86, 10, 28, 0.2) 100%);
-    border: 1px solid rgba(183, 163, 123, 0.18);
+    background: var(--jj-panel);
+    border: 1px solid var(--jj-edge);
     border-radius: 999px;
     color: #f3ecdc;
     font-family: 'JJRobotoCondensed', Arial, sans-serif;
@@ -3124,7 +3090,7 @@
 
 .jj-rd-config input[type='number']:focus {
     border-color: var(--jj-gold);
-    box-shadow: 0 0 0 1px rgba(183, 163, 123, 0.4);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--jj-gold) 40%, transparent);
     outline: 0;
 }
 
@@ -3207,9 +3173,9 @@
 }
 
 .jj-characteristics-custom-row {
-    background: linear-gradient(180deg, rgba(42, 45, 54, 0.9) 0%, rgba(29, 33, 42, 0.92) 100%);
-    border: 1px solid rgba(183, 163, 123, 0.16);
-    border-radius: 10px;
+    background: var(--jj-card-soft);
+    border: 1px solid var(--jj-edge);
+    border-radius: 4px;
     display: grid;
     gap: 10px;
     padding: 12px;
@@ -3315,10 +3281,8 @@
 }
 
 .jj-action-button {
-    background:
-        linear-gradient(180deg, rgba(186, 169, 132, 0.2) 0%, rgba(120, 102, 72, 0.24) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    border: 1px solid rgba(183, 163, 123, 0.42);
+    background: var(--jj-card);
+    border: 1px solid var(--jj-edge-strong);
     color: #f3ecdc;
     font-family: 'JJRobotoCondensed', Arial, sans-serif;
     font-size: 0.74rem;
@@ -3330,17 +3294,34 @@
 }
 
 .jj-action-button--primary {
-    background:
-        linear-gradient(180deg, rgba(124, 17, 42, 0.96) 0%, rgba(86, 10, 28, 0.94) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
-    border-color: rgba(183, 163, 123, 0.48);
+    background: var(--jj-panel-2);
+    border-color: var(--jj-gold);
 }
 
 .jj-action-button--danger {
-    background:
-        linear-gradient(180deg, rgba(120, 27, 44, 0.34) 0%, rgba(82, 18, 31, 0.36) 100%),
-        url('../../import-items/ui/texture1.webp') center / cover no-repeat;
+    background: var(--jj-card);
     border-color: rgba(183, 107, 123, 0.42);
+}
+
+/* Focus-visible: accessible keyboard focus ring */
+.jj-sheet button:focus-visible,
+.jj-sheet a:focus-visible,
+.jj-sheet summary:focus-visible,
+.jj-sheet input:not([type='checkbox']):not([type='hidden']):focus-visible,
+.jj-sheet select:focus-visible,
+.jj-sheet textarea:focus-visible {
+    outline: 2px solid var(--jj-gold);
+    outline-offset: 1px;
+}
+
+.jj-rd-config button:focus-visible,
+.jj-rd-config a:focus-visible,
+.jj-rd-config summary:focus-visible,
+.jj-rd-config input:not([type='checkbox']):not([type='hidden']):focus-visible,
+.jj-rd-config select:focus-visible,
+.jj-rd-config textarea:focus-visible {
+    outline: 2px solid var(--jj-gold);
+    outline-offset: 1px;
 }
 
 @media (max-width: 1100px) {
