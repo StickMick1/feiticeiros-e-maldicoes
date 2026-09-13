@@ -331,7 +331,6 @@ export default class CustomItem extends Item {
         const baseDefaultImg = CustomItem.DEFAULT_IMG();
         const typeDefaultImg = CustomItem.DEFAULT_IMG(this.type);
         if (this.img === baseDefaultImg && typeDefaultImg !== baseDefaultImg) {
-            this.updateSource({ img: typeDefaultImg });
             data.img = typeDefaultImg;
         }
         return true;

@@ -195,7 +195,7 @@ class TextField extends InputComponent {
      */
     static async getConfigForm(_entity, appId, existingComponent) {
         const mainElt = document.createElement('div');
-        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/textField.hbs`, {
+        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/textField.hbs`, {
             ...existingComponent,
             COMPONENT_SIZES,
             appId

@@ -25,7 +25,8 @@ async function processMigration() {
                 //@ts-expect-error Migration
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 statusEffects: template.system.activeEffects,
-                ['-=activeEffects']: null,
+                // V14: set to null to delete field
+                activeEffects: null,
                 templateSystemUniqueVersion: (Math.random() * 0x100000000) >>> 0
             }
         };

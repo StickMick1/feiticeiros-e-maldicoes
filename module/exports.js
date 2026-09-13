@@ -183,7 +183,7 @@ const getFolderStructure = (folderArray) => {
  */
 export const importTemplates = () => {
     // Create File Picker to get export JSON
-    const fp = new foundry.applications.apps.FilePicker.implementation({
+    const fp = new foundry.applications.apps.FilePicker({
         callback: (filePath) => {
             void (async () => {
                 // Get file from server

@@ -165,25 +165,26 @@ function convertModifiersToActiveEffects(modifiers, activeModifierGroups, overri
     Object.entries(modifiersByGroupName).forEach(([name, modifiers]) => {
         const changes = [];
         modifiers.forEach((mod) => {
-            let mode = CONST.ACTIVE_EFFECT_MODES.ADD;
+            // V14: use string mode values instead of CONST.ACTIVE_EFFECT_MODES
+            let mode = 'add';
             let signOperator = null;
             switch (mod.operator) {
                 case MODIFIER_OPERATOR.ADD:
-                    mode = CONST.ACTIVE_EFFECT_MODES.ADD;
+                    mode = 'add';
                     break;
                 case MODIFIER_OPERATOR.MULTIPLY:
-                    mode = CONST.ACTIVE_EFFECT_MODES.MULTIPLY;
+                    mode = 'multiply';
                     break;
                 case MODIFIER_OPERATOR.SUBTRACT:
-                    mode = CONST.ACTIVE_EFFECT_MODES.ADD;
+                    mode = 'add';
                     signOperator = '-';
                     break;
                 case MODIFIER_OPERATOR.DIVIDE:
-                    mode = CONST.ACTIVE_EFFECT_MODES.MULTIPLY;
+                    mode = 'multiply';
                     signOperator = '1/';
                     break;
                 case MODIFIER_OPERATOR.SET:
-                    mode = CONST.ACTIVE_EFFECT_MODES.OVERRIDE;
+                    mode = 'override';
                     break;
             }
             changes.push({

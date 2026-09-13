@@ -28,7 +28,8 @@ async function processMigration() {
                 }
             };
             if (actor.img === 'icons/svg/mystery-man.svg') {
-                updateData.img = 'systems/custom-system-builder/img/template-logo.svg';
+                // V14: use game.system.id for independent system asset paths
+                updateData.img = `systems/${game.system.id}/img/template-logo.svg`;
             }
             actorsToUpdate.push(updateData);
         }
@@ -48,13 +49,14 @@ async function processMigration() {
             if (item.img === 'icons/svg/item-bag.svg') {
                 switch (item.type) {
                     case '_equippableItemTemplate':
-                        updateData.img = 'systems/custom-system-builder/img/template-logo.svg';
+                        // V14: use game.system.id for independent system asset paths
+                        updateData.img = `systems/${game.system.id}/img/template-logo.svg`;
                         break;
                     case 'subTemplate':
-                        updateData.img = 'systems/custom-system-builder/img/subtemplate-logo.svg';
+                        updateData.img = `systems/${game.system.id}/img/subtemplate-logo.svg`;
                         break;
                     case 'userInputTemplate':
-                        updateData.img = 'systems/custom-system-builder/img/user-input-logo.svg';
+                        updateData.img = `systems/${game.system.id}/img/user-input-logo.svg`;
                         break;
                 }
             }

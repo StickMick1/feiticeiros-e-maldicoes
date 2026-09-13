@@ -66,7 +66,8 @@ export const switchCSBVersion = async (fromKey, toKey, deleteOnly = false) => {
     //First, settings.
     const systemSettings = [];
     try {
-        for (const s of game.data.settings) {
+        // V14: use game.settings.settings for iterable setting documents
+        for (const s of game.settings.settings) {
             const splitSettingKey = s.key.split('.', 2);
             if (splitSettingKey[0] === fromKey) {
                 systemSettings.push({
@@ -98,7 +99,8 @@ export const switchCSBVersion = async (fromKey, toKey, deleteOnly = false) => {
                 if (!deleteOnly) {
                     await doc.update({ [`flags.${toKey}`]: flags }, { recursive: false });
                 }
-                await doc.update({ [`flags.-=${fromKey}`]: null });
+                // V14: use unset flag syntax instead of -= operator
+                await doc.unsetFlag(fromKey);
             }
             current++;
         }
@@ -135,7 +137,8 @@ export const switchCSBVersion = async (fromKey, toKey, deleteOnly = false) => {
  * @returns The system id to migrate from
  */
 export const needsMigration = () => {
-    const CSBSettings = game.data.settings?.filter((setting) => setting.key.startsWith(`custom-system-builder`)) ?? [];
+    // V14: use game.settings.settings for iterable setting documents
+    const CSBSettings = [...game.settings.settings].filter((setting) => setting.key.startsWith(`custom-system-builder`)) ?? [];
     for (const setting of CSBSettings) {
         const settingSystemKey = setting.key.split('.')[0];
         if (settingSystemKey !== game.system.id) {

@@ -214,7 +214,7 @@ class Dropdown extends InputComponent {
         const predefinedValues = { ...existingComponent };
         predefinedValues.selectedOptionType = predefinedValues.selectedOptionType ?? 'custom';
         const mainElt = document.createElement('div');
-        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/dropdown.hbs`, {
+        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/dropdown.hbs`, {
             ...predefinedValues,
             COMPONENT_SIZES,
             appId

@@ -29,14 +29,14 @@ export class CustomItemSheetV2 extends foundry.applications.api.HandlebarsApplic
     static async onEditImage(_event, target) {
         const field = target.dataset.field || 'img';
         const current = foundry.utils.getProperty(this.document, field);
-        const fp = new foundry.applications.apps.FilePicker.implementation({
+        const fp = new foundry.applications.apps.FilePicker({
             type: 'image',
             current: current,
             callback: (path) => {
                 void this.document.update({ [field]: path });
             }
         });
-        void fp.render({ force: true });
+        await fp.browse(current);
     }
     static canEditModifiers() {
         return game.user.hasRole(game.settings.get(game.system.id, 'minimumRoleEditItemModifiers'));

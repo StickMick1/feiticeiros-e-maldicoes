@@ -3,7 +3,8 @@ export default class CustomCombat extends Combat {
     async rollInitiative(ids, { formula: rawFormula = null, updateTurn = true, messageOptions = {} } = {}) {
         // Structure input data
         ids = typeof ids === 'string' ? [ids] : ids;
-        const chatRollMode = game.settings.get('core', 'rollMode');
+        // V14: core setting 'rollMode' renamed to 'messageMode'
+        const chatMessageMode = game.settings.get('core', 'messageMode');
         // Iterate over Combatants, performing an initiative roll for each
         const updates = [];
         const messages = [];
@@ -21,12 +22,12 @@ export default class CustomCombat extends Combat {
                 triggerEntity: combatant.actor?.templateSystem
             });
             updates.push({ _id: id, initiative: parseInt(phrase.result) });
-            // If the combatant is hidden, use a private roll unless an alternative rollMode was explicitly requested
-            const rollMode = ('rollMode' in messageOptions
-                ? messageOptions.rollMode
+            // If the combatant is hidden, use a private roll unless an alternative messageMode was explicitly requested
+            const messageMode = ('messageMode' in messageOptions
+                ? messageOptions.messageMode
                 : combatant.hidden
                     ? CONST.DICE_ROLL_MODES.PRIVATE
-                    : chatRollMode);
+                    : chatMessageMode);
             // Construct chat message data
             const messageData = foundry.utils.mergeObject({
                 speaker: foundry.documents.ChatMessage.implementation.getSpeaker({
@@ -41,7 +42,7 @@ export default class CustomCombat extends Combat {
             }, messageOptions);
             const chatData = (await postAugmentedChatMessage(phrase, messageData, {
                 create: false,
-                rollMode
+                messageMode
             }));
             // Play 1 sound for the whole rolled set
             if (i > 0 && chatData)

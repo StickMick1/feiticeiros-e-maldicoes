@@ -140,7 +140,7 @@ class ExtensibleTable extends Container {
             component
         });
         const extensibleSettingsSection = document.createElement('div');
-        extensibleSettingsSection.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/componentExtensibleTableFields.hbs`, {
+        extensibleSettingsSection.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/componentExtensibleTableFields.hbs`, {
             component: component ? this._rowLayout[component.key] : {},
             ALIGNMENT_LIST: getLocalizedAlignmentList(),
             appId: componentSettingsApp.id

@@ -83,7 +83,7 @@ export default class CustomStatusEffectsApplication extends HandlebarsApplicatio
             }
             finalSpecialEffects[key] = formDataObj.specialStatusEffect[key];
         }
-        CONFIG.statusEffects = effectArray;
+        CONFIG.statusEffects = Object.fromEntries(effectArray.map((e) => [e.id, e]));
         await game.settings.set(game.system.id, 'customStatusEffects', effectArray);
         CONFIG.specialStatusEffects = finalSpecialEffects;
         await game.settings.set(game.system.id, 'customSpecialStatusEffects', finalSpecialEffects);
@@ -245,7 +245,8 @@ export default class CustomStatusEffectsApplication extends HandlebarsApplicatio
     }
     async _prepareContext(options) {
         const context = await super._prepareContext(options);
-        context.statusEffects = CONFIG.statusEffects.map((effect) => {
+        // V14: CONFIG.statusEffects is a registry, use Object.values for array-like access
+        context.statusEffects = Object.values(CONFIG.statusEffects).map((effect) => {
             const newEffect = { ...effect };
             if (newEffect.name?.startsWith('EFFECT.')) {
                 newEffect.name = game.i18n.localize(newEffect.name);

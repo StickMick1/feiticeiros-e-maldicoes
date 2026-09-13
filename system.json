@@ -1,12 +1,14 @@
 {
-    "id": "custom-system-builder",
-    "title": "Custom System Builder",
-    "description": "Build your own system with easy to use components",
+    "id": "sorcerers-and-curses",
+    "title": "Sorcerers and Curses",
+    "description": "Character and item sheets for the Sorcerers and Curses (Feiticeiros e Maldições) campaign. Fork of Custom System Builder.",
+
     "compatibility": {
-        "minimum": "13",
-        "verified": "13.350",
-        "maximum": "13"
+        "minimum": "14",
+        "verified": "14.367",
+        "maximum": "14"
     },
+
     "authors": [
         {
             "name": "Jean-Baptiste Louvet-Daniel",
@@ -26,37 +28,7 @@
             "name": "Caloup"
         }
     ],
-    "relationships": {
-        "recommends": [
-            {
-                "id": "_chatcommands",
-                "type": "module",
-                "manifest": "https://gitlab.com/woodentavern/foundryvtt-chat-command-lib/-/raw/master/src/module.json",
-                "compatibility": {
-                    "minimum": "2.0.4",
-                    "verified": "2.0.4"
-                }
-            },
-            {
-                "id": "dfreds-convenient-effects",
-                "type": "module",
-                "manifest": "https://github.com/DFreds/dfreds-convenient-effects/releases/download/v8.1.2/module.json",
-                "compatibility": {
-                    "minimum": "8.1.2",
-                    "verified": "8.1.2"
-                }
-            },
-            {
-                "id": "statuscounter",
-                "type": "module",
-                "manifest": "https://gitlab.com/woodentavern/status-icon-counters/-/raw/master/src/module.json",
-                "compatibility": {
-                    "minimum": "3.0.4",
-                    "verified": "3.0.4"
-                }
-            }
-        ]
-    },
+
     "languages": [
         {
             "lang": "en",
@@ -122,8 +94,6 @@
         "type": 1,
         "diagonals": 0
     },
-    "url": "https://gitlab.com/custom-system-builder/custom-system-builder/",
-    "manifest": "https://gitlab.com/custom-system-builder/custom-system-builder/-/releases/permalink/latest/downloads/system.json",
-    "download": "https://gitlab.com/custom-system-builder/custom-system-builder/-/releases/5.2.0/downloads/custom-system-builder.zip",
+
     "version": "5.2.0"
 }

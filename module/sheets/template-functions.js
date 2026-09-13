@@ -12,7 +12,7 @@
 let modifiersDialog = null;
 const modifiers = async (callback, blocks) => {
     // Render the dialog's contents
-    let content = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/modifiers.hbs`, {
+    let content = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/modifiers.hbs`, {
         blocks,
         MODIFIER_OPERATORS: {
             add: '+',

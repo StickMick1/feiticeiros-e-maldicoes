@@ -85,7 +85,6 @@ export default class CustomActor extends Actor {
         const baseDefaultImg = CustomActor.DEFAULT_IMG();
         const typeDefaultImg = CustomActor.DEFAULT_IMG(this.type);
         if (this.img === baseDefaultImg && typeDefaultImg !== baseDefaultImg) {
-            this.updateSource({ img: typeDefaultImg });
             data.img = typeDefaultImg;
         }
         if (this.type === 'character') {
@@ -94,11 +93,6 @@ export default class CustomActor extends Actor {
                 inplace: false,
                 insertKeys: true,
                 recursive: true
-            });
-            this.updateSource({
-                system: {
-                    props: mergedProps
-                }
             });
             data.system ??= {};
             data.system.props = mergedProps;
@@ -118,7 +112,8 @@ export default class CustomActor extends Actor {
         }
     }
     async toggleStatusEffect(statusId, { active, overlay } = { active: false, overlay: false }) {
-        const status = CONFIG.statusEffects.find((e) => e.id === statusId);
+        // V14: CONFIG.statusEffects is a registry, use Object.values for array-like access
+        const status = Object.values(CONFIG.statusEffects).find((e) => e.id === statusId);
         if (!status)
             throw new Error(`Invalid status ID "${statusId}" provided to Actor#toggleStatusEffect`);
         const existing = [];
@@ -139,10 +134,11 @@ export default class CustomActor extends Actor {
             return;
         const effect = await ActiveEffect.implementation.fromStatusEffect(statusId);
         if (overlay) {
-            effect.updateSource({
+            // V14: update effect data directly before creation
+            foundry.utils.mergeObject(effect, {
                 //@ts-expect-error Won't let us update flags
                 'flags.core.overlay': true
-            });
+            }, { inplace: true, insertKeys: true, recursive: true });
         }
         if (effect.getFlag(game.system.id, 'isPredefined')) {
             return CustomActiveEffect.addActiveEffect(this, effect.id);

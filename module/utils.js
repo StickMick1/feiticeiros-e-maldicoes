@@ -28,8 +28,9 @@ export const postCustomSheetRoll = async (messageText, alternative = false) => {
  * Posts a chat message with a computed phrase data
  * @ignore
  */
-export const postAugmentedChatMessage = async (textContent, msgOptions, { rollMode, create } = { create: true }) => {
-    rollMode = rollMode ?? game.settings.get('core', 'rollMode');
+export const postAugmentedChatMessage = async (textContent, msgOptions, { messageMode, create } = { create: true }) => {
+    // V14: core setting 'rollMode' renamed to 'messageMode'
+    messageMode = messageMode ?? game.settings.get('core', 'messageMode');
     // chat-roll is just the html template for computed formulas
     const template_file = `systems/${game.system.id}/templates/chat/chat-roll.hbs`;
     const template_file_groups = `systems/${game.system.id}/templates/chat/chat-roll-dice-pools.hbs`;
@@ -44,10 +45,10 @@ export const postAugmentedChatMessage = async (textContent, msgOptions, { rollMo
     for (const key in values) {
         let formattedValue = String(values[key].result);
         if (values[key].explanation) {
-            formattedValue = await foundry.applications.handlebars.renderTemplate(template_file, {
+            formattedValue = await foundry.applications.api.handlebars.renderTemplate(template_file, {
                 rollData: values[key],
-                jsonRollData: JSON.stringify(values[key]).replaceAll(/\[\[/g, '[').replaceAll(/]]/g, ']'),
-                rollMode: rollMode
+                jsonRollData: JSON.stringify(values[key]).replaceAll(/\[\[/g, '[').replaceAll(/\]\]/g, ']'),
+                messageMode: messageMode
             });
         }
         if (phrase.startsWith('/')) {
@@ -65,10 +66,10 @@ export const postAugmentedChatMessage = async (textContent, msgOptions, { rollMo
         }
     }
     phrase = phrase.replaceAll(/\n/g, '').trim();
-    const diceGroupsRendered = await foundry.applications.handlebars.renderTemplate(template_file_groups, {
+    const diceGroupsRendered = await foundry.applications.api.handlebars.renderTemplate(template_file_groups, {
         dice: diceGroups,
         multipleDice: diceGroups.filter((group) => !group.hidden).length > 1,
-        rollMode
+        messageMode
     });
     phrase += diceGroupsRendered;
     const chatRollData = {
@@ -78,8 +79,8 @@ export const postAugmentedChatMessage = async (textContent, msgOptions, { rollMo
     // If setting expandRollVisibility is checked, we apply the appropriate whispers to the message
     if (game.settings.get(game.system.id, 'expandRollVisibility')) {
         const gmList = ChatMessage.getWhisperRecipients('GM');
-        chatRollData.rollMode = CONST.DICE_ROLL_MODES.PUBLIC;
-        switch (rollMode) {
+        chatRollData.messageMode = CONST.DICE_ROLL_MODES.PUBLIC;
+        switch (messageMode) {
             case CONST.DICE_ROLL_MODES.PRIVATE:
                 whisper = gmList;
                 break;
@@ -94,7 +95,7 @@ export const postAugmentedChatMessage = async (textContent, msgOptions, { rollMo
         }
     }
     else {
-        chatRollData.rollMode = rollMode;
+        chatRollData.messageMode = messageMode;
     }
     const chatData = foundry.utils.mergeObject(msgOptions, foundry.utils.mergeObject({
         content: phrase,
@@ -113,9 +114,7 @@ export const postAugmentedChatMessage = async (textContent, msgOptions, { rollMo
     else {
         const cls = foundry.utils.getDocumentClass('ChatMessage');
         const msg = new cls(chatData);
-        if (rollMode) {
-            msg.applyRollMode(rollMode);
-        }
+        // V14: messageMode is set during construction, applyRollMode removed
         return msg.toObject();
     }
 };
@@ -237,6 +236,7 @@ export function quoteString(value) {
 }
 export function fastSetFlag(scope, key, value) {
     void game.user.setFlag(scope, key, value);
+    // V14: use setProperty which handles undefined for deletion
     foundry.utils.setProperty(game.user.flags, `${scope}.${key}`, value);
 }
 export function trimProseMirrorEmptyValue(value) {

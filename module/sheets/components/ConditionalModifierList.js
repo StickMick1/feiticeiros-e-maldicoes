@@ -153,7 +153,7 @@ class ConditionalModifierList extends ExtensibleTable {
                 game.i18n.localize('CSB.ComponentProperties.ConditionalModifierList.GroupColumnNameDefault')
         };
         const mainElt = document.createElement('div');
-        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate('systems/' + game.system.id + '/templates/_template/components/conditionalModifierList.hbs', {
+        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate('systems/' + game.system.id + '/templates/_template/components/conditionalModifierList.hbs', {
             ...predefinedValues,
             availableGroups: this._getAvailableGroups(entity).map((group) => ({
                 group,

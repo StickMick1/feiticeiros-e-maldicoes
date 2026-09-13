@@ -18,12 +18,6 @@ import CustomActor from './documents/CustomActor.js';
 import CustomItem from './documents/CustomItem.js';
 import CustomToken from './documents/CustomToken.js';
 // Import sheet classes.
-import { CharacterSheet } from './sheets/actors/character-sheet.js';
-import { TemplateSheet } from './sheets/actors/template-sheet.js';
-import { EquippableItemSheet } from './sheets/items/equippable-item-sheet.js';
-import { EquippableItemTemplateSheet } from './sheets/items/_equippable-item-template-sheet.js';
-import { SubTemplateItemSheet } from './sheets/items/sub-template-item-sheet.js';
-import { UserInputTemplateItemSheet } from './sheets/items/user-input-template-item-sheet.js';
 import Formula from './formulas/Formula.js';
 import { getLocalizedRoleList, isModuleActive, postCustomSheetRoll } from './utils.js';
 // Import components for factory init
@@ -48,7 +42,6 @@ import initChat from './chat.js';
 import CustomActiveEffect from './documents/CustomActiveEffect.js';
 import CustomActiveEffectConfig from './sheets/CustomActiveEffectConfig.js';
 import CustomStatusEffectsApplication from './applications/CustomStatusEffectsApplication.js';
-import ActiveEffectContainerItemSheet from './sheets/items/active-effect-container-item-sheet.js';
 import { CharacterActorDataModel, TemplateActorDataModel } from './documents/model/actorModel.js';
 import { BaseItemDataModel, EquippableItemDataModel, TemplateItemDataModel } from './documents/model/itemModel.js';
 import { CharacterSheetV2 } from './sheets/actors/v2/CharacterSheetV2.js';
@@ -91,7 +84,6 @@ async function initHook() {
         CONFIG.Item.dataModels.activeEffectContainer = BaseItemDataModel;
         CONFIG.Token.documentClass = CustomToken;
         CONFIG.ActiveEffect.documentClass = CustomActiveEffect;
-        CONFIG.ActiveEffect.legacyTransferral = false;
         //@ts-expect-error Return type changed for CSB
         CONFIG.Combatant.documentClass = CustomCombatant;
         CONFIG.Combat.documentClass = CustomCombat;
@@ -109,7 +101,13 @@ async function initHook() {
         });
         const customStatusEffects = game.settings.get(game.system.id, 'customStatusEffects');
         if (customStatusEffects) {
-            CONFIG.statusEffects = customStatusEffects;
+            // V14: CONFIG.statusEffects is a registry (object keyed by id), normalize legacy icon/label to img/name
+            const normalized = customStatusEffects.map((effect) => ({
+                ...effect,
+                img: effect.img ?? effect.icon,
+                name: effect.name ?? effect.label
+            }));
+            CONFIG.statusEffects = Object.fromEntries(normalized.map((e) => [e.id, e]));
         }
         const customSpecialStatusEffects = game.settings.get(game.system.id, 'customSpecialStatusEffects');
         if (customSpecialStatusEffects) {
@@ -213,103 +211,40 @@ async function initHook() {
             choices: getLocalizedRoleList('string'),
             requiresReload: true
         });
-        game.settings.register(game.system.id, 'useApplicationV1', {
-            name: 'CSB.Settings.UseApplicationV1.Name',
-            hint: 'CSB.Settings.UseApplicationV1.Hint',
-            scope: 'world',
-            config: true,
-            default: false,
-            type: Boolean,
-            requiresReload: true
-        });
-        game.settings.register(game.system.id, 'show451ConversionPopUp', {
-            name: 'CSB.Settings.Show451ConversionPopUp.Name',
-            scope: 'world',
-            config: true,
-            default: true,
-            type: Boolean,
-            requiresReload: true
-        });
         Logger.setLogLevel(game.settings.get(game.system.id, 'loggingLevel'));
         // Register sheet application classes
-        foundry.documents.collections.Actors.unregisterSheet('core', foundry.appv1.sheets.ActorSheet);
         foundry.documents.collections.Actors.registerSheet(game.system.id, CharacterSheetV2, {
-            makeDefault: !game.settings.get(game.system.id, 'useApplicationV1'),
+            makeDefault: true,
             types: ['character'],
             label: game.i18n.localize('CSB.Settings.SheetName')
         });
         foundry.documents.collections.Actors.registerSheet(game.system.id, TemplateSheetV2, {
-            makeDefault: !game.settings.get(game.system.id, 'useApplicationV1'),
+            makeDefault: true,
             types: ['_template'],
             label: game.i18n.localize('CSB.Settings.SheetName')
         });
-        //@ts-expect-error wrong types
-        foundry.documents.collections.Actors.registerSheet(game.system.id, CharacterSheet, {
-            makeDefault: game.settings.get(game.system.id, 'useApplicationV1'),
-            types: ['character'],
-            label: game.i18n.localize('CSB.Settings.UseApplicationV1.LegacySheetName')
-        });
-        //@ts-expect-error wrong types
-        foundry.documents.collections.Actors.registerSheet(game.system.id, TemplateSheet, {
-            makeDefault: game.settings.get(game.system.id, 'useApplicationV1'),
-            types: ['_template'],
-            label: game.i18n.localize('CSB.Settings.UseApplicationV1.LegacySheetName')
-        });
-        foundry.documents.collections.Items.unregisterSheet('core', foundry.appv1.sheets.ItemSheet);
-        foundry.documents.collections.Items.registerSheet(game.system.id, EquippableItemTemplateSheet, {
-            makeDefault: game.settings.get(game.system.id, 'useApplicationV1'),
-            types: ['_equippableItemTemplate'],
-            label: game.i18n.localize('CSB.Settings.UseApplicationV1.LegacySheetName')
-        });
-        foundry.documents.collections.Items.registerSheet(game.system.id, EquippableItemSheet, {
-            makeDefault: game.settings.get(game.system.id, 'useApplicationV1'),
-            types: ['equippableItem'],
-            label: game.i18n.localize('CSB.Settings.UseApplicationV1.LegacySheetName')
-        });
-        //@ts-expect-error wrong types
-        foundry.documents.collections.Items.registerSheet(game.system.id, SubTemplateItemSheet, {
-            makeDefault: game.settings.get(game.system.id, 'useApplicationV1'),
-            types: ['subTemplate'],
-            label: game.i18n.localize('CSB.Settings.UseApplicationV1.LegacySheetName')
-        });
-        //@ts-expect-error wrong types
-        foundry.documents.collections.Items.registerSheet(game.system.id, UserInputTemplateItemSheet, {
-            makeDefault: game.settings.get(game.system.id, 'useApplicationV1'),
-            types: ['userInputTemplate'],
-            label: game.i18n.localize('CSB.Settings.UseApplicationV1.LegacySheetName')
-        });
-        foundry.documents.collections.Items.registerSheet(game.system.id, ActiveEffectContainerItemSheet, {
-            makeDefault: game.settings.get(game.system.id, 'useApplicationV1'),
-            types: ['activeEffectContainer'],
-            label: game.i18n.localize('CSB.Settings.UseApplicationV1.LegacySheetName')
-        });
-        // VScode flags these as useless but tsc needs them, so...
         foundry.documents.collections.Items.registerSheet(game.system.id, EquippableItemTemplateSheetV2, {
-            makeDefault: !game.settings.get(game.system.id, 'useApplicationV1'),
+            makeDefault: true,
             types: ['_equippableItemTemplate'],
             label: game.i18n.localize('CSB.Settings.SheetName')
         });
-        // VScode flags these as useless but tsc needs them, so...
         foundry.documents.collections.Items.registerSheet(game.system.id, EquippableItemSheetV2, {
-            makeDefault: !game.settings.get(game.system.id, 'useApplicationV1'),
+            makeDefault: true,
             types: ['equippableItem'],
             label: game.i18n.localize('CSB.Settings.SheetName')
         });
-        // VScode flags these as useless but tsc needs them, so...
         foundry.documents.collections.Items.registerSheet(game.system.id, SubTemplateItemSheetV2, {
-            makeDefault: !game.settings.get(game.system.id, 'useApplicationV1'),
+            makeDefault: true,
             types: ['subTemplate'],
             label: game.i18n.localize('CSB.Settings.SheetName')
         });
-        // VScode flags these as useless but tsc needs them, so...
         foundry.documents.collections.Items.registerSheet(game.system.id, UserInputTemplateItemSheetV2, {
-            makeDefault: !game.settings.get(game.system.id, 'useApplicationV1'),
+            makeDefault: true,
             types: ['userInputTemplate'],
             label: game.i18n.localize('CSB.Settings.SheetName')
         });
-        // VScode flags these as useless but tsc needs them, so...
         foundry.documents.collections.Items.registerSheet(game.system.id, ActiveEffectContainerItemSheetV2, {
-            makeDefault: !game.settings.get(game.system.id, 'useApplicationV1'),
+            makeDefault: true,
             types: ['activeEffectContainer'],
             label: game.i18n.localize('CSB.Settings.SheetName')
         });
@@ -321,17 +256,17 @@ async function initHook() {
         // Helper-functions for handlebars
         Handlebars.registerHelper('eq', (a, b) => a == b);
         // Partials
-        void foundry.applications.handlebars
+        void foundry.applications.api.handlebars
             .getTemplate(`systems/${game.system.id}/templates/_template/partials/icon-formula.hbs`)
             .then((template) => {
             Handlebars.registerPartial('icon-formula', template);
         });
-        void foundry.applications.handlebars
+        void foundry.applications.api.handlebars
             .getTemplate(`systems/${game.system.id}/templates/_template/partials/icon-info.hbs`)
             .then((template) => {
             Handlebars.registerPartial('icon-info', template);
         });
-        void foundry.applications.handlebars
+        void foundry.applications.api.handlebars
             .getTemplate(`systems/${game.system.id}/templates/_template/partials/icon-no-delimiters.hbs`)
             .then((template) => {
             Handlebars.registerPartial('icon-no-delimiters', template);
@@ -480,17 +415,10 @@ Hooks.on('renderSettings', (sidebar, elt) => {
 function createCSBSection(sidebar, _elt) {
     // Add everything cleanly into menu
     const titleDiv = document.createElement('h4');
-    titleDiv.innerText = 'Custom System Builder';
-    const documentationButton = document.createElement('button');
-    documentationButton.innerHTML =
-        '<i class="fas fa-book"></i>' + game.i18n.localize('CSB.Settings.DocumentationButton');
+    titleDiv.innerText = 'Sorcerers and Curses';
     const csbDiv = document.createElement('section');
     csbDiv.classList = 'csb-settings flexcol';
-    documentationButton.addEventListener('click', () => {
-        window.open('https://gitlab.com/custom-system-builder/custom-system-builder/-/wikis/home', '_blank')?.focus();
-    });
     csbDiv.appendChild(titleDiv);
-    csbDiv.appendChild(documentationButton);
     const helpBox = sidebar.element.querySelector('section.documentation');
     helpBox.insertAdjacentElement('beforebegin', csbDiv);
     return csbDiv;

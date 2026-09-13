@@ -94,7 +94,7 @@ class Picture extends InputComponent {
             if (isEditable) {
                 imgElement.classList.add('custom-system-clickable');
                 imgElement.addEventListener('click', (_event) => {
-                    const fp = new foundry.applications.apps.FilePicker.implementation({
+                    const fp = new foundry.applications.apps.FilePicker({
                         current: hiddenInputElement.value,
                         type: 'image',
                         callback: (path) => {
@@ -172,13 +172,13 @@ class Picture extends InputComponent {
      */
     static async getConfigForm(_entity, appId, existingComponent) {
         const mainElt = document.createElement('div');
-        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/picture.hbs`, {
+        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/picture.hbs`, {
             ...existingComponent,
             appId
         });
         mainElt.querySelector('button[data-configAction="openFilePicker"]')?.addEventListener('click', () => {
             const defaultValueField = mainElt.querySelector('[name="defaultValue"]');
-            const fp = new foundry.applications.apps.FilePicker.implementation({
+            const fp = new foundry.applications.apps.FilePicker({
                 current: defaultValueField.value,
                 type: 'image',
                 callback: (path) => {

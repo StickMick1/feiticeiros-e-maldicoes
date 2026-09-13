@@ -215,7 +215,7 @@ class ActiveEffectContainer extends ExtensibleTable {
      */
     static async getConfigForm(_entity, appId, existingComponent) {
         const mainElt = document.createElement('div');
-        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate('systems/' + game.system.id + '/templates/_template/components/activeEffectContainer.hbs', {
+        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate('systems/' + game.system.id + '/templates/_template/components/activeEffectContainer.hbs', {
             title: existingComponent?.title ?? '',
             hideEmpty: existingComponent?.hideEmpty ?? false,
             headDisplay: existingComponent?.headDisplay ?? true,

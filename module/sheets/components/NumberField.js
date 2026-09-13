@@ -425,7 +425,7 @@ class NumberField extends InputComponent {
      */
     static async getConfigForm(_entity, appId, existingComponent) {
         const mainElt = document.createElement('div');
-        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/numberField.hbs`, {
+        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/numberField.hbs`, {
             ...existingComponent,
             COMPONENT_SIZES,
             NUMBER_FIELD_CONTROLS_STYLES,

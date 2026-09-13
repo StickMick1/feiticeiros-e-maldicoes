@@ -495,7 +495,7 @@ class ItemContainer extends ExtensibleTable {
                                 name: entity.entity.name
                             };
                         });
-                        const tpl = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/newItemInDisplayer.hbs`, {
+                        const tpl = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/newItemInDisplayer.hbs`, {
                             defaultItemName: this._newItemDefaultName ??
                                 game.i18n.localize('CSB.ComponentProperties.ItemContainer.AddItemDialog.DefaultName'),
                             ITEMTEMPLATES: Object.fromEntries(allItemTemplates.map((tpl) => {
@@ -749,7 +749,7 @@ class ItemContainer extends ExtensibleTable {
             };
         });
         const mainElt = document.createElement('div');
-        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate('systems/' + game.system.id + '/templates/_template/components/itemContainer.hbs', {
+        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate('systems/' + game.system.id + '/templates/_template/components/itemContainer.hbs', {
             ...predefinedValuesComponent,
             availableTemplates: allItemTemplates.map((tpl) => ({
                 id: tpl.id,
@@ -1082,8 +1082,9 @@ class ItemContainer extends ExtensibleTable {
         savedOrder[index1] = savedOrder[index2];
         savedOrder[index2] = temp;
         fastSetFlag(game.system.id, entity.uuid + '.' + this.templateAddress + '.sortOption', {
-            ['-=prop']: null,
-            ['-=operator']: null,
+            // V14: remove keys by setting to undefined instead of -= operator
+            prop: undefined,
+            operator: undefined,
             savedOrder
         });
         entity.render(false);

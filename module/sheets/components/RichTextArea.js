@@ -185,7 +185,7 @@ class RichTextArea extends InputComponent {
      */
     static async getConfigForm(_entity, appId, existingComponent) {
         const mainElt = document.createElement('div');
-        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/textArea.hbs`, {
+        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/textArea.hbs`, {
             ...existingComponent,
             RICH_TEXT_AREA_STYLES,
             appId

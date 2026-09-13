@@ -106,7 +106,8 @@ export default class CustomActiveEffect extends ActiveEffect {
      * Create an ActiveEffect instance from status effect data.
      */
     static async _fromStatusEffect(statusId, effectData, options) {
-        const statusEffect = CONFIG.statusEffects.find((e) => e.id === statusId);
+        // V14: CONFIG.statusEffects is a registry, use Object.values for array-like access
+        const statusEffect = Object.values(CONFIG.statusEffects).find((e) => e.id === statusId);
         if (statusEffect && statusEffect.linkedEffectId) {
             const activeEffect = this.getPredefinedEffect(statusEffect.linkedEffectId);
             if (activeEffect) {
@@ -243,7 +244,8 @@ export default class CustomActiveEffect extends ActiveEffect {
 }
 Hooks.on('applyActiveEffect', applyCustomActiveEffectChange);
 function applyCustomActiveEffectChange(actor, change, current, _delta, changes) {
-    if (change.mode !== CONST.ACTIVE_EFFECT_MODES.CUSTOM) {
+    // V14: mode is now a string "custom" instead of CONST.ACTIVE_EFFECT_MODES.CUSTOM
+    if (change.mode !== 'custom') {
         return;
     }
     try {
@@ -283,6 +285,7 @@ Hooks.on('preCreateActiveEffect', (effect) => {
             'flags.dfreds-convenient-effects.isTemporary': false
         };
     }
-    effect.updateSource(sourceUpdates);
+    // V14: use foundry.utils.mergeObject to update the data object directly
+    foundry.utils.mergeObject(effect, sourceUpdates, { inplace: true, insertKeys: true, recursive: true });
     return true;
 });

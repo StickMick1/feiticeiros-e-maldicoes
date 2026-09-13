@@ -218,7 +218,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             { value: 'sab', label: 'SAB' },
             { value: 'pre', label: 'PRE' }
         ];
-        return foundry.applications.handlebars.renderTemplate(config.templatePath, {
+        return foundry.applications.api.handlebars.renderTemplate(config.templatePath, {
             dialogTitle: config.dialogTitle,
             entryTypeLabel: config.entryTypeLabel,
             entryTypeLabelLower: config.entryTypeLabelLower,
@@ -259,7 +259,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 event.preventDefault();
                 if (!imageInput)
                     return;
-                const PickerClass = foundry.applications.apps.FilePicker?.implementation ?? globalThis.FilePicker;
+                const PickerClass = foundry.applications.apps.FilePicker ?? globalThis.FilePicker;
                 if (!PickerClass)
                     return;
                 const picker = new PickerClass({
@@ -1286,7 +1286,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                             }
                         }
                     }, {
-                        rollMode: game.settings.get('core', 'rollMode')
+                        // V14: rollMode renamed to messageMode
+                        messageMode: game.settings.get('core', 'messageMode')
                     });
                     const damageFormula = String(entry.damageFormula ?? '').trim();
                     if (damageFormula) {
@@ -1302,7 +1303,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                                 }
                             }
                         }, {
-                            rollMode: game.settings.get('core', 'rollMode')
+                            // V14: rollMode renamed to messageMode
+                            messageMode: game.settings.get('core', 'messageMode')
                         });
                     }
                     return roll;
@@ -1592,7 +1594,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         }
         const actor = this.actor ?? this.document;
         const jujutsu = prepareJujutsuSheetData(actor.system.props ?? {});
-        const content = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-rds-config.hbs`, {
+        const content = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-rds-config.hbs`, {
             rdDefinitions: jujutsu.rdDefinitions
         });
         await new CustomDialogV2({
@@ -2057,7 +2059,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const actor = this.actor ?? this.document;
         const renderDialogContent = async (propsSource = actor.system.props ?? {}) => {
             const currentJujutsu = prepareJujutsuSheetData(propsSource);
-            return foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-resistances-config.hbs`, {
+            return foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-resistances-config.hbs`, {
                 resistanceDefinitions: currentJujutsu.resistanceDefinitions,
                 customResistances: currentJujutsu.props.resistanceConfig?.custom ?? []
             });
@@ -2159,7 +2161,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const actor = this.actor ?? this.document;
         const renderDialogContent = async (propsSource = actor.system.props ?? {}) => {
             const currentJujutsu = prepareJujutsuSheetData(propsSource);
-            return foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-trainings-config.hbs`, {
+            return foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-trainings-config.hbs`, {
                 trainingDefinitions: currentJujutsu.trainingDefinitions,
                 customTrainings: currentJujutsu.props.trainingConfig?.custom ?? []
             });
@@ -2257,7 +2259,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const actor = this.actor ?? this.document;
         const renderDialogContent = async (propsSource = actor.system.props ?? {}) => {
             const currentJujutsu = prepareJujutsuSheetData(propsSource);
-            return foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-characteristics-config.hbs`, {
+            return foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-characteristics-config.hbs`, {
                 characteristicDefinitions: currentJujutsu.characteristicDefinitions,
                 characteristicTypeOptions: currentJujutsu.characteristicTypeOptions,
                 characteristicCategoryOptions: currentJujutsu.characteristicCategoryOptions,
@@ -2670,7 +2672,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 }
             }
         }, {
-            rollMode: game.settings.get('core', 'rollMode')
+            // V14: rollMode renamed to messageMode
+            messageMode: game.settings.get('core', 'messageMode')
         });
     }
     _getCurrentJujutsuSkillData(skillKey, root = this.element) {
@@ -2751,7 +2754,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 }
             }
         }, {
-            rollMode: game.settings.get('core', 'rollMode')
+            // V14: rollMode renamed to messageMode
+            messageMode: game.settings.get('core', 'messageMode')
         });
     }
     _syncSavingThrowTotals(root = this.element) {
@@ -2941,7 +2945,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 }
             }
         }, {
-            rollMode: game.settings.get('core', 'rollMode')
+            // V14: rollMode renamed to messageMode
+            messageMode: game.settings.get('core', 'messageMode')
         });
     }
     _getJujutsuTableEntry(tableKey, rowIndex) {
@@ -3010,7 +3015,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             speaker: foundry.documents.ChatMessage.implementation.getSpeaker({ actor: this.actor }),
             flavor: `<strong>Iniciativa</strong><div>Total ${CharacterSheetV2._toSignedNumber(modifier)}</div>`
         }, {
-            rollMode: game.settings.get('core', 'rollMode')
+            // V14: rollMode renamed to messageMode
+            messageMode: game.settings.get('core', 'messageMode')
         });
     }
     async _rollJujutsuAttribute(attributeKey, root = this.element) {
@@ -3024,7 +3030,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             speaker: foundry.documents.ChatMessage.implementation.getSpeaker({ actor: this.actor }),
             flavor: `<strong>Atributo: ${label}</strong><div>Mod. Atr. ${CharacterSheetV2._toSignedNumber(modifier)}</div>`
         }, {
-            rollMode: game.settings.get('core', 'rollMode')
+            // V14: rollMode renamed to messageMode
+            messageMode: game.settings.get('core', 'messageMode')
         });
     }
     async _rollJujutsuAptitudeLevel(aptitudeKey, root = this.element) {
@@ -3038,7 +3045,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             speaker: foundry.documents.ChatMessage.implementation.getSpeaker({ actor: this.actor }),
             flavor: `<strong>Teste de Aptidão: ${label}</strong><div>Bônus ${CharacterSheetV2._toSignedNumber(modifier)}</div>`
         }, {
-            rollMode: game.settings.get('core', 'rollMode')
+            // V14: rollMode renamed to messageMode
+            messageMode: game.settings.get('core', 'messageMode')
         });
     }
     _onJujutsuTableDragStart(event, element) {

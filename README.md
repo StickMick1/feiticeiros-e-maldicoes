@@ -1,6 +1,12 @@
-# Feiticeiros e Maldições (Foundry VTT)
+# Feiticeiros e Maldições (Foundry VTT) — `sorcerers-and-curses`
 
-Sistema/ficha customizada para campanha de **Feiticeiros e Maldições** no Foundry VTT, construída sobre o `custom-system-builder`.
+Sistema/ficha customizada para campanha de **Feiticeiros e Maldições** no Foundry VTT.
+Sistema independente (fork do `custom-system-builder`), id **`sorcerers-and-curses`**,
+compatível com Foundry V14.
+
+> **Migrando um mundo existente?** Veja [docs/migration.md](docs/migration.md) —
+> troca do ID de sistema é manual e feita uma vez; a migração de runtime retém
+> settings e flags existentes.
 
 ## O que já está implementado
 

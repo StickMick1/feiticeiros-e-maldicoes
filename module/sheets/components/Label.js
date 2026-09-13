@@ -334,7 +334,7 @@ class Label extends SizedComponent {
                         return;
                     }
                     const chatCommand = `/sheet${isAlternative ? 'Alt' : ''}Roll ` + rollCode;
-                    void foundry.applications.handlebars
+                    void foundry.applications.api.handlebars
                         .renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/addLabelMacro.hbs`, {
                         appId: foundry.utils.randomID()
                     })
@@ -633,7 +633,7 @@ class Label extends SizedComponent {
         if (predefinedValuesComponent.altRollMessageToChat === undefined) {
             predefinedValuesComponent.altRollMessageToChat = true;
         }
-        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/label.hbs`, {
+        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/label.hbs`, {
             ...predefinedValuesComponent,
             COMPONENT_SIZES,
             LABEL_STYLES,

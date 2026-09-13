@@ -61,11 +61,7 @@ export default class AttributeBarsDialog extends HandlebarsApplicationMixin((App
             return [attributeBar.name, { value: attributeBar.value, max: attributeBar.max, editable: false }];
         }));
         Logger.debug(`Saving attribute bars for ${this.entity.uuid}`, finalData);
-        for (const barName in this.entity.system.attributeBar) {
-            if (!finalData[barName]) {
-                finalData['-=' + barName] = null;
-            }
-        }
+        // V14: full object replacement deletes missing keys automatically
         await this.entity.update({
             system: {
                 attributeBar: finalData

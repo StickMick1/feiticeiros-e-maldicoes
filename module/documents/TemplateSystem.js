@@ -287,7 +287,8 @@ class TemplateSystem {
                                 catch (err) {
                                     if (err instanceof UncomputableError) {
                                         Logger.debug(`Could not compute active effect ${activeEffect.uuid} (${activeEffect.name} from ${activeEffect.parent?.name})`);
-                                        foundry.utils.setProperty(system.props, '-=' + prop, null);
+                                        // Local object deletion: use delete, not _=- operator
+                                        delete system.props[prop];
                                     }
                                     throw err;
                                 }
@@ -590,15 +591,14 @@ class TemplateSystem {
         });
         const templatePropertySet = new Set(this._getProperties());
         const entityPropertySet = new Set(Object.keys(entityTemplateSystem.entity.system.props).map((prop) => {
-            if (prop.startsWith('==') || prop.startsWith('-=')) {
-                return prop.substring(2);
+            if (prop.startsWith('==') || prop.startsWith('-=') || prop.startsWith('_=-')) {
+                return prop.substring(prop.startsWith('_=-') ? 3 : 2);
             }
             return prop;
         }));
         entityPropertySet.forEach((prop) => {
             if (!templatePropertySet.has(prop)) {
                 delete entityTemplateSystem.entity.system.props[prop];
-                entityTemplateSystem.entity.system.props['-=' + prop] = null;
             }
         });
     }
@@ -721,15 +721,6 @@ class TemplateSystem {
         const template = entityCollection.get(templateId);
         if (!template) {
             throw new Error(`Trying to reload entity with undefined template: ${templateId} - ${this.entity.uuid} - ${this.entity.name}`);
-        }
-        let attributeBars;
-        if (CustomActor.isTemplateActor(template) && CustomActor.isCharacterActor(this.entity)) {
-            attributeBars = { ...template.system.attributeBar };
-            for (const barName in this.entity.system.attributeBar) {
-                if (!attributeBars[barName]) {
-                    attributeBars['-=' + barName] = null;
-                }
-            }
         }
         template.templateSystem.setDefaultValues(this);
         this.entity.sheet.hasBeenRenderedOnce = false;
@@ -962,7 +953,8 @@ class TemplateSystem {
     // Edit status effects actions
     async editStatusEffects() {
         if (CustomActor.isTemplateActor(this.entity)) {
-            const allEffects = CONFIG.statusEffects.map((anEffect) => {
+            // V14: CONFIG.statusEffects is a registry, use Object.values for array-like access
+            const allEffects = Object.values(CONFIG.statusEffects).map((anEffect) => {
                 const newEffect = {
                     ...anEffect,
                     modifiers: [],
@@ -1142,7 +1134,7 @@ class TemplateSystem {
                 value: this.entity.system.props[hiddenAttr.name]
             });
         }
-        const content = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/readAttributes.hbs`, {
+        const content = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/readAttributes.hbs`, {
             attributes
         });
         await new CustomDialogV2({
@@ -1161,7 +1153,7 @@ class TemplateSystem {
     }
     async openAttributeBarsVision() {
         const attributeBars = Object.values(this.entity.system.attributeBar);
-        const content = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/readAttributeBars.hbs`, {
+        const content = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/readAttributeBars.hbs`, {
             attributeBars
         });
         await new CustomDialogV2({
