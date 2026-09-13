@@ -69,7 +69,7 @@ async function expandMfsRoll(ev) {
         if (data) {
             const template_file = `systems/${game.system.id}/templates/chat/chat-roll-tooltip.hbs`;
             // Render explanation template
-            void foundry.applications.api.handlebars.renderTemplate(template_file, { ...data }).then((html) => {
+            void foundry.applications.handlebars.renderTemplate(template_file, { ...data }).then((html) => {
                 // Add last-minute CSS
                 const tooltipWrapper = $(html)[0];
                 const tooltip = tooltipWrapper.children[0];

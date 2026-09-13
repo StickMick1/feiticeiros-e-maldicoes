@@ -268,7 +268,7 @@ class Panel extends Container {
         predefinedValuesComponent.verticalAlign = predefinedValuesComponent.verticalAlign ?? defaultVerticalAlign;
         predefinedValuesComponent.flow = predefinedValuesComponent.flow ?? defaultFlow;
         const mainElt = document.createElement('div');
-        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/panel.hbs`, {
+        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/panel.hbs`, {
             ...predefinedValuesComponent,
             ALIGNMENTS: getLocalizedAlignmentList(true),
             VERTICALALIGNMENTS: getLocalizedVerticalAlignmentList(),

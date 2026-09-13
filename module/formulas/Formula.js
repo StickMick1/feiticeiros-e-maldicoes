@@ -363,7 +363,7 @@ class Formula {
             userInputToken = userInputTokens.next();
         }
         if (allUserVars.length > 0) {
-            let content = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/user-input.hbs`, {
+            let content = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/user-input.hbs`, {
                 allUserVars: allUserVars,
                 appId: foundry.utils.randomID()
             });

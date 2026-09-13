@@ -218,7 +218,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             { value: 'sab', label: 'SAB' },
             { value: 'pre', label: 'PRE' }
         ];
-        return foundry.applications.api.handlebars.renderTemplate(config.templatePath, {
+        return foundry.applications.handlebars.renderTemplate(config.templatePath, {
             dialogTitle: config.dialogTitle,
             entryTypeLabel: config.entryTypeLabel,
             entryTypeLabelLower: config.entryTypeLabelLower,
@@ -1594,7 +1594,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         }
         const actor = this.actor ?? this.document;
         const jujutsu = prepareJujutsuSheetData(actor.system.props ?? {});
-        const content = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-rds-config.hbs`, {
+        const content = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-rds-config.hbs`, {
             rdDefinitions: jujutsu.rdDefinitions
         });
         await new CustomDialogV2({
@@ -2059,7 +2059,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const actor = this.actor ?? this.document;
         const renderDialogContent = async (propsSource = actor.system.props ?? {}) => {
             const currentJujutsu = prepareJujutsuSheetData(propsSource);
-            return foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-resistances-config.hbs`, {
+            return foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-resistances-config.hbs`, {
                 resistanceDefinitions: currentJujutsu.resistanceDefinitions,
                 customResistances: currentJujutsu.props.resistanceConfig?.custom ?? []
             });
@@ -2161,7 +2161,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const actor = this.actor ?? this.document;
         const renderDialogContent = async (propsSource = actor.system.props ?? {}) => {
             const currentJujutsu = prepareJujutsuSheetData(propsSource);
-            return foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-trainings-config.hbs`, {
+            return foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-trainings-config.hbs`, {
                 trainingDefinitions: currentJujutsu.trainingDefinitions,
                 customTrainings: currentJujutsu.props.trainingConfig?.custom ?? []
             });
@@ -2259,7 +2259,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const actor = this.actor ?? this.document;
         const renderDialogContent = async (propsSource = actor.system.props ?? {}) => {
             const currentJujutsu = prepareJujutsuSheetData(propsSource);
-            return foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-characteristics-config.hbs`, {
+            return foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-characteristics-config.hbs`, {
                 characteristicDefinitions: currentJujutsu.characteristicDefinitions,
                 characteristicTypeOptions: currentJujutsu.characteristicTypeOptions,
                 characteristicCategoryOptions: currentJujutsu.characteristicCategoryOptions,

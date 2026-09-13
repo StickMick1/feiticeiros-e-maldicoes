@@ -394,7 +394,7 @@ class DynamicTable extends ExtensibleTable {
                 actionBullet.addClass('context-item');
                 actionBullet.html(`<i class="fas fa-plus-circle"></i>${game.i18n.localize('CSB.ComponentProperties.DynamicTable.AddMultipleRowsDialog.AddMultipleRows')}`);
                 actionBullet.on('click', () => {
-                    void foundry.applications.api.handlebars
+                    void foundry.applications.handlebars
                         .renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/addMultipleRows.hbs`, {
                         appId: foundry.utils.randomID()
                     })
@@ -745,7 +745,7 @@ class DynamicTable extends ExtensibleTable {
             component
         });
         const extensibleSettingsSection = document.createElement('div');
-        extensibleSettingsSection.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/componentExtensibleTableFields.hbs`, {
+        extensibleSettingsSection.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/componentExtensibleTableFields.hbs`, {
             component: component ? this._rowLayout[component.key] : {},
             ALIGNMENT_LIST: getLocalizedAlignmentList(),
             appId: componentSettingsApp.id
@@ -756,7 +756,7 @@ class DynamicTable extends ExtensibleTable {
         readonlyPredefinedLabel.htmlFor = `compReadonlyPredefined-${componentSettingsApp.id}`;
         readonlyPredefinedLabel.textContent = game.i18n.localize('CSB.ComponentProperties.DynamicTable.ReadonlyPredefined');
         const readonlyPredefinedLabelInfo = document.createElement('div');
-        readonlyPredefinedLabelInfo.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/partials/icon-info.hbs`, {
+        readonlyPredefinedLabelInfo.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/partials/icon-info.hbs`, {
             title: game.i18n.localize('CSB.ComponentProperties.DynamicTable.ReadonlyPredefinedInfo')
         });
         readonlyPredefinedLabel.append(readonlyPredefinedLabelInfo.firstChild);
@@ -880,7 +880,7 @@ class DynamicTable extends ExtensibleTable {
         predefinedValuesComponent.canPlayerAdd ??= true;
         predefinedValuesComponent.sortOption ??= TABLE_SORT_OPTION.MANUAL;
         const mainElt = document.createElement('div');
-        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/dynamicTable.hbs`, {
+        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/dynamicTable.hbs`, {
             ...predefinedValuesComponent,
             SORT_OPERATORS,
             appId

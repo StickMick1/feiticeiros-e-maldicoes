@@ -179,7 +179,7 @@ class TabbedPanel extends Container {
     /** Get configuration form for component creation / edition */
     static async getConfigForm(_entity, appId, existingComponent) {
         const mainElt = document.createElement('div');
-        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/tabbed-panel.hbs`, {
+        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/tabbed-panel.hbs`, {
             ...existingComponent,
             appId
         });

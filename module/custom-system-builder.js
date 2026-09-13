@@ -256,17 +256,17 @@ async function initHook() {
         // Helper-functions for handlebars
         Handlebars.registerHelper('eq', (a, b) => a == b);
         // Partials
-        void foundry.applications.api.handlebars
+        void foundry.applications.handlebars
             .getTemplate(`systems/${game.system.id}/templates/_template/partials/icon-formula.hbs`)
             .then((template) => {
             Handlebars.registerPartial('icon-formula', template);
         });
-        void foundry.applications.api.handlebars
+        void foundry.applications.handlebars
             .getTemplate(`systems/${game.system.id}/templates/_template/partials/icon-info.hbs`)
             .then((template) => {
             Handlebars.registerPartial('icon-info', template);
         });
-        void foundry.applications.api.handlebars
+        void foundry.applications.handlebars
             .getTemplate(`systems/${game.system.id}/templates/_template/partials/icon-no-delimiters.hbs`)
             .then((template) => {
             Handlebars.registerPartial('icon-no-delimiters', template);

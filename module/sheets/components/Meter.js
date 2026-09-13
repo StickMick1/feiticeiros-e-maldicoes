@@ -317,7 +317,7 @@ class Meter extends SizedComponent {
     static async getConfigForm(_entity, appId, existingComponent) {
         const mainElt = document.createElement('div');
         const predefinedValuesComponent = { ...existingComponent };
-        mainElt.innerHTML = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/meter.hbs`, {
+        mainElt.innerHTML = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/components/meter.hbs`, {
             ...predefinedValuesComponent,
             COMPONENT_SIZES,
             METER_TEXT_OPTIONS,

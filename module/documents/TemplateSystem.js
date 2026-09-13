@@ -1134,7 +1134,7 @@ class TemplateSystem {
                 value: this.entity.system.props[hiddenAttr.name]
             });
         }
-        const content = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/readAttributes.hbs`, {
+        const content = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/readAttributes.hbs`, {
             attributes
         });
         await new CustomDialogV2({
@@ -1153,7 +1153,7 @@ class TemplateSystem {
     }
     async openAttributeBarsVision() {
         const attributeBars = Object.values(this.entity.system.attributeBar);
-        const content = await foundry.applications.api.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/readAttributeBars.hbs`, {
+        const content = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/_template/dialogs/readAttributeBars.hbs`, {
             attributeBars
         });
         await new CustomDialogV2({

@@ -45,7 +45,7 @@ export const postAugmentedChatMessage = async (textContent, msgOptions, { messag
     for (const key in values) {
         let formattedValue = String(values[key].result);
         if (values[key].explanation) {
-            formattedValue = await foundry.applications.api.handlebars.renderTemplate(template_file, {
+            formattedValue = await foundry.applications.handlebars.renderTemplate(template_file, {
                 rollData: values[key],
                 jsonRollData: JSON.stringify(values[key]).replaceAll(/\[\[/g, '[').replaceAll(/\]\]/g, ']'),
                 messageMode: messageMode
@@ -66,7 +66,7 @@ export const postAugmentedChatMessage = async (textContent, msgOptions, { messag
         }
     }
     phrase = phrase.replaceAll(/\n/g, '').trim();
-    const diceGroupsRendered = await foundry.applications.api.handlebars.renderTemplate(template_file_groups, {
+    const diceGroupsRendered = await foundry.applications.handlebars.renderTemplate(template_file_groups, {
         dice: diceGroups,
         multipleDice: diceGroups.filter((group) => !group.hidden).length > 1,
         messageMode
