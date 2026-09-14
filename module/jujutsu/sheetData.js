@@ -927,6 +927,7 @@ export const createJujutsuDefaultProps = () => {
         attackBonuses,
         savingThrows,
         movement: '9m',
+        movementBonus: 0,
         specializationCd: {
             base: 10,
             attribute: 'des',
@@ -1578,6 +1579,12 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
                 integridade: {
                     ...integridadeDisplay
                 }
+            },
+            movement: {
+                base: 9,
+                bonus: n(props.movementBonus),
+                total: 9 + n(props.movementBonus),
+                display: `${9 + n(props.movementBonus)}m`
             }
         },
         deathSuccesses,

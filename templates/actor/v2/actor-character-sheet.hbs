@@ -73,7 +73,17 @@
                             <div class='jj-lozenge-label'>Iniciativa</div>
                         </div>
                         <div class='jj-lozenge'>
-                            <div class='jj-lozenge-value'>{{jujutsu.props.movement}}</div>
+                            {{#if editable}}
+                            <button
+                                type='button'
+                                class='jj-lozenge-value jj-lozenge-value--button'
+                                data-action='configureJujutsuMovement'
+                                data-tooltip='Editar deslocamento'
+                                aria-label='Editar deslocamento'
+                            >{{jujutsu.computed.movement.display}}</button>
+                            {{else}}
+                            <div class='jj-lozenge-value'>{{jujutsu.computed.movement.display}}</div>
+                            {{/if}}
                             <div class='jj-lozenge-label'>Desloc.</div>
                         </div>
                         <div class='jj-lozenge'>

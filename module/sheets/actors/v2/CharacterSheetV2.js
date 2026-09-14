@@ -62,7 +62,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             configureJujutsuRds: CharacterSheetV2.configureJujutsuRds,
             configureJujutsuResistances: CharacterSheetV2.configureJujutsuResistances,
             configureJujutsuTrainings: CharacterSheetV2.configureJujutsuTrainings,
-            configureJujutsuCharacteristics: CharacterSheetV2.configureJujutsuCharacteristics
+            configureJujutsuCharacteristics: CharacterSheetV2.configureJujutsuCharacteristics,
+            configureJujutsuMovement: CharacterSheetV2.configureJujutsuMovement
         }
     };
     static PARTS = {
@@ -1638,6 +1639,70 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             },
             window: {
                 title: 'Configurar Redução de Danos (RDs)'
+            }
+        }).render({ force: true });
+    }
+    static async configureJujutsuMovement(_event, _target) {
+        const actor = this.actor ?? this.document;
+        if (!this.isEditable || !actor?.isOwner) {
+            return;
+        }
+        if (game.settings.get(game.system.id, 'manualEntitySaving') && this?.actor?.templateSystem?.isModified) {
+            await this.submit();
+        }
+        const jujutsu = prepareJujutsuSheetData(actor.system.props ?? {});
+        const content = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/templates/actor/v2/dialogs/jujutsu-movement-config.hbs`, {
+            movement: jujutsu.computed.movement
+        });
+        await new CustomDialogV2({
+            modal: true,
+            content,
+            buttons: {
+                save: {
+                    default: true,
+                    icon: 'fa-solid fa-save',
+                    label: 'Salvar'
+                },
+                cancel: {
+                    icon: 'fa-solid fa-xmark',
+                    label: 'Cancelar'
+                }
+            },
+            submit: async (result, _submitEvent, _button, dialog) => {
+                if (result !== 'save')
+                    return;
+                const form = dialog.querySelector('form');
+                if (!form)
+                    return;
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    ui.notifications?.warn?.('Informe um bônus numérico válido.');
+                    throw new Error('Bônus inválido');
+                }
+                const input = form.querySelector('input[name="movementBonus"]');
+                if (!input) {
+                    ui.notifications?.warn?.('Campo de bônus não encontrado.');
+                    throw new Error('Bônus inválido');
+                }
+                const bonusRaw = input.value?.trim() ?? '';
+                const bonus = bonusRaw === '' ? 0 : input.valueAsNumber;
+                if (!Number.isFinite(bonus) || input.validity?.badInput) {
+                    ui.notifications?.warn?.('Bônus inválido: insira um número finito.');
+                    throw new Error('Bônus inválido');
+                }
+                if (!this.isEditable || !actor?.isOwner) {
+                    return;
+                }
+                await actor.update({
+                    'system.props.movementBonus': bonus
+                });
+            },
+            position: {
+                width: 380,
+                height: 'auto'
+            },
+            window: {
+                title: 'Configurar Deslocamento'
             }
         }).render({ force: true });
     }

@@ -2038,6 +2038,28 @@
     text-transform: uppercase;
 }
 
+.jj-sheet .jj-lozenge-value--button {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    color: var(--jj-text);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+    height: auto;
+    min-height: 0;
+    cursor: pointer;
+    text-shadow: none;
+}
+
+.jj-sheet .jj-lozenge-value--button:hover {
+    color: var(--jj-gold-soft);
+}
+
 .jj-abilities {
     display: grid;
     gap: 4px 2px;
@@ -3097,6 +3119,32 @@
 .jj-rd-config input[type='number']:disabled {
     cursor: not-allowed;
     opacity: 0.55;
+}
+
+.jj-rd-config-row[data-movement-base] {
+    opacity: 0.7;
+}
+.jj-rd-config-row[data-movement-base] .jj-rd-config-code {
+    background: var(--jj-card);
+    color: var(--jj-muted);
+}
+.jj-movement-base-value {
+    color: var(--jj-muted);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+}
+.jj-rd-config-row[data-movement-total] {
+    background: var(--jj-panel-2);
+    border-color: var(--jj-edge-strong);
+}
+.jj-movement-total-value {
+    color: var(--jj-gold);
+    font-family: 'JJRobotoCondensed', Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
 }
 
 .jj-characteristics-config-toolbar {
