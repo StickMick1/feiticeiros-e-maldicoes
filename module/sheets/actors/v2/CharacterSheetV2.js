@@ -326,6 +326,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const getValue = (name) => String(form?.querySelector?.(`[name='${name}']`)?.value ?? '').trim();
         const getNumber = (name) => CharacterSheetV2._toSafeNumber(getValue(name), 0);
         const entryId = String(source?.id ?? '').trim() || foundry.utils.randomID?.() || `${config.rowType}-${Date.now()}`;
+        const macroCode = form?.querySelector?.('[name="macroCode"]')?.value ?? '';
         if (config.rowType === 'attack') {
             const hasRoll = !!form?.querySelector?.(`[name='hasRoll']`)?.checked;
             const rollDie = getValue('rollDie').toLowerCase();
@@ -349,7 +350,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 range: getValue('range'),
                 properties: getValue('properties'),
                 description: getValue('description'),
-                observations: getValue('observations')
+                observations: getValue('observations'),
+                macroCode
             };
         }
         if (config.rowType === 'inventory') {
@@ -377,7 +379,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 rollDie: hasRoll && ['d4', 'd6', 'd8', 'd10', 'd12', 'd20'].includes(rollDie) ? rollDie : '',
                 rollCount: hasRoll ? Math.max(1, Math.trunc(getNumber('rollCount') || 1)) : 1,
                 rollBonus: hasRoll ? Math.trunc(getNumber('rollBonus') || 0) : 0,
-                rollAttribute: hasRoll && ['for', 'des', 'con', 'int', 'sab', 'pre'].includes(rollAttribute) ? rollAttribute : ''
+                rollAttribute: hasRoll && ['for', 'des', 'con', 'int', 'sab', 'pre'].includes(rollAttribute) ? rollAttribute : '',
+                macroCode
             };
         }
         if (config.rowType === 'invocationSkill') {
@@ -411,7 +414,8 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             rollFormula: hasRoll ? getValue('rollFormula') : '',
             damageFormula: hasRoll ? getValue('damageFormula') : '',
             description: getValue('description'),
-            observations: getValue('observations')
+            observations: getValue('observations'),
+            macroCode
         };
     }
     static async _openJujutsuRowDialog({ actor, sheet, config, entry, title, onSave }) {
@@ -662,6 +666,72 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
     }
     static _toBoolean(value) {
         return value === true || value === 'true' || value === 'on' || value === 1 || value === '1';
+    }
+    static _macroConsentCache = new Map();
+    static async _executeEntryMacroCode(entry, context) {
+        const macroCode = typeof entry?.macroCode === 'string' ? entry.macroCode : '';
+        if (!macroCode.trim()) return;
+        try {
+            const user = game.user;
+            const actor = context.actor;
+            if (!actor?.isOwner) return;
+            if (!user.can('MACRO_SCRIPT')) {
+                ui.notifications?.warn?.('Permissão MACRO_SCRIPT ausente; script ignorado. Rolagem mantida.');
+                return;
+            }
+            const userId = user.id;
+            let token = null;
+            if (globalThis.canvas?.ready) {
+                token = actor.token?.object
+                    ?? globalThis.canvas.tokens?.controlled?.find((t) => t.actor?.uuid === actor.uuid)
+                    ?? actor.getActiveTokens?.()?.[0]
+                    ?? null;
+            }
+            const targets = Array.from(user.targets ?? []);
+            const macro = new foundry.documents.Macro.implementation({
+                name: 'Efeito: ' + (entry?.name ?? 'Entry'),
+                type: 'script',
+                command: macroCode,
+                author: userId,
+                ownership: { [userId]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER }
+            });
+            if (!macro.canExecute) {
+                ui.notifications?.warn?.('Código pós-rolagem (JB2A) não autorizado; rolagem mantida.');
+                return;
+            }
+            const cacheKey = JSON.stringify([userId, actor.uuid, entry.id]);
+            if (CharacterSheetV2._macroConsentCache.get(cacheKey) !== macroCode) {
+                const confirmed = await foundry.applications.api.DialogV2.confirm({
+                    window: { title: 'Executar código pós-rolagem (JB2A)' },
+                    content: `<div style="line-height:1.4;">
+                        <p><strong>Aviso:</strong> Este código roda com <em>suas permissões</em> (não há sandbox). Aprovação vale apenas para esta sessão e este código exato.</p>
+                        <p>Recusar <strong>não</strong> desfaz a rolagem.</p>
+                        <pre style="max-height:240px;overflow:auto;white-space:pre-wrap;">${foundry.utils.escapeHTML(macroCode)}</pre>
+                    </div>`,
+                    yes: { label: 'Executar', default: false },
+                    no: { label: 'Cancelar', default: true },
+                    modal: true,
+                    rejectClose: false
+                });
+                if (confirmed !== true) return;
+                CharacterSheetV2._macroConsentCache.set(cacheKey, macroCode);
+            }
+            if (game.user.id !== userId) return;
+            if (!actor.isOwner || !game.user.can('MACRO_SCRIPT') || !macro.canExecute) return;
+            await macro.execute({
+                actor,
+                token,
+                speaker: context.speaker,
+                entry,
+                roll: context.roll ?? null,
+                damageRoll: context.damageRoll ?? null,
+                targets
+            });
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err ?? 'Erro desconhecido');
+            Logger.warn?.(`Erro ao executar macroCode de ${entry?.name}: ${msg}`);
+            ui.notifications?.error?.(`Falha ao executar código JB2A: ${msg}`);
+        }
     }
     static _getJujutsuTableRows(props, tablePath) {
         const rawRows = foundry.utils.getProperty(props ?? {}, tablePath);
@@ -1192,30 +1262,32 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 }
             }
         });
+        let damageRoll = null;
         const damageFormula = String(attack.damage ?? '').trim();
-        if (!damageFormula)
-            return attackRoll;
-        try {
-            const damageRoll = new Roll(damageFormula);
-            await damageRoll.evaluate({ async: true });
-            await damageRoll.toMessage({
-                speaker,
-                flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Ataque')}<p><strong>Dano</strong></p>`,
-                flags: {
-                    [game.system.id]: {
-                        jujutsuDamage: {
-                            amount: Math.max(0, Math.trunc(CharacterSheetV2._toSafeNumber(damageRoll.total, 0)))
+        if (damageFormula) {
+            try {
+                damageRoll = new Roll(damageFormula);
+                await damageRoll.evaluate({ async: true });
+                await damageRoll.toMessage({
+                    speaker,
+                    flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Ataque')}<p><strong>Dano</strong></p>`,
+                    flags: {
+                        [game.system.id]: {
+                            jujutsuDamage: {
+                                amount: Math.max(0, Math.trunc(CharacterSheetV2._toSafeNumber(damageRoll.total, 0)))
+                            }
                         }
                     }
-                }
-            });
-            return attackRoll;
+                });
+            }
+            catch (error) {
+                const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
+                ui.notifications.error(`Não foi possível rolar o dano de ${attack.name}: ${message}`);
+                return attackRoll;
+            }
         }
-        catch (error) {
-            const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
-            ui.notifications.error(`Não foi possível rolar o dano de ${attack.name}: ${message}`);
-            return attackRoll;
-        }
+        await CharacterSheetV2._executeEntryMacroCode(attack, { actor, speaker, roll: attackRoll, damageRoll });
+        return attackRoll;
     }
     static async useJujutsuTableFeature(actorOrUuid, { tableKey = '', rowId = null, rowIndex = -1 } = {}) {
         const actor = typeof actorOrUuid === 'string' ? await fromUuid(actorOrUuid) : actorOrUuid;
@@ -1260,11 +1332,13 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
         const subtitle = normalizedTableKey === 'spells'
             ? `Feitiço • Nível ${CharacterSheetV2._toSafeNumber(entry.level, 0)}`
             : CharacterSheetV2._getJujutsuTableLabel(normalizedTableKey);
+        let roll = null;
+        let damageRoll = null;
         if (entry.hasRoll) {
             const formula = CharacterSheetV2._buildJujutsuConfiguredRollFormula(entry, actor);
             if (formula) {
                 try {
-                    const roll = await new Roll(formula).evaluate({ async: true });
+                    roll = await new Roll(formula).evaluate({ async: true });
                     const criticalState = CharacterSheetV2._getD20CriticalState(roll);
                     const isHitRoll = CharacterSheetV2._isSingleD20Roll(roll);
                     const criticalText = criticalState === 'success'
@@ -1292,7 +1366,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                     });
                     const damageFormula = String(entry.damageFormula ?? '').trim();
                     if (damageFormula) {
-                        const damageRoll = await new Roll(damageFormula).evaluate({ async: true });
+                        damageRoll = await new Roll(damageFormula).evaluate({ async: true });
                         await damageRoll.toMessage({
                             speaker,
                             flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(entry, subtitle)}<p><strong>Dano/Efeito</strong></p>`,
@@ -1308,7 +1382,6 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                             messageMode: game.settings.get('core', 'messageMode')
                         });
                     }
-                    return roll;
                 }
                 catch (error) {
                     const message = error instanceof Error ? error.message : String(error ?? 'Erro desconhecido');
@@ -1317,11 +1390,14 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 }
             }
         }
-        await foundry.documents.ChatMessage.implementation.create({
-            speaker,
-            content: `${CharacterSheetV2._buildJujutsuItemChatHeader(entry, subtitle)}<p>${description}</p>${costLine}`
-        });
-        return entry;
+        if (!roll) {
+            await foundry.documents.ChatMessage.implementation.create({
+                speaker,
+                content: `${CharacterSheetV2._buildJujutsuItemChatHeader(entry, subtitle)}<p>${description}</p>${costLine}`
+            });
+        }
+        await CharacterSheetV2._executeEntryMacroCode(entry, { actor, speaker, roll, damageRoll });
+        return roll ?? entry;
     }
     static async rollJujutsuInventoryItem(actorOrUuid, { rowId = null, rowIndex = -1 } = {}) {
         const actor = typeof actorOrUuid === 'string' ? await fromUuid(actorOrUuid) : actorOrUuid;
@@ -1365,8 +1441,9 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
             formulaParts.push(`- ${Math.abs(attributeMod)}`);
         const roll = await new Roll(formulaParts.join(' ')).evaluate({ async: true });
         const criticalState = CharacterSheetV2._getD20CriticalStateWithThreshold(roll, entry?.critMin);
+        const speaker = foundry.documents.ChatMessage.implementation.getSpeaker({ actor });
         await roll.toMessage({
-            speaker: foundry.documents.ChatMessage.implementation.getSpeaker({ actor }),
+            speaker,
             flavor: `${entry?.name || 'Item'} • Rolagem de inventário`,
             flags: {
                 [game.system.id]: {
@@ -1377,6 +1454,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 }
             }
         });
+        await CharacterSheetV2._executeEntryMacroCode(entry, { actor, speaker, roll, damageRoll: null });
         return roll;
     }
     static async createJujutsuTableMacro(dropData, slot) {
@@ -3048,9 +3126,10 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 }
             }
         });
+        let damageRoll = null;
         const damageFormula = String(attack.damage ?? '').trim();
         if (damageFormula) {
-            const damageRoll = await new Roll(damageFormula).evaluate({ async: true });
+            damageRoll = await new Roll(damageFormula).evaluate({ async: true });
             await damageRoll.toMessage({
                 speaker,
                 flavor: `${CharacterSheetV2._buildJujutsuItemChatHeader(attack, attack.weapon || attack.type || 'Arma do inventário')}<p><strong>Dano</strong></p>`,
@@ -3063,6 +3142,7 @@ export class CharacterSheetV2 extends CustomActorSheetV2 {
                 }
             });
         }
+        await CharacterSheetV2._executeEntryMacroCode(attack, { actor: this.actor, speaker, roll: attackRoll, damageRoll });
     }
     async _useJujutsuTableFeature(tableKey, rowIndex) {
         await CharacterSheetV2.useJujutsuTableFeature(this.actor, { tableKey, rowIndex });

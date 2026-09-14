@@ -1,0 +1,1 @@
+Guia oficial movido para `docs/macros-jb2a.md`. Este arquivo foi substituído.

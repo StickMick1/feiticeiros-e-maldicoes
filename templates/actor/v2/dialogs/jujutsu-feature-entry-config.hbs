@@ -92,5 +92,10 @@
             <span>Observações</span>
             <textarea name='observations' rows='2'>{{entry.observations}}</textarea>
         </label>
+        <label class='jj-characteristics-custom-field jj-characteristics-custom-field--wide'>
+            <span>Código JavaScript — após rolagem/uso</span>
+            <textarea name='macroCode' rows='6' spellcheck='false'>{{entry.macroCode}}</textarea>
+            <small class='jj-characteristics-custom-help'>JS async opcional (não é fórmula). Disponíveis: actor, token, entry, roll, damageRoll, targets. Requer módulos de animação (Sequencer/JB2A) ativos e arquivos de efeito instalados.</small>
+        </label>
     </div>
 </form>

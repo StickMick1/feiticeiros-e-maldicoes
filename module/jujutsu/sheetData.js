@@ -478,6 +478,7 @@ const normalizeAttackTableEntry = (entry, index = 0) => {
         if (rollAttributeLabel)
             rollLabelParts.push(`+${rollAttributeLabel}`);
     }
+    const macroCode = typeof entry?.macroCode === 'string' ? entry.macroCode : '';
     return {
         id: normalizeJujutsuTableEntryId(entry?.id ?? name, 'attack-entry', index),
         name,
@@ -499,7 +500,8 @@ const normalizeAttackTableEntry = (entry, index = 0) => {
         range: cleanText(entry?.range),
         properties: cleanText(entry?.properties),
         description: cleanText(entry?.description),
-        observations: cleanText(entry?.observations)
+        observations: cleanText(entry?.observations),
+        macroCode
     };
 };
 
@@ -528,6 +530,7 @@ const normalizeFeatureTableEntry = (entry, index = 0, prefix = 'feature-entry', 
                 rollLabelParts.push(`+${rollAttributeLabel}`);
         }
     }
+    const macroCode = typeof entry?.macroCode === 'string' ? entry.macroCode : '';
     return {
         id: normalizeJujutsuTableEntryId(entry?.id ?? name, prefix, index),
         name,
@@ -547,7 +550,8 @@ const normalizeFeatureTableEntry = (entry, index = 0, prefix = 'feature-entry', 
         damageFormula,
         rollLabel: rollLabelParts.join(' '),
         description: cleanText(entry?.description),
-        observations: cleanText(entry?.observations)
+        observations: cleanText(entry?.observations),
+        macroCode
     };
 };
 
@@ -578,6 +582,7 @@ const normalizeInventoryTableEntry = (entry, index = 0) => {
         if (rollAttributeLabel)
             rollLabelParts.push(`+${rollAttributeLabel}`);
     }
+    const macroCode = typeof entry?.macroCode === 'string' ? entry.macroCode : '';
     return {
         id: normalizeJujutsuTableEntryId(entry?.id ?? name, 'inventory-entry', index),
         name,
@@ -599,7 +604,8 @@ const normalizeInventoryTableEntry = (entry, index = 0) => {
         rollBonus,
         rollAttribute,
         rollAttributeLabel,
-        rollLabel: rollLabelParts.join(' ')
+        rollLabel: rollLabelParts.join(' '),
+        macroCode
     };
 };
 
@@ -831,7 +837,8 @@ export const createJujutsuTableRow = (type) => {
             rollDie: '',
             rollCount: 1,
             rollBonus: 0,
-            rollAttribute: ''
+            rollAttribute: '',
+            macroCode: ''
         }, 0);
     }
     if (type === 'maximumTechnique') {
@@ -1308,7 +1315,8 @@ export const prepareJujutsuSheetData = (sourceProps = {}) => {
         range: item.range,
         properties: 'Gerado pelo inventário',
         description: item.rollLabel ? `Rolagem do item: ${item.rollLabel}` : '',
-        observations: 'Ataque derivado de item equipado no inventário.'
+        observations: 'Ataque derivado de item equipado no inventário.',
+        macroCode: typeof item.macroCode === 'string' ? item.macroCode : ''
     }, index));
 
     const defenseDex = getAttrMod('des');
