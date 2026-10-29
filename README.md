@@ -1,12 +1,11 @@
 # Feiticeiros e Maldições (Foundry VTT) — `sorcerers-and-curses`
 
 Sistema/ficha customizada para campanha de **Feiticeiros e Maldições** no Foundry VTT.
-Sistema independente (fork do `custom-system-builder`), id **`sorcerers-and-curses`**,
-compatível com Foundry V14.
+Sistema independente, id **`sorcerers-and-curses`**, com compatibilidade declarada para Foundry V14.
 
 > **Migrando um mundo existente?** Veja [docs/migration.md](docs/migration.md) —
-> troca do ID de sistema é manual e feita uma vez; a migração de runtime retém
-> settings e flags existentes.
+> o fluxo foi corrigido no código e precisa de confirmação em uma cópia do
+> mundo antes de uso.
 
 ## O que já está implementado
 
@@ -69,3 +68,10 @@ compatível com Foundry V14.
 
 - As automações de chat dependem de token selecionado no canvas para aplicar dano/verificar acerto.
 - Em caso de atualização de código local, faça `Ctrl+F5` no navegador para limpar cache de frontend.
+
+## Distribuição e licenças
+
+A preparação do lançamento está registrada em [docs/release-audit.md](docs/release-audit.md).
+A instalação pública por manifesto depende da publicação de uma release própria.
+Consulte [LICENSE](LICENSE) e [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) para
+os termos do código herdado e as pendências de licenciamento dos demais recursos.

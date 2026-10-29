@@ -505,8 +505,8 @@
             "TemplateModifiers": "Шаблонные модификаторы"
         },
         "ProgressBar": {
-            "ReloadingTemplates": "CSB: Загруженно {NAME} ({UUID}); {CURRENT} / {MAX}",
-            "ReloadingTemplatesFinished": "CSB: Перезагрузка шаблонов документов завершена; перезагружено {MAX} документов"
+            "ReloadingTemplates": "Sorcerers and Curses: Загруженно {NAME} ({UUID}); {CURRENT} / {MAX}",
+            "ReloadingTemplatesFinished": "Sorcerers and Curses: Перезагрузка шаблонов документов завершена; перезагружено {MAX} документов"
         },
         "ReloadTemplates": {
             "ActorsInGameDirectory": "Элементы, связанные с актерами в библиотеках",

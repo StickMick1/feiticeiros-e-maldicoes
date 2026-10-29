@@ -60,9 +60,10 @@ export default class CustomItem extends Item {
      * @type {number}
      */
     static MAX_DEPTH = 5;
-    static EMBEDDED_ITEMS_FOLDER_NAME = 'CSB - Embedded Items Folder - DO NOT RENAME OR REMOVE';
+    static EMBEDDED_ITEMS_FOLDER_NAME = 'Sorcerers and Curses - Embedded Items - DO NOT RENAME OR REMOVE';
     static getEmbeddedItemsFolder(warnIfNotFound = true) {
-        const folder = game.items.folders.getName(this.EMBEDDED_ITEMS_FOLDER_NAME);
+        const folder = game.items.folders.getName(this.EMBEDDED_ITEMS_FOLDER_NAME)
+            ?? game.items.folders.getName('CSB - Embedded Items Folder - DO NOT RENAME OR REMOVE');
         if (!folder && warnIfNotFound) {
             ui.notifications.warn(game.i18n.format('CSB.UserMessages.EmbeddedItemsFolderNotFound', {
                 EMBEDDED_ITEMS_FOLDER_NAME: this.EMBEDDED_ITEMS_FOLDER_NAME
@@ -156,7 +157,7 @@ export default class CustomItem extends Item {
      * @deprecated
      */
     get isTemplate() {
-        Logger.warn('isTemplate getter is deprecated, and will be removed in CSB 6.0.0 - FoundryVTT 14. Please use the following functions instead : CustomItem.isEquippableItem ; CustomItem.isEquippableItemTemplate ; CustomItem.isSubTemplate ; CustomItem.isUserInputTemplate ; CustomItem.isActiveEffectContainer ; CustomItem.isTemplateItem.');
+        Logger.warn('isTemplate getter is deprecated. Please use the following functions instead: CustomItem.isEquippableItem ; CustomItem.isEquippableItemTemplate ; CustomItem.isSubTemplate ; CustomItem.isUserInputTemplate ; CustomItem.isActiveEffectContainer ; CustomItem.isTemplateItem.');
         return this.isSubTemplate() || this.isUserInputTemplate() || this.isEquippableItemTemplate();
     }
     /**
@@ -170,7 +171,7 @@ export default class CustomItem extends Item {
      * @deprecated
      */
     get entity() {
-        Logger.warn(`${this.uuid}: entity.entity is now deprecated, since entity already is the Item. please change all the "entity.entity" in your script for just "entity". This will be removed in CSB 7.0.0 - FoundryVTT 15`);
+        Logger.warn(`${this.uuid}: entity.entity is deprecated, since entity already is the Item. Please change all the "entity.entity" in your script to "entity".`);
         return this;
     }
     /**

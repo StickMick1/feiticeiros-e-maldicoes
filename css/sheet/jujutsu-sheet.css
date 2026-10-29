@@ -245,14 +245,46 @@
 
 .jj-badge--number {
     align-content: center;
-    background: url('../../import-items/ui/level-badge.webp') center / contain no-repeat !important;
+    background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
     justify-items: center;
     min-height: 92px;
     overflow: visible;
     padding: 0;
+    position: relative;
     text-align: center;
+}
+
+/* Original CSS seals: decoration stays behind editable values and focus rings. */
+.jj-badge--number,
+.jj-portrait-badge {
+    --jj-seal-inset: 4px 22px;
+    isolation: isolate;
+}
+
+.jj-badge--number::before,
+.jj-badge--number::after,
+.jj-portrait-badge::before,
+.jj-portrait-badge::after {
+    background: var(--jj-edge-strong);
+    clip-path: polygon(18% 0, 82% 0, 100% 18%, 100% 82%, 82% 100%, 18% 100%, 0 82%, 0 18%);
+    content: '';
+    inset: var(--jj-seal-inset);
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+}
+
+.jj-badge--number::after,
+.jj-portrait-badge::after {
+    background: linear-gradient(145deg, #323039, #15171e);
+    scale: 0.92;
+}
+
+.jj-badge--number input:focus-visible {
+    outline: 2px solid var(--jj-gold-soft);
+    outline-offset: 2px;
 }
 
 .jj-badge--number input {
@@ -1982,8 +2014,9 @@
 }
 
 .jj-portrait-badge {
+    --jj-seal-inset: 0;
     align-items: center;
-    background: url('../../import-items/ui/level-badge.webp') center / contain no-repeat;
+    background: transparent;
     bottom: -6px;
     display: flex;
     height: 74px;
@@ -2012,11 +2045,29 @@
 
 .jj-lozenge {
     align-content: center;
-    background: url('../../import-items/ui/lozenge.svg') no-repeat center / 100% 100%;
+    background: transparent;
     display: grid;
+    isolation: isolate;
     min-height: 68px;
     padding: 6px 8px 10px;
+    position: relative;
     text-align: center;
+}
+
+.jj-lozenge::before,
+.jj-lozenge::after {
+    background: var(--jj-edge-strong);
+    clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+}
+
+.jj-lozenge::after {
+    background: var(--jj-panel-2);
+    inset: 1px;
 }
 
 .jj-lozenge-value {
@@ -2060,6 +2111,11 @@
     color: var(--jj-gold-soft);
 }
 
+.jj-sheet .jj-lozenge-value--button:focus-visible {
+    outline: 2px solid var(--jj-gold-soft);
+    outline-offset: 3px;
+}
+
 .jj-abilities {
     display: grid;
     gap: 4px 2px;
@@ -2084,10 +2140,19 @@
 }
 
 .jj-ability-card::before {
-    background: url('../../import-items/ui/ability-score-tab-dark.svg') no-repeat center top / 100% 100%;
+    background: var(--jj-panel-2);
+    border: 1px solid var(--jj-edge);
+    border-top: 2px solid var(--jj-edge-strong);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px));
     content: '';
     inset: 0;
+    pointer-events: none;
     position: absolute;
+}
+
+.jj-ability-card input:focus-visible {
+    outline: 2px solid var(--jj-gold-soft);
+    outline-offset: 1px;
 }
 
 .jj-ability-card > h3 {

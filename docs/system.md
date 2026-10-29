@@ -8,7 +8,7 @@ dependências e riscos conhecidos.
 
 ## 1. Propósito
 
-Sistema independente de Foundry VTT (fork do **Custom System Builder**), id
+Sistema independente de Foundry VTT, id
 `sorcerers-and-curses`, customizado para a campanha brasileira
 **"Feiticeiros e Maldições"** (inspirada em Jujutsu Kaisen). A customização é
 majoritariamente a ficha em português "Jujutsu", implementada em
@@ -18,8 +18,8 @@ majoritariamente a ficha em português "Jujutsu", implementada em
 **Compatibilidade:** Foundry V14 (em `system.json`: `minimum: "14"`,
 `verified: "14.367"`, `maximum: "14"`).
 
-> **Migração de mundos `custom-system-builder` → `sorcerers-and-curses`:**
-> ver `docs/migration.md`.
+> **Migração de mundos existentes:** ver `docs/migration.md`; o fluxo corrigido
+> no código precisa ser confirmado em uma cópia do mundo.
 
 ---
 
@@ -33,7 +33,7 @@ module/              Código do sistema
 templates/           Handlebars (actor, item, chat, settings, _template)
 css/                 Folhas de estilo (top-level genéricas + sheet/)
 img/                 Imagens (bg-jujutsu-1.jpg, logos SVG)
-import-items/        Fonte de dados de exemplos (fonts/, ui/)
+import-items/        Fontes locais (fonts/)
 lang/                Localização (de/en/fr/ru — SEM pt-BR)
 lib/                 deep-diff.min.js(.map), math.js(.map)
 README.md            Visão geral da ficha em português
@@ -41,15 +41,15 @@ README.md            Visão geral da ficha em português
 
 **Ordem de carregamento:** `lib/math.js` e `lib/deep-diff.min.js` são scripts
 clássicos globais declarados em `system.json` (`scripts`) e carregados antes
-do entry point ES-module `module/custom-system-builder.js` (declarado em
+do entry point ES-module `module/sorcerers-and-curses.js` (declarado em
 `esmodules`); eles não são importados pelo entry module. Dentro do módulo:
 `ComputablePhrase` → `ComponentFactory` → `migrationHandler` → `exports`
 (import/export) → classes de documento (documents/) → sheets (v1 e v2) →
 Fórmulas → componentes genéricos → código da campanha Jujutsu → hooks do
 Foundry (o hook principal de init registra sheets, settings e apps).
 
-Não existe `template.json` (esperado no V13 — os data models vivem em
-`module/documents/model/*.js`).
+Não existe `template.json`: os modelos de dados são definidos em
+`module/documents/model/*.js` e registrados durante a inicialização.
 
 ---
 
@@ -77,7 +77,7 @@ Data models V13 em `module/documents/model/`: `actorModel.js`, `baseModels.js`,
 
 ### 3.2 Inicialização, settings e apps
 
-- Registro de sheets e apps no hook de init em `module/custom-system-builder.js`.
+- Registro de sheets e apps no hook de init em `module/sorcerers-and-curses.js`.
 - Apps de configuração (`module/applications/`): `AttributeBarsDialog`,
   `ComponentSettingsApplication`, `CustomDialogV2`,
   `CustomStatusEffectsApplication`, `DisplaySettingsDialog`,
@@ -245,10 +245,11 @@ texto de formulário, chips). Fallbacks: `serif` / `Arial, sans-serif`.
 Fonte de formulário padrão 0.85rem; labels 0.6–0.78rem com
 `letter-spacing` e `text-transform: uppercase`.
 
-**Texturas (em `import-items/ui/`):** `texture1.webp`, `texture-gray1.webp`,
-`texture-gray2.webp` (fundos de cards/painéis), `notable-left-corner.svg`
-/ `notable-right-corner.svg` (cantos de painel), `level-badge.webp`
-(emblema de nível).
+**Ornamentos em código:** os emblemas de nível, indicadores e molduras de
+atributo são desenhados por CSS em `jujutsu-sheet.css`, com pseudo-elementos e
+formas geométricas originais. Os oito recursos gráficos de `import-items/ui/`
+foram retirados. As texturas e os cantos removidos não tinham consumidores em
+tempo de execução; as fontes de `import-items/fonts/` permanecem.
 
 **Layout base do sheet:** `.jj-sheet` é grid `320px minmax(0,1fr)`; classes:
 `.jj-span-2` (linha inteira), `.jj-layout` (wrapper por aba, mesmo grid),
@@ -341,9 +342,9 @@ registro), **760px** (tags, lozenges, derived, death-track, training-board),
 - **R3 — Arquivos grandes/acoplados:** `CharacterSheetV2.js` (~3622 linhas,
   domínio de ficha inteiro) e `jujutsu-sheet.css` (3462 linhas). Alterar com
   cuidado; mudanças em um frequentemente exigem o outro.
-- **R4 — ~~Manifest upstream divergente~~ (resolvido):** `system.json` apontava
-  `url`, `manifest` e `download` para o GitLab upstream do Custom System
-  Builder; removidos no fork independente (sem URL de release própria ainda).
+- **R4 — Distribuição pública incompleta:** `url` e `bugs` apontam para o
+  repositório atual. Ainda faltam uma release própria com ZIP público e os
+  respectivos campos `manifest` e `download`; não publicar links fictícios.
 - **R5 — Variáveis CSS indefinidas:** `--jj-label-font`, `--jj-heading-font`,
   `--jj-ink-light`, `--jj-heading` são consumidas (inventário) mas nunca
   declaradas em `.jj-sheet`.
@@ -357,6 +358,14 @@ registro), **760px** (tags, lozenges, derived, death-track, training-board),
   validação é manual/orquestrador.
 
 ---
+
+- **R9 — Migração de namespace:** a revisão corrigiu o acesso a configurações
+  persistidas e a remoção de flags. A confirmação em Foundry continua pendente;
+  o fluxo não tem transação global nem cobre compêndios ou atores sintéticos.
+  Detalhes em `migration.md` e `release-audit.md`.
+- **R10 — Licenciamento e procedência:** confirmar direitos de arte, textos de
+  regras, bibliotecas e fontes. `LICENSE` não licencia automaticamente esses
+  materiais; ver `THIRD_PARTY_NOTICES.md`.
 
 ## 10. Orientações de mudança
 

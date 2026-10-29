@@ -32,10 +32,10 @@ export class Logger {
     }
     _logToConsole(level, msg, ...args) {
         if (!console[level]) {
-            console.warn(`Custom System Builder | Called Logger with unknown level ${level}`);
+            console.warn(`Sorcerers and Curses | Called Logger with unknown level ${level}`);
             level = 'log';
         }
-        msg = 'Custom System Builder | ' + msg;
+        msg = 'Sorcerers and Curses | ' + msg;
         console[level](msg, ...args);
     }
     error(msg, ...args) {
@@ -66,7 +66,7 @@ export class Logger {
     setLogLevel(newLevel) {
         if (typeof newLevel === 'number') {
             if (!Object.values(LogLevel).includes(newLevel)) {
-                console.error(`Custom System Builder | Tried to set unknown level ${newLevel}`);
+                console.error(`Sorcerers and Curses | Tried to set unknown level ${newLevel}`);
             }
             else {
                 this.logLevel = newLevel;
@@ -74,7 +74,7 @@ export class Logger {
         }
         else {
             if (!(newLevel in LogLevel)) {
-                console.error(`Custom System Builder | Tried to set unknown level ${newLevel}`);
+                console.error(`Sorcerers and Curses | Tried to set unknown level ${newLevel}`);
             }
             else {
                 this.logLevel = LogLevel[newLevel];

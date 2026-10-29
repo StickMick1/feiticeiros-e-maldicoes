@@ -1,7 +1,11 @@
 {
     "id": "sorcerers-and-curses",
     "title": "Sorcerers and Curses",
-    "description": "Character and item sheets for the Sorcerers and Curses (Feiticeiros e Maldições) campaign. Fork of Custom System Builder.",
+    "description": "Character and item sheets for Sorcerers and Curses (Feiticeiros e Maldições).",
+    "url": "https://github.com/StickMick1/feiticeiros-e-maldicoes",
+    "bugs": "https://github.com/StickMick1/feiticeiros-e-maldicoes/issues",
+    "readme": "README.md",
+    "license": "LICENSE",
 
     "compatibility": {
         "minimum": "14",
@@ -11,21 +15,8 @@
 
     "authors": [
         {
-            "name": "Jean-Baptiste Louvet-Daniel",
-            "email": "linkedfluuuush@gmail.com",
-            "discord": "LinkedFluuuush"
-        },
-        {
-            "name": "Martin1522",
-            "email": "martindeutsch152@outlook.de",
-            "discord": "Martin1522"
-        },
-        {
-            "name": "adorablecoin",
-            "discord": "adorablecoin"
-        },
-        {
-            "name": "Caloup"
+            "name": "Infernalisch",
+            "url": "https://github.com/StickMick1"
         }
     ],
 
@@ -52,7 +43,7 @@
         }
     ],
     "esmodules": [
-        "module/custom-system-builder.js"
+        "module/sorcerers-and-curses.js"
     ],
     "scripts": [
         "lib/math.js",

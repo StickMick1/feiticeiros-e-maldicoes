@@ -409,7 +409,7 @@ Hooks.on('renderSettings', (sidebar, elt) => {
     }
 });
 /**
- * Create Custom System Builder section
+ * Create Sorcerers and Curses section
  * @ignore
  */
 function createCSBSection(sidebar, _elt) {

@@ -546,8 +546,8 @@
             "TemplateModifiers": "Modificateurs du modèle"
         },
         "ProgressBar": {
-            "ReloadingTemplates": "CSB : {NAME} ({UUID}) rechargé ; {CURRENT} / {MAX}",
-            "ReloadingTemplatesFinished": "CSB : Le rechargement des modèles dans les documents est terminé ; {MAX} documents rechargés"
+            "ReloadingTemplates": "Sorcerers and Curses : {NAME} ({UUID}) rechargé ; {CURRENT} / {MAX}",
+            "ReloadingTemplatesFinished": "Sorcerers and Curses : Le rechargement des modèles dans les documents est terminé ; {MAX} documents rechargés"
         },
         "ReloadTemplates": {
             "ActorsInGameDirectory": "Objets liés aux acteurs du dossier principal",

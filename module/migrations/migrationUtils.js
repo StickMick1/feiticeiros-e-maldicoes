@@ -7,18 +7,18 @@
  */
 import Logger from '../Logger.js';
 export function beginMigration(version) {
-    return ui.notifications.info(`CSB: Migration to Version ${version} started`, { progress: true });
+    return ui.notifications.info(`Sorcerers and Curses: Migration to Version ${version} started`, { progress: true });
 }
 export function logProgress(document, version, current, total, notification) {
     Logger.log('Processing migration ' + version + ' for ' + document.name + ' - ' + document.id);
     notification.update({
-        message: `CSB: Migration to Version ${version}. Updating ${document.constructor.name} ${current + 1} / ${total}`,
+        message: `Sorcerers and Curses: Migration to Version ${version}. Updating ${document.constructor.name} ${current + 1} / ${total}`,
         pct: current / total
     });
 }
 export function finishMigration(version, notification) {
     notification.update({
-        message: `CSB: Migration to Version ${version} finished`,
+        message: `Sorcerers and Curses: Migration to Version ${version} finished`,
         pct: 1
     });
 }

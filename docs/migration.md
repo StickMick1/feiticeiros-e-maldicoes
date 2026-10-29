@@ -1,85 +1,70 @@
-# Migração manual: troca do ID de sistema do mundo
+# Migração de mundos existentes
 
-Guia único de migração para mundos existentes criados com o sistema sob o ID
-`custom-system-builder` (upstream) que agora usarão `sorcerers-and-curses`
-(este sistema independente).
+A troca do sistema de um mundo envolve migrar configurações e flags, além de
+alterar seu identificador. Mundos novos criados com `sorcerers-and-curses` não
+precisam desta troca.
 
-> **A troca de ID é um evento único e manual, feito uma vez por mundo.**
-> A migração de *runtime* mantém os flags existentes — ela **não** apaga dados.
+## Situação da rotina
 
----
+A revisão estática identificou e motivou correções em
+`module/migrations/migrationHandler.js` e `migrationUtils.js`. A detecção deixou
+de tratar o registro `game.settings.settings` como uma coleção de documentos;
+a rotina passou a ler as configurações persistidas em
+`game.settings.storage.get('world').contents`. A remoção do namespace de flags
+também foi corrigida. Referências:
+[ClientSettings V14](https://foundryvtt.com/api/v14/classes/foundry.helpers.ClientSettings.html),
+[WorldSettings V14](https://foundryvtt.com/api/v14/classes/foundry.documents.collections.WorldSettings.html).
 
-## Por que isso é necessário
+As correções foram feitas no código. O fluxo ainda precisa ser confirmado em
+um mundo de teste na versão de Foundry declarada antes de migrar um mundo em uso.
 
-O código armazena settings e flags sob a chave do **ID do sistema ativo**,
-obtida via `game.system.id`:
+## Identificadores de compatibilidade
 
-- settings: `game.settings.register(game.system.id, ...)`
-- flags de documento: `flags.<system.id>.version`, `flags.<system.id>.isPredefined`, etc.
+O namespace legado `custom-system-builder` permanece no código de migração para
+reconhecer configurações e flags de mundos antigos. Ele é um identificador de
+dados necessário para localizar a origem; a interface usa o nome do sistema
+atual. As chaves de localização `CSB.*` e hooks antigos também são mantidos
+para compatibilidade com código e integrações existentes.
 
-Ao trocar o ID do sistema de `custom-system-builder` para
-`sorcerers-and-curses`, essas chaves ficam sob o ID antigo e o sistema novo
-não as enxerga — até a migração de runtime reescrevê-las.
+O sistema atual registra configurações com `game.system.id` e armazena flags em
+`flags.sorcerers-and-curses.*`. Os atributos e tabelas dos documentos em
+`system.*` não são renomeados pela troca de namespace.
 
-O migration handler (`module/migrations/migrationHandler.js`) detecta o switch
-em `needsMigration()`: ele varre settings e flags cuja chave começa com
-`custom-system-builder` e compara com o `game.system.id` atual. Se houver
-divergência, o GM vê um diálogo com 3 opções:
+## Preparação da migração
 
-| Opção | Efeito |
-|---|---|
-| **Migrate Settings & Flags (recommended)** | copia settings e flags de `custom-system-builder` → `sorcerers-and-curses` e remove os antigos |
-| **Do not migrate and only delete old settings & flags** | apaga settings/flags antigos sem migrar (dados de documento em `system.*` são preservados) |
-| **Do nothing** | nada; o diálogo reaparece no próximo reload |
+1. Fazer backup completo do mundo e trabalhar primeiro em uma cópia. O diálogo
+   recomenda backup; ele não cria nem verifica esse backup.
+2. Instalar este sistema em `Data/systems/sorcerers-and-curses/`, mantendo o
+   sistema antigo disponível para recuperar o mundo original. O diretório do
+   novo sistema deve corresponder ao `id` de seu `system.json`.
+3. Com o mundo encerrado, alterar somente na cópia a chave raiz `system` de
+   `world.json` para `sorcerers-and-curses`. Não renomear a instalação do
+   sistema antigo como atalho.
+4. Abrir a cópia como GM e conferir a operação do diálogo de migração.
+5. Conferir configurações, flags, atores, itens, inventário, efeitos, tokens,
+   chat e macros. Somente então planejar a migração do mundo original.
 
-## Passo a passo (uma vez por mundo)
+## Comportamento implementado e limites
 
-1. **Backup completo** da pasta do mundo (ex.: `Data/worlds/<meu-mundo>/`)
-   — e, idealmente, do `Data/systems/` também. O diálogo de migração exige isso
-   antes de oferecer a migração.
-2. Abra `world.json` do mundo e altere a chave raiz `"system"`:
+- Configurações persistidas do mundo são transferidas para o namespace atual.
+  Configurações já existentes no destino são preservadas.
+- Flags de usuários, atores, itens, cenas, tokens, combates, combatentes e itens
+  incorporados em atores são procuradas. A cópia combina os dados, preservando
+  valores já presentes no destino, antes de remover o namespace de origem.
+- Adiar, fechar o diálogo ou falhar na migração libera a continuação do hook
+  de inicialização e evita executar as migrações de versão nessa tentativa.
+- Não existe transação global: se uma etapa falhar, etapas anteriores podem
+  já ter sido concluídas. O backup continua necessário.
+- Compêndios, flags de atores sintéticos e configurações de cliente não estão
+  cobertos pelo fluxo descrito. Avaliar esses casos antes de migrar um mundo
+  que dependa deles.
 
-   ```json
-   { "system": "sorcerers-and-curses" }
-   ```
+## Opções do diálogo
 
-3. Renomeie a pasta do sistema instalado em `Data/systems/` para
-   `sorcerers-and-curses` (o mesmo valor do `"id"` em `system.json`). O Foundry
-   exige que o diretório tenha o nome do ID do sistema; nome divergente gera o
-   erro de startup `Invalid system "sorcerers-and-curses" detected in directory
-   "custom-system-builder"`. Veja a nota de diretório no final deste guia.
-4. Como GM, o diálogo **System switch detected** aparecerá (se o mundo tiver
-   actors/items com flags ou settings sob `custom-system-builder`). Escolha
-   **Migrate Settings & Flags (recommended)**.
-5. Confirme no console/navegador e em uma ficha que os dados continuam lá:
-   itens, atributos, abas e efeitos ativos.
+O código oferece migrar configurações e flags, excluir os dados antigos sem
+migrar ou adiar. A opção de exclusão remove os dados legados e não serve para
+preservá-los. A opção de migrar é a que procura conservar os dados, mas o
+resultado ainda precisa ser confirmado em execução na cópia do mundo.
 
-## O que é preservado no documento vs. o que é migrado
-
-- **Migrado pela rotina de runtime**: settings registrados sob
-  `custom-system-builder` (efeitos customizados, init formula, estilos, etc.) e
-  flags de documento (`flags.custom-system-builder.*`) em users, actors, items,
-  scenes, tokens, combats e combatants — reescritos sob `sorcerers-and-curses`.
-- **Preservado como está**: o conteúdo em `system.*` de cada documento
-  (atributos da ficha, tabelas, inventário, etc.). A troca de ID não toca nesses
-  dados — por isso a migração de runtime **retém** flags/dados existentes.
-
-## Limitações
-
-- A detecção automática (`needsMigration`) só enxerga chaves com prefixo
-  `custom-system-builder`. Se um mundo nunca rodou sob esse ID, o diálogo não
-  aparece e não há nada a migrar.
-- Mundos novos criados já sob `sorcerers-and-curses` não precisam deste guia.
-- Se o mundo ainda estiver com o sistema original instalado e os dois
-  coexistirem, só o ID escolhido no `world.json` determina qual sistema ativo.
-
-## Nota de diretório (erro de startup verificado)
-
-O Foundry detecta sistemas lendo cada subpasta de `Data/systems/` e compara o
-nome do diretório com o `"id"` declarado no `system.json` dela. Se divergirem,
-o startup falha com `Invalid system "<id>" detected in directory "<pasta>"`.
-
-Portanto, além do `"system"` em `world.json`, a pasta do sistema **precisa**
-ser renomeada de `custom-system-builder` para **`sorcerers-and-curses`** —
-ex.: `Data/systems/sorcerers-and-curses/`. Isso é um evento único por
-instalação, feito manualmente (ou via reinstalação pelo manifesto).
+O plano de lançamento e as demais pendências estão em
+[release-audit.md](release-audit.md).

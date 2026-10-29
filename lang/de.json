@@ -546,8 +546,8 @@
             "TemplateModifiers": "Template-Modifier"
         },
         "ProgressBar": {
-            "ReloadingTemplates": "CSB: {NAME} ({UUID}) geladen; {CURRENT} / {MAX}",
-            "ReloadingTemplatesFinished": "CSB: Neuladen der Templates von den Dokumenten abgeschlossen; {MAX} Dokumente geladen"
+            "ReloadingTemplates": "Sorcerers and Curses: {NAME} ({UUID}) geladen; {CURRENT} / {MAX}",
+            "ReloadingTemplatesFinished": "Sorcerers and Curses: Neuladen der Templates von den Dokumenten abgeschlossen; {MAX} Dokumente geladen"
         },
         "ReloadTemplates": {
             "ActorsInGameDirectory": "Items verbunden mit Akteuren im Spielverzeichnis",

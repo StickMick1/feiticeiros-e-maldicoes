@@ -11,164 +11,170 @@ import migration_4_5_1 from './migration_4_5_1.js';
 import migration_4_6_4 from './migration_4_6_4.js';
 import CustomDialogV2 from '../applications/CustomDialogV2.js';
 import migration_5_0_0 from './migration_5_0_0.js';
+
 export default async function processMigrations() {
-    await detectSwitchVersion();
+    if (!game.user.isGM || !(await detectSwitchVersion()) || needsMigration()) {
+        return;
+    }
     await migration_4_5_0.processMigration();
     await migration_4_5_1.processMigration();
     await migration_4_6_4.processMigration();
     await migration_5_0_0.processMigration();
 }
+
 async function detectSwitchVersion() {
-    if (!game.user.isGM) {
-        return;
-    }
     const migrateFrom = needsMigration();
-    if (migrateFrom) {
-        await new Promise((resolve) => {
-            void new CustomDialogV2({
-                window: { title: `System switch detected` },
-                content: `<h2>System switch detected from <code>${migrateFrom}</code> to <code>${game.system.id}</code></h2><p>Do you want to migrate settings and flags (recommended)?</p><p>PLEASE BACK UP YOUR WORLD BEFORE DOING ANYTHING</p>`,
+    if (!migrateFrom) {
+        return true;
+    }
+    return new Promise((resolve) => {
+        // Closing the window is the same as postponing migration.
+        class MigrationDialog extends CustomDialogV2 {
+            async _preClose(options) {
+                await super._preClose(options);
+                resolve(false);
+            }
+        }
+        const reportFailure = (error) => {
+            Logger.error(error.message, error);
+            ui.notifications.error('Sorcerers and Curses: Migration could not be completed. Previous system data may remain; restore a backup if necessary and retry.');
+            resolve(false);
+        };
+        const migrate = async (deleteOnly = false) => {
+            try {
+                await switchCSBVersion(migrateFrom, game.system.id, deleteOnly);
+                resolve(true);
+            }
+            catch (error) {
+                reportFailure(error);
+            }
+        };
+        try {
+            const dialog = new MigrationDialog({
+                window: { title: 'System switch detected' },
+                content: '<h2>Previous system data detected</h2><p>Do you want to migrate settings and flags to Sorcerers and Curses (recommended)?</p><p>PLEASE BACK UP YOUR WORLD BEFORE DOING ANYTHING</p>',
                 buttons: {
                     yes: {
                         default: true,
-                        icon: '<i class="fas fa-check"></i>',
+                        icon: 'fas fa-check',
                         label: 'Migrate Settings & Flags (recommended)',
-                        callback: async () => {
-                            await switchCSBVersion(migrateFrom, game.system.id);
-                            resolve();
-                        }
+                        callback: () => migrate()
                     },
                     delete: {
-                        icon: '<i class="fas fa-trash"></i>',
+                        icon: 'fas fa-trash',
                         label: 'Do not migrate and only delete old settings & flags',
-                        callback: async () => {
-                            await switchCSBVersion(migrateFrom, game.system.id, true);
-                            resolve();
-                        }
+                        callback: () => migrate(true)
                     },
                     no: {
-                        icon: '<i class="fas fa-xmark"></i>',
+                        icon: 'fas fa-xmark',
                         label: 'Do nothing (this window will pop-up again on the next reload)',
-                        callback: async () => {
-                            resolve();
-                        }
+                        callback: () => resolve(false)
                     }
                 }
-            }).render({ force: true });
-        });
+            });
+            Promise.resolve(dialog.render({ force: true })).catch(reportFailure);
+        }
+        catch (error) {
+            reportFailure(error);
+        }
+    });
+}
+
+function getWorldSettings() {
+    return game.settings.storage.get('world').contents;
+}
+
+function* getMigratableDocuments() {
+    yield* game.users;
+    for (const actor of game.actors) {
+        yield actor;
+        yield* actor.items;
+    }
+    yield* game.items;
+    for (const scene of game.scenes) {
+        yield scene;
+        yield* scene.tokens;
+    }
+    for (const combat of game.combats) {
+        yield combat;
+        yield* combat.combatants;
     }
 }
+
+// Keep the export name for existing integrations.
 export const switchCSBVersion = async (fromKey, toKey, deleteOnly = false) => {
-    if (!game.user.isGM) {
+    if (!game.user.isGM || fromKey === toKey) {
         return;
     }
-    // We need to port any and all settings over from the original version and any or all flags.
-    //First, settings.
-    const systemSettings = [];
-    try {
-        // V14: use game.settings.settings for iterable setting documents
-        for (const s of game.settings.settings) {
-            const splitSettingKey = s.key.split('.', 2);
-            if (splitSettingKey[0] === fromKey) {
-                systemSettings.push({
-                    _id: s._id,
-                    key: `${toKey}.${splitSettingKey[1]}`,
-                    value: s.value
-                });
-            }
-        }
-        if (deleteOnly) {
-            await Setting.deleteDocuments(systemSettings.map((setting) => setting._id) ?? []);
+    const settings = getWorldSettings();
+    const settingsByKey = new Map(settings.map((setting) => [setting.key, setting]));
+    const sourcePrefix = fromKey + '.';
+    const sourceSettings = settings.filter((setting) => setting.key.startsWith(sourcePrefix));
+    // Work with persisted Setting documents, rather than the settings registration Map.
+    // Updating only the key preserves the original stored value, including its type.
+    for (const setting of sourceSettings) {
+        const targetKey = toKey + '.' + setting.key.slice(sourcePrefix.length);
+        if (deleteOnly || settingsByKey.has(targetKey)) {
+            await setting.delete();
         }
         else {
-            await Setting.updateDocuments(systemSettings);
+            await setting.update({ key: targetKey });
+            settingsByKey.set(targetKey, setting);
         }
     }
-    catch (error) {
-        Logger.error(error.message, error);
-    }
+    const documents = Array.from(getMigratableDocuments())
+        .filter((document) => Object.hasOwn(document.flags ?? {}, fromKey));
     const notification = ui.notifications.info('', { progress: true });
-    // Now flags, let us write a convenience function
-    async function changeFlagsInCollection(collection) {
-        const total = collection.size;
-        let current = 0;
-        for (const doc of collection) {
-            logProgress(doc, current, total, notification);
-            const flags = doc.flags[fromKey];
-            if (flags) {
-                if (!deleteOnly) {
-                    await doc.update({ [`flags.${toKey}`]: flags }, { recursive: false });
-                }
-                // V14: use unset flag syntax instead of -= operator
-                await doc.unsetFlag(fromKey);
-            }
-            current++;
+    for (let current = 0; current < documents.length; current++) {
+        const document = documents[current];
+        if (!deleteOnly) {
+            const mergedFlags = foundry.utils.mergeObject(
+                foundry.utils.deepClone(document.flags[fromKey]),
+                foundry.utils.deepClone(document.flags[toKey] ?? {}),
+                { inplace: false, recursive: true, overwrite: true }
+            );
+            // Existing destination values win; unrelated flag scopes are untouched.
+            await document.update({ ['flags.' + toKey]: mergedFlags });
         }
-    }
-    // Users
-    await changeFlagsInCollection(game.users);
-    // Actors
-    await changeFlagsInCollection(game.actors);
-    // Items in Actors
-    for (const doc of game.actors) {
-        await changeFlagsInCollection(doc.items);
-    }
-    // Items
-    await changeFlagsInCollection(game.items);
-    // Scenes
-    await changeFlagsInCollection(game.scenes);
-    // Tokens
-    for (const doc of game.scenes) {
-        await changeFlagsInCollection(doc.tokens);
-    }
-    // Combats
-    await changeFlagsInCollection(game.combats);
-    // Combatants
-    for (const doc of game.combats) {
-        await changeFlagsInCollection(doc.combatants);
+        // Remove the old namespace only after the destination update succeeds.
+        await document.update({ ['flags.-=' + fromKey]: null });
+        logProgress(document, current, documents.length, notification);
     }
     notification.update({
-        message: `CSB: Migration of flags finished`,
-        pct: 100
+        message: 'Sorcerers and Curses: Migration of settings and flags finished',
+        pct: 1
     });
 };
-/**
- * Checks if system needs migration, i.e. if it has been switched from one version to another (between stable, beta and unstable)
- * @returns The system id to migrate from
- */
+
+function isLegacySystemId(systemId) {
+    return systemId !== game.system.id &&
+        (systemId === 'custom-system-builder' || systemId.startsWith('custom-system-builder-'));
+}
+
+/** Return the previous system namespace when persisted settings or document flags need migration. */
 export const needsMigration = () => {
-    // V14: use game.settings.settings for iterable setting documents
-    const CSBSettings = [...game.settings.settings].filter((setting) => setting.key.startsWith(`custom-system-builder`)) ?? [];
-    for (const setting of CSBSettings) {
-        const settingSystemKey = setting.key.split('.')[0];
-        if (settingSystemKey !== game.system.id) {
-            return settingSystemKey;
+    for (const setting of getWorldSettings()) {
+        const separator = setting.key.indexOf('.');
+        if (separator < 0) {
+            continue;
+        }
+        const systemId = setting.key.slice(0, separator);
+        if (isLegacySystemId(systemId)) {
+            return systemId;
         }
     }
-    if (game.actors.size > 0) {
-        const actorFlags = Array.from(game.actors.values())[0].flags;
-        const CSBActorKeys = Object.keys(actorFlags).filter((key) => key.startsWith(`custom-system-builder`)) ?? [];
-        for (const key of CSBActorKeys) {
-            if (key !== game.system.id) {
-                return key;
-            }
+    for (const document of getMigratableDocuments()) {
+        const systemId = Object.keys(document.flags ?? {}).find(isLegacySystemId);
+        if (systemId) {
+            return systemId;
         }
     }
-    if (game.items.size > 0) {
-        const itemFLags = Array.from(game.items.values())[0].flags;
-        const CSBItemKeys = Object.keys(itemFLags).filter((key) => key.startsWith(`custom-system-builder`)) ?? [];
-        for (const key of CSBItemKeys) {
-            if (key !== game.system.id) {
-                return key;
-            }
-        }
-    }
-    return;
 };
+
 export const logProgress = (document, current, total, notification) => {
     Logger.log('Migrating flags for ' + document.name + ' - ' + document.id);
     notification.update({
-        message: `CSB: Migrating flags. Updating ${document.constructor.name} ${current + 1} / ${total}`,
-        pct: Math.round((current * 100) / total)
+        message: 'Sorcerers and Curses: Migrating flags. Updating ' + document.constructor.name + ' ' + (current + 1) + ' / ' + total,
+        pct: total ? (current + 1) / total : 1
     });
 };

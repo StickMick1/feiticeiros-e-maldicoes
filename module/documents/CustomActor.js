@@ -46,7 +46,7 @@ export default class CustomActor extends Actor {
      * @deprecated
      */
     get isTemplate() {
-        Logger.warn(`${this.uuid}: isTemplate getter is deprecated, and will be removed in CSB 6.0.0 - FoundryVTT 14. Please use the following functions instead : CustomActor.isCharacterActor ; CustomActor.isTemplateActor`);
+        Logger.warn(`${this.uuid}: isTemplate getter is deprecated. Please use the following functions instead: CustomActor.isCharacterActor ; CustomActor.isTemplateActor`);
         return CustomActor.isTemplateActor(this);
     }
     /**
@@ -60,7 +60,7 @@ export default class CustomActor extends Actor {
      * @deprecated
      */
     get entity() {
-        Logger.warn(`${this.uuid}: entity.entity is now deprecated, since entity already is the Actor. please change all the "entity.entity" in your script for just "entity". This will be removed in CSB 7.0.0 - FoundryVTT 15`);
+        Logger.warn(`${this.uuid}: entity.entity is deprecated, since entity already is the Actor. Please change all the "entity.entity" in your script to "entity".`);
         return this;
     }
     /**
